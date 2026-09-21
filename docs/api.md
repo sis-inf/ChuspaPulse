@@ -8,9 +8,9 @@ http://localhost:PUERTO
 
 ```md
 ### GET /metrics
-
+> **Estado:** Planeado / No disponible aún
 **Descripción:**
-Devuelve las métricas actuales del sistema monitoreado.
+Devuelve las métricas actuales del sistema monitoreado. (Endpoint en desarrollo)
 
 **Parámetros opcionales:**
 
@@ -105,6 +105,8 @@ curl http://localhost:8080/health
 
 ### GET /config
 
+> **Estado:** Planeado / No disponible aún
+
 **Descripción:**
 Devuelve la configuración activa del servidor.
 
@@ -130,6 +132,7 @@ curl http://localhost:8080/config
 * 500 Internal Server Error
 
 ### GET /alerts
+> **Estado:** Planeado / No disponible aún
 
 **Descripción:**
 Lista las alertas activas generadas por el sistema.
@@ -167,3 +170,17 @@ curl http://localhost:8080/alerts
 | 200 | OK |
 | 400 | Bad Request |
 | 500 | Internal Server Error |
+
+### GET /version
+
+> **Estado:** Disponible / Funcional
+**Descripción:**
+Devuelve la versión actual de la aplicación.
+
+---
+
+### GET /metrics/prometheus
+> **Estado:** Disponible / Funcional
+
+**Descripción:**
+Expone las métricas en formato compatible con Prometheus.

@@ -11,6 +11,8 @@ URL
 
 /metrics
 
+> **Estado:** Planeado / No disponible aún
+
 Descripción
 
 Devuelve las métricas actuales del sistema en tiempo real.
@@ -94,6 +96,7 @@ URL
 
 /config
 
+> **Estado:** Planeado / No disponible aún
 Descripción
 
 Devuelve la configuración activa del sistema (sin datos sensibles).
@@ -115,7 +118,7 @@ GET
 URL
 
 /alerts
-
+> **Estado:** Planeado / No disponible aún
 Descripción
 
 Devuelve las alertas activas del sistema.
@@ -142,3 +145,23 @@ Código	Significado
 404	Recurso no encontrado
 500	Error interno del servidor
 503	Servicio no disponible
+
+GET /version
+Método
+GET
+URL
+/version
+> **Estado:** Disponible / Funcional
+
+Descripción
+Devuelve la versión actual de la aplicación.
+
+GET /metrics/prometheus
+Método
+GET
+URL
+/metrics/prometheus
+> **Estado:** Disponible / Funcional
+
+Descripción
+Expone las métricas en formato compatible con Prometheus.
