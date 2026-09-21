@@ -96,6 +96,12 @@ cmake -S . -B build
 make -C build
 ./build/pulso
 ```
+También puedes usar las reglas directas del Makefile:
+
+```bash
+make          # Compila el proyecto usando CMake
+make test     # Ejecuta las pruebas
+make clean    # Limpia el directorio de compilación
 
 Para una guía completa de instalación consulte:
 
