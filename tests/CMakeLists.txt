@@ -24,7 +24,7 @@ target_link_libraries(test_types PRIVATE
 gtest_discover_tests(test_types)
  
 add_executable(test_config
-    test_config.cpp
+    automatizados/unit/test_config_completo.cpp
 )
 target_include_directories(test_config PRIVATE
     ${PROJECT_SOURCE_DIR}/src

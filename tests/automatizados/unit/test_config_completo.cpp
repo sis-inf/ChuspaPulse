@@ -31,6 +31,9 @@ TEST_F(ConfigCompletoTest, ValoresPorDefecto)
 
     EXPECT_EQ(cfg.servidor.puerto, 8080);
     EXPECT_EQ(cfg.sampler.intervalo_segundos, 10);
+    EXPECT_EQ(cfg.servidor.host, "0.0.0.0");
+    EXPECT_EQ(cfg.storage.ruta_db, "pulso.db");
+    EXPECT_EQ(cfg.nivel_log, "info");
 }
 
 TEST_F(ConfigCompletoTest, CargaArchivoValido)
