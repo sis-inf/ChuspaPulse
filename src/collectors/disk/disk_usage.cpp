@@ -1,9 +1,11 @@
+#include "disk_usage.h"
 #include <sys/statvfs.h>
 #include <stdexcept>
 #include <cerrno>
 #include <cstring>
 #include <cstdint>
 #include <string>
+#include <ctime>
 
 /// @brief Estructura que representa el uso de disco del sistema.
 /// Todos los valores están expresados en bytes.
@@ -36,3 +38,22 @@ DiskUsage getDiskUsage(const std::string& ruta = "/") {
 
     return uso;
 }
+
+namespace pulso::collectors::disk {
+
+std::string DiskCollector::nombre() const {
+    return "disk";
+}
+
+std::vector<pulso::core::Metrica> DiskCollector::recolectar() {
+    const DiskUsage uso = getDiskUsage();
+    const std::int64_t ahora = static_cast<std::int64_t>(std::time(nullptr));
+
+    return {
+        {"disk.total", static_cast<double>(uso.total), "bytes", ahora},
+        {"disk.used", static_cast<double>(uso.usado), "bytes", ahora},
+        {"disk.free", static_cast<double>(uso.libre), "bytes", ahora},
+    };
+}
+
+}  // namespace pulso::collectors::disk

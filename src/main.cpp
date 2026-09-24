@@ -22,9 +22,9 @@
 // Collectors
 #include "collectors/memory/ram_usage.hpp"
 #include "collectors/bateria/bateria_collector.hpp"
+#include "collectors/disk/disk_usage.h"
+#include "collectors/network/net_usage.h"
 #include "platform/linux/collector_cpu.hpp"
-// TODO: CollectorDisk y CollectorNetwork no implementan ICollector aún.
-//       Pendiente en issue separado.
 
 // Sampler
 #include "sampler/sampler.hpp"
@@ -204,7 +204,17 @@ int main(int argc, char* argv[]) {
         std::make_shared<pulso::collectors::bateria::CollectorBateria>()
      );
 
-    // TODO: agregar CollectorDisk y CollectorNetwork cuando implementen ICollector.
+    if (cli_opts.monitor.disk || usar_todos)
+    {
+        collectors.push_back(
+            std::make_shared<pulso::collectors::disk::DiskCollector>()
+        );
+    }
+
+    // La CLI todavía no tiene un flag dedicado para red, por eso se mantiene activa.
+    collectors.push_back(
+        std::make_shared<pulso::collectors::network::NetworkCollector>()
+    );
 
     // =========================================================================
     // MODO ONCE
