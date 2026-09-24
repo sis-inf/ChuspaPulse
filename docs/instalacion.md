@@ -10,7 +10,7 @@ Antes de instalar Pulso, asegúrese de contar con lo siguiente:
 
 | Requisito | Versión mínima | Notas |
 |---|---|---|
-| Sistema operativo | — | Linux, Windows o macOS |
+| Sistema operativo | — | Linux o Windows; macOS aún no está soportado |
 | Compilador C++ | C++17 | GCC, Clang o MSVC |
 | CMake | 3.16 | |
 | Git | — | Para clonar el repositorio |
@@ -23,11 +23,9 @@ sudo apt install g++ cmake git
 ```
  
 **macOS**
-```bash
-brew install cmake git
-```
-> El compilador Clang viene incluido con las herramientas de línea de comandos de Xcode. Si no lo tiene, ejecute `xcode-select --install`.
- 
+
+> macOS aún no cuenta con collectors nativos completos, por lo que no se considera una plataforma soportada actualmente.
+
 **Windows**
  
 - Instale [CMake](https://cmake.org/download/) y marque la opción para agregarlo al PATH durante la instalación.
@@ -49,7 +47,7 @@ cd pulso
 
 ## Compilar el proyecto
  
-### Linux y macOS
+### Linux
  
 ```bash
 # Configurar el proyecto y crear la carpeta build
@@ -77,7 +75,7 @@ cmake --build build --config Release
  
 ## Ejecutar el programa
  
-### Linux y macOS
+### Linux
  
 ```bash
 ./build/bin/pulso
