@@ -35,6 +35,7 @@
 #include "formatters/formatter_prometheus.hpp"
 
 // HTTP handlers
+#include "http/handler_config.hpp"
 #include "http/handler_health.hpp"
 #include "http/handler_history.hpp"
 #include "http/handler_metrics.hpp"
@@ -263,6 +264,7 @@ server.Get("/version", [](
         "application/json"
     );
 });
+server.Get("/config", handle_config);
 
     // GET /metrics — pendiente hasta que SystemMonitor se adapte al flujo
     // actual (Storage + ICollector). Ver issue #270.
