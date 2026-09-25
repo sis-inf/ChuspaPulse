@@ -1,19 +1,23 @@
----
-Checks: '
-bugprone-*,
-cppcoreguidelines-*,
-modernize-*,
-performance-*,
-readability-*,
--*readability-magic-numbers,
--*cppcoreguidelines-avoid-magic-numbers,
--*readability-identifier-length,
-'
+# Configuración de Clang-Tidy para ChuspaPulse
+# 
+# Categorías activas:
+# - bugprone-*: Detecta patrones de código propensos a errores lógicos y comportamientos inesperados.
+# - performance-*: Identifica ineficiencias de rendimiento y optimizaciones de memoria/CPU.
+# - cert-*: Evalúa reglas de codificación segura según los estándares CERT C/C++.
 
-CheckOptions:
-  - key: readability-identifier-length.MinVariableNameLength
-    value: '2'
-  - key: readability-identifier-length.MinParameterNameLength
-    value: '2'
-  - key: modernize-use-auto.MinTypeNameLength
-    value: '5'
+Checks: >
+  -*,
+  bugprone-*,
+  performance-*,
+  cert-*,
+  -bugprone-easily-swappable-parameters,
+  -cert-err33-c,
+  -clang-diagnostic-*
+
+# Convierte las advertencias de las categorías críticas en errores bloqueantes para el CI
+WarningsAsErrors: 'bugprone-*,performance-*,cert-*,-clang-diagnostic-*'
+
+# Filtra el análisis para enfocarlo en los archivos del proyecto dentro de src/
+HeaderFilterRegex: 'src/.*'
+
+FormatStyle: 'none'
