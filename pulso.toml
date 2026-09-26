@@ -1,4 +1,4 @@
-﻿# Archivo de configuración del agente pulso
+# Archivo de configuración del agente pulso
 # Todas las opciones tienen valores por defecto; este archivo muestra los valores
 # explícitos para fines de documentación.
 
@@ -22,3 +22,10 @@ intervalo_segundos = 10
 # Ruta del archivo de base de datos SQLite.
 # Puede ser relativa al directorio de ejecución o absoluta.
 ruta_db = "pulso.db"
+
+[alertas.webhook]
+# Habilita o deshabilita la notificación externa vía webhook
+enabled = true
+
+# URL de destino para las peticiones POST con el payload de la alerta
+url = "http://localhost:8080/webhook"

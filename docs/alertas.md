@@ -120,3 +120,18 @@ Se activa cuando el uso del almacenamiento supera el 95%.
 ## Resumen
 
 El sistema de alertas de Pulso permite supervisar métricas críticas mediante reglas configurables. Gracias a la evaluación automática de umbrales y la consulta de alertas activas, es posible detectar rápidamente situaciones que requieren atención.
+
+---
+
+## Notificaciones externas vía Webhook
+
+El sistema de alertas permite enviar notificaciones en tiempo real a servicios externos vía peticiones HTTP `POST` con payload JSON cada vez que una alerta se dispara.
+
+### Configuración en `pulso.toml`
+
+Para habilitar el envío automático de notificaciones a un webhook:
+
+```toml
+[alertas.webhook]
+enabled = true
+url = "http://localhost:8080/webhook"

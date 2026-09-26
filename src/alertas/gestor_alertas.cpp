@@ -10,21 +10,32 @@ void GestorAlertas::setCallback(std::function<void(const std::string&)> callback
     callback_ = callback;
 }
 
-void GestorAlertas::evaluar(const pulso::MetricSnapshot& snap) const {
-    // Si no hay callback registrado, no hacemos nada
-    if (!callback_) {
-        return;
+void GestorAlertas::addNotificador(std::shared_ptr<INotificador> notificador) {
+    if (notificador) {
+        notificadores_.push_back(notificador);
     }
+}
 
-    // Si no hay alertas registradas, no hacemos nada
+void GestorAlertas::evaluar(const pulso::MetricSnapshot& snap) const {
     if (alertas_.empty()) {
         return;
     }
 
-    // Evaluar cada alerta y llamar callback solo para las que se disparan
     for (const auto& alerta : alertas_) {
         if (alerta.evaluar(snap)) {
-            callback_(alerta.mensaje());
+            std::string msg = alerta.mensaje();
+
+            // Ejecutar callback si existe
+            if (callback_) {
+                callback_(msg);
+            }
+
+            // Invocar notificadores registrados
+            for (const auto& notificador : notificadores_) {
+                if (notificador) {
+                    notificador->notificar(msg);
+                }
+            }
         }
     }
 }
