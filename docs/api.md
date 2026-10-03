@@ -81,7 +81,7 @@ curl "http://localhost:8080/metrics/history?limit=5"
 ### GET /health
 
 **Descripción:**
-Verifica el estado general del servicio.
+Devuelve la versión actual del servidor.
 
 **Ejemplo de request:**
 
