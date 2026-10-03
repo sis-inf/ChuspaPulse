@@ -1,8 +1,10 @@
+#include "net_usage.h"
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
 #include <string>
 #include <cstdint>
+#include <ctime>
 
 /// @brief Estructura que representa el uso de red del sistema.
 /// Acumula los bytes recibidos y enviados de todas las interfaces
@@ -67,3 +69,21 @@ NetUsage getNetUsage(const std::string& ruta = "/proc/net/dev") {
 
     return uso;
 }
+
+namespace pulso::collectors::network {
+
+std::string NetworkCollector::nombre() const {
+    return "network";
+}
+
+std::vector<pulso::core::Metrica> NetworkCollector::recolectar() {
+    const NetUsage uso = getNetUsage("/proc/net/dev");
+    const std::int64_t ahora = static_cast<std::int64_t>(std::time(nullptr));
+
+    return {
+        {"net.rx", static_cast<double>(uso.rx_bytes_total), "bytes", ahora},
+        {"net.tx", static_cast<double>(uso.tx_bytes_total), "bytes", ahora},
+    };
+}
+
+}  // namespace pulso::collectors::network

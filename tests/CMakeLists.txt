@@ -86,3 +86,29 @@ target_link_libraries(test_ram_usage PRIVATE
     GTest::gtest_main
 )
 gtest_discover_tests(test_ram_usage)
+add_executable(test_alerta_umbral
+    automatizados/unit/test_alerta_umbral.cpp
+    ${PROJECT_SOURCE_DIR}/src/alertas/alerta_umbral.cpp
+)
+target_include_directories(test_alerta_umbral PRIVATE
+    ${PROJECT_SOURCE_DIR}/src
+)
+target_link_libraries(test_alerta_umbral PRIVATE
+    GTest::gtest
+    GTest::gtest_main
+)
+gtest_discover_tests(test_alerta_umbral)
+
+add_executable(test_gestor_alertas
+    automatizados/unit/test_gestor_alertas.cpp
+    ${PROJECT_SOURCE_DIR}/src/alertas/alerta_umbral.cpp
+    ${PROJECT_SOURCE_DIR}/src/alertas/gestor_alertas.cpp
+)
+target_include_directories(test_gestor_alertas PRIVATE
+    ${PROJECT_SOURCE_DIR}/src
+)
+target_link_libraries(test_gestor_alertas PRIVATE
+    GTest::gtest
+    GTest::gtest_main
+)
+gtest_discover_tests(test_gestor_alertas)

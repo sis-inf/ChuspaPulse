@@ -1,0 +1,1 @@
+## Checklist Manual de QA por Release

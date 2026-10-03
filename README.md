@@ -20,7 +20,6 @@ Salida esperada:
 Estado del sistema: OK
 ```
 
-
 ## ¿Qué es?
 
 Pulso es una aplicación desarrollada en C++ que permite gestionar y visualizar información relevante de manera centralizada. Está pensada para ofrecer alto rendimiento y control directo sobre los recursos del sistema.
@@ -46,10 +45,18 @@ Gracias a su implementación en C++, Pulso permite una ejecución más rápida y
 ## Instalación
 
 **Requisitos del sistema**
-- Sistema operativo: Windows, Linux o macOS
+- Sistema operativo soportado actualmente: **Linux (Kernel 5.4+)** y **Windows 10/11**. **macOS 12+ aún no está soportado.**
 - Compilador de C++ (GCC, Clang o MSVC)
 - CMake (recomendado)
 - Git
+
+### Soporte de Plataformas
+
+| Sistema Operativo | Estado de Soporte | Colectores de Métricas |
+| :--- | :---: | :---: |
+| **Linux (Kernel 5.4+)** | Soporte Pleno | 100% Funcional |
+| **Windows 10/11** | Soporte Pleno | 100% Funcional |
+| **macOS 12+** | No soportado actualmente | Colectores nativos pendientes |
 
 ### Pasos básicos
 
@@ -96,7 +103,13 @@ cmake -S . -B build
 make -C build
 ./build/pulso
 ```
+También puedes usar las reglas directas del Makefile:
 
+```bash
+make          # Compila el proyecto usando CMake
+make test     # Ejecuta las pruebas
+make clean    # Limpia el directorio de compilación
+```
 Para una guía completa de instalación consulte:
 
 [docs/instalacion.md](docs/instalacion.md)
@@ -184,77 +197,34 @@ Seleccione una opción:
 # Salida
 Estado del sistema: OK
 ```
-
-**Usando argumentos:**
-
-```bash
-# Entrada
-./pulso --status
-
-# Salida:
-Estado del sistema: OK
-Procesos activos: 5
-Uso de recursos: Normal
-CPU:
-- Uso: 23%
-- Núcleos activos: 4
-
-Memoria (RAM):
-- Uso: 3.2 GB / 8 GB
-- Disponible: 4.8 GB
-
-Disco:
-- Uso: 120 GB / 256 GB
-- Espacio libre: 136 GB
-
-Red:
-- Descarga: 12 Mbps
-- Subida: 3 Mbps
-- Estado: Conectado
-```
-
 ---
 > [!IMPORTANT]
 > Este proyecto se encuentra en desarrollo activo. Los pasos de instalación y ejecución pueden cambiar en futuras versiones.
 ---
-## Compilación con Makefile (sin CMake)
- 
-Para entornos ligeros donde CMake no está disponible, el proyecto incluye un
-`Makefile` alternativo listo para usar.
- 
+## Compilación con Makefile
+
+El proyecto incluye un `Makefile` como wrapper conveniente para invocar los comandos de CMake.
+
 ### Requisitos
- 
+
 | Herramienta | Versión mínima |
-|-------------|---------------|
+|------------|----------------|
 | `g++` / `clang++` | C++17 |
+| CMake | 3.16+ |
 | GNU Make | 4.x |
- 
+
 ### Uso rápido
- 
+
 ```bash
 # Compilar el proyecto
 make
- 
-# Usar un compilador distinto (ej. clang++)
-make CXX=clang++
- 
+
 # Ejecutar los tests
 make test
- 
+
 # Eliminar artefactos de compilación
 make clean
 ```
- 
-### Variables configurables
- 
-| Variable | Valor por defecto | Descripción |
-|----------|------------------|-------------|
-| `CXX` | `g++` | Compilador C++ |
-| `CXXFLAGS` | `-std=c++17 -Wall` | Flags de compilación |
- 
-> **Nota:** el operador `?=` en `CXX` permite sobreescribir el compilador
-> desde la línea de comandos o desde la variable de entorno del sistema sin
-> modificar el Makefile.
  
 ### Estructura esperada
  
@@ -269,6 +239,10 @@ project/
 ---
 
 ## ✨ Características
+
+### 🌐 Soporte Multiplataforma
+- Compatibilidad actual con **Linux** y **Windows**.
+- El soporte nativo para **macOS** permanece pendiente.
 
 ### 📊 Métricas monitoreadas
 - CPU
@@ -303,7 +277,6 @@ la última build, gracias al seguimiento de dependencias de Make sobre los
 archivos objeto (`.o`) en `build/`.
 ---
 
-
 ## Documentación
 
 Ver la carpeta [docs/](docs/)
@@ -321,4 +294,3 @@ Ver [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## Licencia
 MIT — ver [LICENSE](LICENSE)
-

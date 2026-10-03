@@ -24,7 +24,7 @@ struct CliOptions {
  * - --interval <ms>
  * - --metrics <lista>
  * - --once
- * - --format json|csv|prometheus
+ * - --format json|csv|prometheus|text
  * - -h, --help
  * - --version
  *

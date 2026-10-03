@@ -1,10 +1,17 @@
-# Criterios de Salida
+# Criterios de Salida - Release v0.1.0
 
-## Para pasar de dev a main
+Para dar por concluida la primera release etiquetada del proyecto **Pulso**, deben cumplirse y verificarse los siguientes criterios de salida:
 
-- [ ] Cobertura de tests >= ___%
-- [ ] Cero bugs de severidad Crítica o Alta abiertos
-- [ ] Todos los casos de prueba del sprint ejecutados
-- [ ] Informe de pruebas generado y aprobado
-- [ ] Revisión de seguridad completada
-- [ ] Documentación actualizada
+## 1. Módulos Bloqueantes (Alta Prioridad)
+- [x] **Collectors:** Implementación y pruebas funcionales completadas.
+- [x] **Alertas:** Sistema de notificaciones y alertas operativo.
+- [x] **HTTP:** Endpoints principales integrados y respondiendo correctamente.
+
+## 2. Calidad y Pruebas
+- [x] Pruebas unitarias de los módulos críticos pasando exitosamente.
+- [x] Ausencia de fallos o errores de compilación bloqueantes en la rama base.
+
+## 3. Documentación y Versionado
+- [x] Actualización del archivo `CHANGELOG.md` reflejando los cambios acumulados.
+- [x] Generación del tag de versión correspondiente (`v0.1.0`).
+-

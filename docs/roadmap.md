@@ -6,12 +6,15 @@
 |--------------|---------|------------|------------------|
 | CPU | Completada | Baja | Sí |
 | RAM | Completada | Baja | Sí |
-| Disco | Completada | Baja | Sí |
-| Red | Completada | Media | No |
+| Disco | En desarrollo | Baja | Sí |
+| Red | En desarrollo | Media | No |
 | Temperatura | Planificada | Media | Sí |
 | Uptime | Planificada | Baja | Sí |
 | Load Average | Planificada | Media | No |
 | Procesos | Planificada | Alta | No |
+
+Pendientes:
+- Completar la implementación de Disco y Red con la integración de ICollector. Referencia: #1.
 
 ## Módulo: Formatters
 
@@ -46,6 +49,18 @@
 | Sistema de alertas | En desarrollo | Media | No |
 | Reglas personalizadas | Planificada | Alta | No |
 | Notificaciones | Planificada | Alta | No |
+
+Pendientes:
+- Completar la integración del sistema de alertas. Referencias: #12, #13 y #14.
+
+## Módulo: Plataformas
+
+| Funcionalidad | Estado | Dificultad | Good First Issue |
+|--------------|---------|------------|------------------|
+| Soporte macOS | Planificada | Alta | No |
+
+Pendientes:
+- Implementar soporte para macOS. Referencia: #5.
 
 ## Leyenda
 

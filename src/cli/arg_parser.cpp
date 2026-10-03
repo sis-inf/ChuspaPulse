@@ -45,11 +45,11 @@ void print_help()
     std::cout << "  pulso [opciones]\n\n";
 
     std::cout << "Opciones:\n";
-    std::cout << "  --config <path>   Ruta al archivo de configuracion (default: pulso.toml)\n";
+
     std::cout << "  --interval <ms>   Intervalo de lectura\n";
     std::cout << "  --metrics <list>  Metricas a recolectar: cpu,ram,disk\n";
     std::cout << "  --once            Ejecutar una sola lectura y salir\n";
-    std::cout << "  --format <fmt>    Formato de salida con --once: json|csv|prometheus\n";
+    std::cout << "  --format <fmt>    Formato de salida con --once: json|csv|prometheus|text\n";
     std::cout << "  -h, --help        Mostrar ayuda\n";
     std::cout << "  --version         Mostrar version\n";
 }

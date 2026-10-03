@@ -22,9 +22,9 @@
 // Collectors
 #include "collectors/memory/ram_usage.hpp"
 #include "collectors/bateria/bateria_collector.hpp"
+#include "collectors/disk/disk_usage.h"
+#include "collectors/network/net_usage.h"
 #include "platform/linux/collector_cpu.hpp"
-// TODO: CollectorDisk y CollectorNetwork no implementan ICollector aún.
-//       Pendiente en issue separado.
 
 // Sampler
 #include "sampler/sampler.hpp"
@@ -35,6 +35,7 @@
 #include "formatters/formatter_prometheus.hpp"
 
 // HTTP handlers
+#include "http/handler_config.hpp"
 #include "http/handler_health.hpp"
 #include "http/handler_history.hpp"
 #include "http/handler_metrics.hpp"
@@ -89,22 +90,32 @@ static int run_once_mode(
     }
 
     // 3. FORMATEAR con los formatters OFICIALES
-    std::unique_ptr<pulso::formatters::IFormatter> formatter;
+std::unique_ptr<pulso::formatters::IFormatter> formatter;
 
-    if (format == "json")
-    {
-        formatter = std::make_unique<pulso::formatters::FormatterJSON>();
-    }
-    else if (format == "csv")
-    {
-        formatter = std::make_unique<pulso::formatters::FormatterCSV>();
-    }
-    else if (format == "prometheus")
-    {
-        formatter = std::make_unique<pulso::formatters::FormatterPrometheus>();
-    }
+if (format == "json")
+{
+    formatter = std::make_unique<pulso::formatters::FormatterJSON>();
+}
+else if (format == "csv")
+{
+    formatter = std::make_unique<pulso::formatters::FormatterCSV>();
+}
+else if (format == "prometheus")
+{
+    formatter = std::make_unique<pulso::formatters::FormatterPrometheus>();
+}
 
-    std::string output = formatter->formatear(snapshot);
+// Validación explícita del formato recibido por CLI
+if (!formatter)
+{
+    std::cerr << "[pulso] Formato no soportado: "
+              << format
+              << "\n";
+
+    return 1;
+}
+
+std::string output = formatter->formatear(snapshot);
 
     // 4. IMPRIMIR a stdout
     std::cout << output;
@@ -194,7 +205,17 @@ int main(int argc, char* argv[]) {
         std::make_shared<pulso::collectors::bateria::CollectorBateria>()
      );
 
-    // TODO: agregar CollectorDisk y CollectorNetwork cuando implementen ICollector.
+    if (cli_opts.monitor.disk || usar_todos)
+    {
+        collectors.push_back(
+            std::make_shared<pulso::collectors::disk::DiskCollector>()
+        );
+    }
+
+    // La CLI todavía no tiene un flag dedicado para red, por eso se mantiene activa.
+    collectors.push_back(
+        std::make_shared<pulso::collectors::network::NetworkCollector>()
+    );
 
     // =========================================================================
     // MODO ONCE
@@ -253,6 +274,7 @@ server.Get("/version", [](
         "application/json"
     );
 });
+server.Get("/config", handle_config);
 
     // GET /metrics — pendiente hasta que SystemMonitor se adapte al flujo
     // actual (Storage + ICollector). Ver issue #270.

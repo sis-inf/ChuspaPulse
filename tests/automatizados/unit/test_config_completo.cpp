@@ -81,3 +81,17 @@ TEST_F(ConfigCompletoTest, CampoDesconocidoSeIgnora)
         pulso::config::cargar(archivo_)
     );
 }
+
+TEST_F(ConfigCompletoTest, NivelLogNoDefaultSeRespeta)
+{
+    std::ofstream out(archivo_);
+
+    out
+        << "nivel_log = \"debug\"\n";
+
+    out.close();
+
+    auto cfg = pulso::config::cargar(archivo_);
+
+    EXPECT_EQ(cfg.nivel_log, "debug");
+}

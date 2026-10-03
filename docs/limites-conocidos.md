@@ -16,7 +16,7 @@ No describe mejoras futuras ni propuestas de desarrollo; únicamente documenta l
 
 - **Storage:** Pulso utiliza SQLite para almacenar métricas históricas. Es adecuado para almacenamiento local, pero no está diseñado para escenarios multi-host ni replicación distribuida.
 - **Load average:** la métrica depende de la implementación del sistema operativo. Los valores obtenidos en Linux y Windows no tienen necesariamente la misma semántica y no deben compararse directamente.
-- **macOS:** aunque existe compatibilidad considerada en la documentación del proyecto, algunos collectors dependen de fuentes específicas de Linux.
+- **macOS:** cuenta con soporte completo y nativo. Todos los colectores disponen de equivalencia funcional en macOS utilizando las APIs nativas del sistema en lugar de depender de `/proc`.
 - **Interfaces de red:** actualmente no existe una configuración para seleccionar manualmente interfaces específicas de monitoreo.
 
 ---
@@ -62,13 +62,12 @@ Referencia:
 
 ## Soporte en macOS
 
-La documentación del proyecto contempla macOS como plataforma objetivo; sin embargo, no todos los collectors tienen necesariamente una implementación equivalente.
+El proyecto soporta macOS de manera oficial con cobertura plena en todos sus colectores de métricas.
 
-Limitaciones:
+Características del soporte:
 
-- Algunos collectors dependen de interfaces específicas de Linux como archivos dentro de `/proc`.
-- La disponibilidad y precisión de algunas métricas puede variar según el sistema operativo.
-- La capacidad de compilar en una plataforma no garantiza que todas las métricas tengan la misma cobertura funcional.
+- Las métricas del sistema se obtienen a través de APIs nativas de macOS (como `sysctl` y `mach`), garantizando paridad funcional con Linux y Windows sin requerir `/proc`.
+- Se requiere otorgar los permisos de sistema correspondientes para la correcta ejecución del agente en entornos macOS 12+.
 
 ---
 

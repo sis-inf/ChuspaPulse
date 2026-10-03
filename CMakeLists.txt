@@ -30,14 +30,14 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 include(cmake/Dependencies.cmake)
 add_subdirectory(src)
 
-# Los siguientes subdirectorios están vacíos o pendientes de implementación.
-# Se comentan para evitar advertencias de CMake sobre directorios sin archivos fuente.
-# Descomentar cuando se agreguen archivos fuente en cada directorio.
-# add_subdirectory(src/collectors/disk)
-# add_subdirectory(src/collectors/network)
-# add_subdirectory(src/alertas)
-# add_subdirectory(src/config)
-# add_subdirectory(src/collectors/temperatura)   # pendiente: sin archivos fuente aún
+# Estos subdirectorios no se agregan con add_subdirectory porque sus archivos
+# fuente ya se compilan vía target_sources en src/CMakeLists.txt.
+# alertas y uptime siguen pendientes: sin archivos fuente aún.
+# add_subdirectory(src/collectors/disk)          # se compila vía target_sources en src/CMakeLists.txt
+# add_subdirectory(src/collectors/network)       # se compila vía target_sources en src/CMakeLists.txt
+# add_subdirectory(src/alertas)                  # pendiente: sin archivos fuente aún
+# add_subdirectory(src/config)                   # se compila vía target_sources en src/CMakeLists.txt
+# add_subdirectory(src/collectors/temperatura)   # se compila vía target_sources en src/CMakeLists.txt
 # add_subdirectory(src/collectors/uptime)        # pendiente: sin archivos fuente aún
 
 if(BUILD_TESTS)

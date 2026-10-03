@@ -4,7 +4,7 @@ on:
   push:
     branches: [dev]
   pull_request:
-    branches: [main]
+    branches: [dev] # CAMBIO 1: El issue pide que el PR sea contra dev, no main
 
 permissions:
   security-events: write
@@ -18,12 +18,28 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Inicializar CodeQL
-        uses: github/codeql-action/init@v4
+        uses: github/codeql-action/init@v4.37.3
         with:
-          languages: javascript-typescript
+          languages: cpp # CAMBIO 2: Cambiado de javascript-typescript a cpp
+          # build-mode: manual # Descomenta esto si la compilación automática falla
+
+      # CAMBIO 3: Paso de compilación OBLIGATORIO para C++
+      # CodeQL necesita "ver" cómo se construye tu proyecto para analizarlo.
+      # DEBES reemplazar estos comandos con los reales de tu proyecto.
+      - name: Compilar proyecto C++
+        run: |
+          # Ejemplo si usas CMake:
+          # mkdir build && cd build
+          # cmake .. -DCMAKE_BUILD_TYPE=Release
+          # cmake --build . --config Release
+          
+          # Ejemplo si usas Make:
+          # make
+          
+          echo "Aquí van tus comandos de compilación reales"
 
       - name: Análisis de CodeQL
-        uses: github/codeql-action/analyze@v4
+        uses: github/codeql-action/analyze@v4.37.3
 
       - name: Escaneo de dependencias con OSV-Scanner
         uses: google/osv-scanner-action/scan@v1
@@ -32,4 +48,3 @@ jobs:
             --recursive
             --severity=HIGH,CRITICAL
             .
-            

@@ -18,7 +18,6 @@ target_sources(pulso PRIVATE
     formatters/formatter_csv.cpp
     formatters/formatter_text.cpp
     formatters/formatter_prometheus.cpp
-    formatters/formatter_text.cpp
     http/handler_health.cpp
     http/handler_history.cpp
     http/handler_metrics.cpp
@@ -32,6 +31,8 @@ target_sources(pulso PRIVATE
     src/core/version.hpp
     src/http/handler_version.hpp
     src/http/handler_version.cpp
+    alertas/alerta_umbral.cpp
+    alertas/gestor_alertas.cpp
 )
 
 # Collector de CPU para Windows: solo se compila en plataforma WIN32.

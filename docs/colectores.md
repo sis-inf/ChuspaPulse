@@ -2,30 +2,49 @@
 
 ## 1. Introducción
 
-Los collectors son componentes encargados de obtener métricas del sistema y exponerlas para su procesamiento o visualización. Cada collector tiene una responsabilidad específica y puede ejecutarse de manera independiente del resto.
+Un collector (o colector) es el componente encargado de **obtener, leer y organizar** las métricas de uso de recursos del sistema operativo y exponerlas para su procesamiento o visualización. Cada collector se especializa en un tipo de recurso (como procesador, memoria o disco) y funciona de manera independiente sin que otros componentes necesiten saber cómo se lee cada dato.
+
+---
 
 ## 2. Collectors implementados
 
 Actualmente se encuentran implementados los siguientes collectors:
 
-| Collector | Descripción                                                  |
-| --------- | ------------------------------------------------------------ |
-| CPU       | Obtiene información de uso y carga del procesador.           |
-| RAM       | Obtiene métricas de memoria utilizada y disponible.          |
-| Disco     | Obtiene información sobre uso y capacidad de almacenamiento. |
+| Collector | Clase / Archivo de referencia | Descripción y métricas que devuelve |
+| :--- | :--- | :--- |
+| **CPU** | `CpuCollector`<br>`src/collectors/cpu.cpp` | Porcentaje de uso total, tiempo de usuario/sistema, número de núcleos y carga del procesador. |
+| **RAM** | `RamCollector`<br>`src/collectors/ram.cpp` | Memoria total, en uso, libre, disponible y almacenada en búferes. |
+| **Disco** | `DiskCollector`<br>`src/collectors/disk.cpp` | Espacio total, usado, libre, porcentaje de ocupación y operaciones de lectura/escritura. |
 
-## 3. Cómo agregar un nuevo collector
+---
 
-1. Crear un nuevo archivo para el collector dentro del directorio destinado a collectors.
-2. Implementar la lógica necesaria para obtener la métrica requerida.
-3. Definir una interfaz o estructura compatible con los collectors existentes.
-4. Registrar el nuevo collector en el punto de inicialización de la aplicación.
-5. Verificar que el collector pueda ejecutarse sin afectar a los demás.
-6. Agregar pruebas, si el proyecto las utiliza.
-7. Ejecutar la aplicación y comprobar que las métricas del nuevo collector se generen correctamente.
-8. Actualizar esta documentación indicando el nombre y propósito del nuevo collector.
+## 3. Fuentes de datos en Linux
 
-## 4. Buenas prácticas
+Para la obtención de métricas, los colectores leen directamente las siguientes fuentes del sistema:
+
+| Ruta / Archivo | Información que provee |
+| :--- | :--- |
+| `/proc/stat` | Estadísticas del procesador, tiempos por modo, interrupciones |
+| `/proc/meminfo` | Detalles completos de memoria RAM y áreas reservadas |
+| `/proc/net/dev` | Tráfico de red por interfaz: bytes, paquetes, errores |
+| `/proc/diskstats` | Actividad de discos: lecturas, escrituras, tiempos de servicio |
+
+---
+
+## 4. Cómo agregar un nuevo collector
+
+1. Define la nueva clase heredando de `BaseCollector` dentro del directorio `src/collectors/`.
+2. Agrega la declaración en el archivo de cabecera correspondiente.
+3. Implementa el método `collect()` con la lógica necesaria para leer y calcular los valores/métricas requeridas.
+4. Registra el nuevo colector en la fábrica o punto de inicialización de la aplicación.
+5. Compila el proyecto con CMake para verificar que no haya errores.
+6. Agrega pruebas unitarias o de integración si el proyecto las utiliza.
+7. Ejecuta la aplicación y comprueba que las métricas del nuevo collector se generen correctamente sin afectar a los demás.
+8. Actualiza esta documentación indicando el nombre, ubicación y propósito del nuevo collector.
+
+---
+
+## 5. Buenas prácticas
 
 * Mantener una única responsabilidad por collector.
 * Evitar dependencias innecesarias entre collectors.
