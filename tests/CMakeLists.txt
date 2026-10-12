@@ -1,4 +1,5 @@
 enable_testing()
+add_test(NAME test_http_endpoints COMMAND test_http_endpoints)
 message(STATUS "Tests are enabled (PULSO_BUILD_TESTS=ON)")
 find_package(GTest REQUIRED)
 include(GoogleTest)
@@ -118,9 +119,13 @@ add_executable(test_http_endpoints
 )
 target_include_directories(test_http_endpoints PRIVATE
     ${PROJECT_SOURCE_DIR}/src
+    ${httplib_SOURCE_DIR}
 )
 target_link_libraries(test_http_endpoints PRIVATE
     GTest::gtest
     GTest::gtest_main
+    pthread
+    httplib
+    nlohmann_json::nlohmann_json
 )
 gtest_discover_tests(test_http_endpoints)
