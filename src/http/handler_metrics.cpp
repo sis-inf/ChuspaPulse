@@ -2,45 +2,34 @@
 #include "utils/logging/logger.hpp"
 
 #include <string>
-#include <chrono>
-#include <iomanip>
-#include <sstream>
-#include <ctime>
 
 namespace pulso::http {
 
 void HandleMetrics(
   httplib::Server& servidor,
-  SystemMonitor&   system_monitor)
+  const pulso::storage::Storage& storage)
 {
-  servidor.Get("/metrics", [&system_monitor](
+  servidor.Get("/metrics", [&storage](
     const httplib::Request& req,
-    httplib::Response&      res)
+    httplib::Response& res)
   {
     auto& logger = pulso::utils::logging::Logger::instancia();
 
-    auto metrics = system_monitor.getMetrics();
-
-    auto now = std::chrono::system_clock::now();
-    std::time_t now_time_t = std::chrono::system_clock::to_time_t(now);
-    std::stringstream ss;
-    ss << std::put_time(std::gmtime(&now_time_t), "%Y-%m-%dT%H:%M:%SZ");
-    metrics["timestamp"] = ss.str();
+    auto snapshot = storage.last();
 
     int status_code = 0;
 
-    if (!metrics.empty()) {
+    if (snapshot) {
       pulso::formatters::FormatterJSON formatter;
 
-      std::string body         = formatter.formatear(metrics);
-      std::string content_type = formatter.contentType();
+      std::string body = formatter.formatear(*snapshot);
 
-      res.set_content(body, content_type);
+      res.set_content(body, formatter.contentType());
       res.status = 200;
       status_code = 200;
     } else {
       res.set_content(
-        R"({ "error": "no data available" })",
+        R"({"error":"no data available"})",
         "application/json"
       );
       res.status = 503;

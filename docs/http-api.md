@@ -11,11 +11,11 @@ URL
 
 /metrics
 
-> **Estado:** Planeado / No disponible aún
+> **Estado:** Disponible / Funcional
 
 Descripción
 
-Devuelve las métricas actuales del sistema en tiempo real.
+Devuelve el snapshot más reciente almacenado, con todas sus métricas (una entrada por cada métrica recolectada en ese instante). Si todavía no hay datos almacenados, responde 503.
 
 Parámetros
 
@@ -24,13 +24,31 @@ No requiere parámetros.
 Ejemplo de request
 GET /metrics HTTP/1.1
 Host: localhost:8080
-Ejemplo de respuesta
+Ejemplo de respuesta (200 OK, Content-Type: application/json)
 {
-  "cpu_usage": 27.8,
-  "memory_usage": 61.4,
-  "disk_usage": 48.9,
-  "timestamp": "2026-06-22T15:45:10Z"
+  "metricas": [
+    {
+      "nombre": "cpu.usage",
+      "timestamp": 1782143110,
+      "unidad": "percent",
+      "valor": 27.8
+    },
+    {
+      "nombre": "ram.used",
+      "timestamp": 1782143110,
+      "unidad": "bytes",
+      "valor": 2147483648.0
+    }
+  ],
+  "timestamp": 1782143110
 }
+Campos
+timestamp (entero): momento del snapshot, en segundos Unix.
+metricas (arreglo): todas las métricas del snapshot. Cada una incluye nombre, valor, unidad y timestamp. Los nombres dependen de los collectors activos.
+Códigos de estado
+200 OK: se devuelve el snapshot más reciente completo.
+503 Service Unavailable: todavía no hay datos almacenados. Cuerpo: {"error":"no data available"}
+
 GET /metrics/history
 Método
 

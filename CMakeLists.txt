@@ -41,5 +41,6 @@ add_subdirectory(src)
 # add_subdirectory(src/collectors/uptime)        # pendiente: sin archivos fuente aún
 
 if(BUILD_TESTS)
+    enable_testing()
     add_subdirectory(tests)
 endif()

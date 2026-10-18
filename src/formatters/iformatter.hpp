@@ -2,7 +2,7 @@
 
 #include <string>
 #include <vector>
-#include "core/snapshot.hpp"
+#include "core/types.hpp"
 
 namespace pulso::formatters {
 

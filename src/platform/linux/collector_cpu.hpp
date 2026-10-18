@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../core/interfaces/icollector.hpp"
+#include "../../collectors/icollector.hpp"
 #include <vector>
 #include <string>
 

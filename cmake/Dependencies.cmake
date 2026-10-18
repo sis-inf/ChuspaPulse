@@ -44,13 +44,3 @@ if(PULSO_BUILD_TESTS)
 
     FetchContent_MakeAvailable(googletest)
 endif()
-add_executable(test_formatter_json
-    tests/formatters/test_formatter_json.cpp
-)
-
-target_link_libraries(test_formatter_json
-    gtest
-    gtest_main
-)
-
-add_test(NAME test_formatter_json COMMAND test_formatter_json)

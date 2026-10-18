@@ -1,16 +1,16 @@
 #pragma once
 
 #include <httplib.h>
-#include "../core/SystemMonitor.hpp"
+#include "../storage/storage.hpp"
 #include "../formatters/formatter_json.hpp"
 
 namespace pulso::http {
 
 /**
- * @brief Registra el handler del endpoint GET /metrics en el servidor HTTP.
+ * @brief Registra el handler del endpoint GET /metrics.
  *
- * El handler retorna el snapshot más reciente obtenido directamente desde
- * SystemMonitor, serializado como JSON usando FormatterJSON.
+ * El handler retorna el snapshot más reciente almacenado en Storage,
+ * serializado como JSON usando FormatterJSON.
  *
  * - Si hay datos: responde con HTTP 200 y el body en JSON.
  * - Si no hay datos: responde con HTTP 503 y un JSON de error.
@@ -23,6 +23,6 @@ namespace pulso::http {
  */
 void HandleMetrics(
   httplib::Server& servidor,
-  SystemMonitor&   system_monitor);
+  const pulso::storage::Storage& storage);
 
 } // namespace pulso::http

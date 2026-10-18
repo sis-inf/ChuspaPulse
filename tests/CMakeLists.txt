@@ -1,6 +1,5 @@
 enable_testing()
 message(STATUS "Tests are enabled (PULSO_BUILD_TESTS=ON)")
-find_package(GTest REQUIRED)
 include(GoogleTest)
 
 # Apply AddressSanitizer flags if BUILD_WITH_ASAN is enabled
@@ -112,3 +111,44 @@ target_link_libraries(test_gestor_alertas PRIVATE
     GTest::gtest_main
 )
 gtest_discover_tests(test_gestor_alertas)
+
+add_executable(test_metrics
+    automatizados/integration/test_metrics.cpp
+    ${PROJECT_SOURCE_DIR}/src/http/handler_metrics.cpp
+    ${PROJECT_SOURCE_DIR}/src/storage/storage.cpp
+    ${PROJECT_SOURCE_DIR}/src/storage/schema.cpp
+    ${PROJECT_SOURCE_DIR}/src/formatters/formatter_json.cpp
+    ${PROJECT_SOURCE_DIR}/src/utils/logging/logger.cpp
+)
+
+target_include_directories(test_metrics PRIVATE
+    ${PROJECT_SOURCE_DIR}/src
+)
+
+target_link_libraries(test_metrics PRIVATE
+    GTest::gtest
+    GTest::gtest_main
+    httplib
+    nlohmann_json
+    SQLiteCpp
+    sqlite3
+)
+
+if(UNIX)
+    target_link_libraries(test_metrics PRIVATE pthread dl)
+endif()
+gtest_discover_tests(test_metrics)
+
+add_executable(test_formatter_json
+    formatters/test_formatter_json.cpp
+    ${PROJECT_SOURCE_DIR}/src/formatters/formatter_json.cpp
+)
+target_include_directories(test_formatter_json PRIVATE
+    ${PROJECT_SOURCE_DIR}/src
+)
+target_link_libraries(test_formatter_json PRIVATE
+    GTest::gtest
+    GTest::gtest_main
+    nlohmann_json
+)
+gtest_discover_tests(test_formatter_json)

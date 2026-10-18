@@ -108,89 +108,76 @@ void Storage::exportToCSV(const std::string& ruta_archivo) const {
 }
 
 void Storage::save(const pulso::core::Snapshot& snapshot) {
-    // Extraer métricas del snapshot por nombre
-    auto getMetricValue = [&](const std::string& name) -> double {
-        for (const auto& m : snapshot.metrics) {
-            if (m.name == name) return m.value;
-        }
-        return 0.0;
-    };
-
-    SQLite::Statement query(db_,
-        "INSERT INTO snapshots "
-        "(timestamp, cpu_usage, cpu_cores, memory_total, memory_used, memory_available, "
-        " disk_total, disk_used, disk_free, network_rx_bytes, network_tx_bytes) "
-        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"
+    SQLite::Statement query(
+        db_,
+        "INSERT INTO snapshots (timestamp, nombre, valor, unidad) "
+        "VALUES (?, ?, ?, ?);"
     );
 
-    query.bind(1,  snapshot.timestamp);
-    query.bind(2,  getMetricValue("cpu.usage"));
-    query.bind(3,  static_cast<int>(getMetricValue("cpu.cores")));
-    query.bind(4,  static_cast<int64_t>(getMetricValue("memory.total")));
-    query.bind(5,  static_cast<int64_t>(getMetricValue("memory.used")));
-    query.bind(6,  static_cast<int64_t>(getMetricValue("memory.available")));
-    query.bind(7,  static_cast<int64_t>(getMetricValue("disk.total")));
-    query.bind(8,  static_cast<int64_t>(getMetricValue("disk.used")));
-    query.bind(9,  static_cast<int64_t>(getMetricValue("disk.free")));
-    query.bind(10, static_cast<int64_t>(getMetricValue("network.rx_bytes")));
-    query.bind(11, static_cast<int64_t>(getMetricValue("network.tx_bytes")));
-
-    query.exec();
+    for (const auto& m : snapshot.metricas) {
+        query.bind(1, snapshot.timestamp);
+        query.bind(2, m.nombre);
+        query.bind(3, m.valor);
+        query.bind(4, m.unidad);
+        query.exec();
+        query.reset();
+    }
 
     pruneSnapshots(db_, maxEntries_);
 }
 
-// Convierte una fila de la query en un Snapshot
+// Convierte las filas de una consulta en un Snapshot
 static pulso::core::Snapshot rowToSnapshot(SQLite::Statement& query) {
     pulso::core::Snapshot snapshot;
     snapshot.timestamp = query.getColumn(0).getInt64();
 
-    // Mapeo de columnas a métricas
-    auto addMetric = [&](const std::string& name, const std::string& unit, double value) {
-        pulso::core::Metrica m;
-        m.name      = name;
-        m.value     = value;
-        m.unit      = unit;
-        m.timestamp = snapshot.timestamp;
-        snapshot.metrics.push_back(m);
-    };
+    pulso::core::Metrica m;
+    m.nombre = query.getColumn(1).getString();
+    m.valor = query.getColumn(2).getDouble();
+    m.unidad = query.getColumn(3).getString();
+    m.timestamp = snapshot.timestamp;
 
-    addMetric("cpu.usage",          "percent",  query.getColumn(1).getDouble());
-    addMetric("cpu.cores",          "cores",    query.getColumn(2).getInt());
-    addMetric("memory.total",       "bytes",    query.getColumn(3).getInt64());
-    addMetric("memory.used",        "bytes",    query.getColumn(4).getInt64());
-    addMetric("memory.available",   "bytes",    query.getColumn(5).getInt64());
-    addMetric("disk.total",         "bytes",    query.getColumn(6).getInt64());
-    addMetric("disk.used",          "bytes",    query.getColumn(7).getInt64());
-    addMetric("disk.free",          "bytes",    query.getColumn(8).getInt64());
-    addMetric("network.rx_bytes",   "bytes",    query.getColumn(9).getInt64());
-    addMetric("network.tx_bytes",   "bytes",    query.getColumn(10).getInt64());
-
+    snapshot.metricas.push_back(m);
     return snapshot;
 }
 
 std::optional<pulso::core::Snapshot> Storage::last() const {
-    SQLite::Statement query(db_,
-        "SELECT timestamp, cpu_usage, cpu_cores, memory_total, memory_used, memory_available, "
-        "disk_total, disk_used, disk_free, network_rx_bytes, network_tx_bytes "
-        "FROM snapshots ORDER BY timestamp DESC LIMIT 1;"
+    SQLite::Statement query(
+        db_,
+        "SELECT timestamp, nombre, valor, unidad "
+        "FROM snapshots WHERE timestamp = (SELECT MAX(timestamp) FROM snapshots) "
+        "ORDER BY rowid ASC;"
     );
 
     if (!query.executeStep()) {
         return std::nullopt;
     }
 
-    return rowToSnapshot(query);
+    auto snapshot = rowToSnapshot(query);
+
+    while (query.executeStep()) {
+        if (query.getColumn(0).getInt64() != snapshot.timestamp) {
+            break;
+        }
+
+        pulso::core::Metrica m;
+        m.nombre = query.getColumn(1).getString();
+        m.valor = query.getColumn(2).getDouble();
+        m.unidad = query.getColumn(3).getString();
+        m.timestamp = snapshot.timestamp;
+        snapshot.metricas.push_back(m);
+    }
+
+    return snapshot;
 }
 
 std::vector<pulso::core::Snapshot> Storage::history(
     std::int64_t from,
     std::int64_t until,
-    std::size_t  limit) const
+    std::size_t limit) const
 {
     std::string sql =
-        "SELECT timestamp, cpu_usage, cpu_cores, memory_total, memory_used, memory_available, "
-        "disk_total, disk_used, disk_free, network_rx_bytes, network_tx_bytes "
+        "SELECT timestamp, nombre, valor, unidad "
         "FROM snapshots WHERE timestamp >= ?";
 
     if (until != 0) {
@@ -203,14 +190,25 @@ std::vector<pulso::core::Snapshot> Storage::history(
 
     int bindIndex = 1;
     query.bind(bindIndex++, from);
+
     if (until != 0) {
         query.bind(bindIndex++, until);
     }
-    query.bind(bindIndex, static_cast<int64_t>(limit));
+
+    query.bind(bindIndex, static_cast<std::int64_t>(limit));
 
     std::vector<pulso::core::Snapshot> results;
+
     while (query.executeStep()) {
-        results.push_back(rowToSnapshot(query));
+        auto fila = rowToSnapshot(query);
+        auto it = results.empty() ? results.end() : results.end();
+
+        if (!results.empty() &&
+            results.back().timestamp == fila.timestamp) {
+            results.back().metricas.push_back(fila.metricas.front());
+        } else {
+            results.push_back(fila);
+        }
     }
 
     return results;
@@ -240,11 +238,11 @@ pulso::core::Snapshot Storage::getPromedio(uint32_t ventana_segundos) const {
             "disk.total", "disk.used", "disk.free",
             "network.rx_bytes", "network.tx_bytes"}) {
             pulso::core::Metrica m;
-            m.name      = nombre;
-            m.value     = 0.0;
-            m.unit      = "";
+            m.nombre      = nombre;
+            m.valor     = 0.0;
+            m.unidad      = "";
             m.timestamp = ahora;
-            vacio.metrics.push_back(m);
+            vacio.metricas.push_back(m);
         }
         return vacio;
     }
@@ -254,9 +252,9 @@ pulso::core::Snapshot Storage::getPromedio(uint32_t ventana_segundos) const {
     std::map<std::string, std::string> unidades;
 
     for (const auto& snap : snapshots) {
-        for (const auto& m : snap.metrics) {
-            acumulado[m.name] += m.value;
-            unidades[m.name]   = m.unit;
+        for (const auto& m : snap.metricas) {
+            acumulado[m.nombre] += m.valor;
+            unidades[m.nombre]   = m.unidad;
         }
     }
 
@@ -266,11 +264,11 @@ pulso::core::Snapshot Storage::getPromedio(uint32_t ventana_segundos) const {
 
     for (auto& [nombre, total] : acumulado) {
         pulso::core::Metrica m;
-        m.name      = nombre;
-        m.value     = total / static_cast<double>(snapshots.size());
-        m.unit      = unidades[nombre];
+        m.nombre      = nombre;
+        m.valor     = total / static_cast<double>(snapshots.size());
+        m.unidad      = unidades[nombre];
         m.timestamp = ahora;
-        promedio.metrics.push_back(m);
+        promedio.metricas.push_back(m);
     }
 
     return promedio;

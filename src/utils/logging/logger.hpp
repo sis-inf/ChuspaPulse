@@ -9,6 +9,10 @@ namespace pulso::utils::logging {
  * @brief Niveles de log disponibles para el Logger.
  * DEBUG=0, INFO=1, WARN=2, ERROR=3
  */
+#ifdef ERROR
+#undef ERROR
+#endif
+
 enum class LogLevel {
     DEBUG = 0,
     INFO  = 1,
