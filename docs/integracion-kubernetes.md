@@ -35,7 +35,7 @@ Ejemplo:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: ChuspaPulse-storage
+  name: chuspapulse-storage
 spec:
   accessModes:
     - ReadWriteOnce

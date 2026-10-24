@@ -29,12 +29,12 @@ spec:
       volumes:
         - name: storage
           persistentVolumeClaim:
-            claimName: pulso-storage
+            claimName: chuspapulse-storage
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: pulso-storage
+  name: chuspapulse-storage
 spec:
   accessModes:
     - ReadWriteOnce
