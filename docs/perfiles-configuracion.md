@@ -2,7 +2,7 @@
 
 ## Resumen
 
-Pulso permite definir múltiples perfiles de configuración dentro del archivo `pulso.toml`. Los perfiles facilitan utilizar diferentes configuraciones para distintos entornos, como desarrollo y producción, sin necesidad de mantener varios archivos de configuración.
+Pulso permite definir múltiples perfiles de configuración dentro del archivo `ChuspaPulse.toml`. Los perfiles facilitan utilizar diferentes configuraciones para distintos entornos, como desarrollo y producción, sin necesidad de mantener varios archivos de configuración.
 
 Cada perfil puede seleccionarse al iniciar la aplicación mediante el parámetro `--perfil`.
 
@@ -32,7 +32,7 @@ Por ejemplo:
 
 # Funcionamiento de los perfiles
 
-Al iniciar Pulso, primero se carga la configuración definida en la sección raíz del archivo.
+Al iniciar ChuspaPulse, primero se carga la configuración definida en la sección raíz del archivo.
 
 Si se selecciona un perfil mediante `--perfil`, los valores definidos dentro de ese perfil reemplazan únicamente los parámetros correspondientes, manteniendo el resto de la configuración original.
 
@@ -42,23 +42,23 @@ De esta forma es posible reutilizar una configuración base y modificar solament
 
 # Seleccionar un perfil
 
-El perfil puede indicarse al ejecutar Pulso mediante el parámetro:
+El perfil puede indicarse al ejecutar ChuspaPulse mediante el parámetro:
 
 ```bash
-pulso --config pulso.toml --perfil desarrollo
+ChuspaPulse --config pulso.toml --perfil desarrollo
 ```
 
 o bien:
 
 ```bash
-pulso --config pulso.toml --perfil produccion
+ChuspaPulse --config pulso.toml --perfil produccion
 ```
 
 ---
 
 # Ejemplo completo
 
-A continuación se muestra un ejemplo de un archivo `pulso.toml` con dos perfiles.
+A continuación se muestra un ejemplo de un archivo `ChuspaPulse.toml` con dos perfiles.
 
 ```toml
 intervalo = 5
@@ -116,6 +116,6 @@ Se recomienda:
 
 # Conclusiones
 
-Los perfiles de configuración permiten reutilizar un único archivo `pulso.toml` para distintos escenarios de ejecución.
+Los perfiles de configuración permiten reutilizar un único archivo `ChuspaPulse.toml` para distintos escenarios de ejecución.
 
-Gracias al parámetro `--perfil`, es posible adaptar el comportamiento de Pulso para entornos de desarrollo y producción sin duplicar configuraciones, facilitando el mantenimiento y reduciendo errores de configuración.
+Gracias al parámetro `--perfil`, es posible adaptar el comportamiento de ChuspaPulse para entornos de desarrollo y producción sin duplicar configuraciones, facilitando el mantenimiento y reduciendo errores de configuración.
