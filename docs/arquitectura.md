@@ -1,4 +1,4 @@
-# Arquitectura del Sistema Pulso
+# Arquitectura del Sistema ChuspaPulse
 
 ## Módulos principales
 
@@ -12,13 +12,13 @@
 | **Logger** | Registra eventos, errores y actividad del sistema |
 
 ## 1. Introducción
-La arquitectura de software de **Pulso** define la organización estructural del sistema, sus responsabilidades y las interconexiones entre sus componentes. Este diseño responde a la necesidad de monitorear recursos críticos de hardware (CPU, RAM, Red) con un enfoque en la eficiencia, escalabilidad y disponibilidad de datos en tiempo real.
+La arquitectura de software de **ChuspaPulse** define la organización estructural del sistema, sus responsabilidades y las interconexiones entre sus componentes. Este diseño responde a la necesidad de monitorear recursos críticos de hardware (CPU, RAM, Red) con un enfoque en la eficiencia, escalabilidad y disponibilidad de datos en tiempo real.
 
 ## Diagrama de componentes (Mermaid)
 
 ```mermaid
 graph TD
-    A[Sistema Pulso] --> B[Collector]
+    A[Sistema ChuspaPulse] --> B[Collector]
     A --> C[Storage]
     A --> D[Analyzer]
     A --> E[API]
@@ -34,7 +34,7 @@ graph TD
 ```
 
 ## 2. Visión General del Sistema
-Pulso es una plataforma de monitoreo distribuida. A diferencia de herramientas CLI aisladas, Pulso integra un modelo de recolección de datos mediante agentes que se comunican con una infraestructura central para la persistencia, alerta y visualización mediante una interfaz web moderna.
+ChuspaPulse es una plataforma de monitoreo distribuida. A diferencia de herramientas CLI aisladas, ChuspaPulse integra un modelo de recolección de datos mediante agentes que se comunican con una infraestructura central para la persistencia, alerta y visualización mediante una interfaz web moderna.
 
 ---
 
@@ -78,7 +78,7 @@ Estos handlers actúan como punto de entrada para clientes HTTP y facilitan la i
 
 ### Nuevos Collectors
 
-Además de las métricas tradicionales de CPU, memoria y red, Pulso incorpora nuevos collectors especializados:
+Además de las métricas tradicionales de CPU, memoria y red, ChuspaPulse incorpora nuevos collectors especializados:
 
 | Collector | Descripción |
 |------------|------------|
@@ -102,7 +102,7 @@ Se han seleccionado herramientas que garantizan la interoperabilidad y el rendim
 ---
 
 ## 5. Diagrama de Arquitectura
-El siguiente diagrama describe la interacción entre los componentes definidos para el sistema Pulso.
+El siguiente diagrama describe la interacción entre los componentes definidos para el sistema ChuspaPulse.
 
 ```mermaid
 graph TD
