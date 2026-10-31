@@ -1,6 +1,6 @@
 # Casos de Falla
 
-Comportamiento del agente Pulso ante condiciones de error y como recuperarse.
+Comportamiento del agente ChuspaPulse ante condiciones de error y como recuperarse.
 
 ## Nota sobre verificacion
 
@@ -12,7 +12,7 @@ Los escenarios 1, 2 y 4 fueron verificados localmente reproduciendo las condicio
 
 ### Que ocurre
 
-Cuando el disco donde se encuentra pulso.db se llena, la clase Storage lanza ErrorStorage al intentar insertar un nuevo snapshot. El agente se degrada parcialmente: sigue recolectando metricas y sirviendo /metrics con datos en memoria, pero el historial no se actualiza.
+Cuando el disco donde se encuentra chuspapulse.db se llena, la clase Storage lanza ErrorStorage al intentar insertar un nuevo snapshot. El agente se degrada parcialmente: sigue recolectando metricas y sirviendo /metrics con datos en memoria, pero el historial no se actualiza.
 
 ### Log observado
 
@@ -26,13 +26,13 @@ Cuando el disco donde se encuentra pulso.db se llena, la clase Storage lanza Err
     df -h
 
 2. Liberar espacio eliminando archivos innecesarios
-3. Reiniciar pulso:
+3. Reiniciar chuspapulse:
 
-    ./pulso --config pulso.toml
+    ./chuspapulse --config chuspapulse.toml
 
 ## 2. /proc inaccesible — collector de CPU o red falla
 
-**Verificado:** Se restringieron permisos de /proc/stat y se ejecuto pulso como usuario sin privilegios.
+**Verificado:** Se restringieron permisos de /proc/stat y se ejecuto chuspapulse como usuario sin privilegios.
 
 ### Que ocurre
 
@@ -46,7 +46,7 @@ Los collectors de CPU y red leen de /proc/stat y /proc/net/dev. Si no son accesi
 
 ### Como recuperarse
 
-    sudo ./pulso --config pulso.toml
+    sudo ./chuspapulse --config chuspapulse.toml
 
 O en Docker:
 
@@ -58,7 +58,7 @@ O en Docker:
 
 ### Que ocurre
 
-Si pulso.db esta corrupto o bloqueado por otro proceso, Storage lanza ErrorStorage al iniciar. Pulso no arranca.
+Si chuspapulse.db esta corrupto o bloqueado por otro proceso, Storage lanza ErrorStorage al iniciar. ChuspaPulse no arranca.
 
 ### Log esperado
 
@@ -69,27 +69,27 @@ Si pulso.db esta corrupto o bloqueado por otro proceso, Storage lanza ErrorStora
 
 Verificar integridad:
 
-    sqlite3 pulso.db "PRAGMA integrity_check;"
+    sqlite3 chuspapulse.db "PRAGMA integrity_check;"
 
 Si esta corrupto:
 
-    cp pulso.db pulso.db.bak
-    rm pulso.db
-    ./pulso --config pulso.toml
+    cp chuspapulse.db chuspapulse.db.bak
+    rm chuspapulse.db
+    ./chuspapulse --config chuspapulse.toml
 
 Si esta bloqueado:
 
-    lsof pulso.db
+    lsof chuspapulse.db
 
-Detener el proceso y reiniciar pulso.
+Detener el proceso y reiniciar chuspapulse.
 
 ## 4. Puerto HTTP ya en uso
 
-**Verificado:** Se levanto otro proceso en el puerto 8080 y se intento iniciar pulso.
+**Verificado:** Se levanto otro proceso en el puerto 8080 y se intento iniciar chuspapulse.
 
 ### Que ocurre
 
-Si el puerto configurado ya esta en uso, pulso no puede iniciar el servidor HTTP y termina.
+Si el puerto configurado ya esta en uso, chuspapulse no puede iniciar el servidor HTTP y termina.
 
 ### Log observado
 
@@ -102,7 +102,7 @@ Identificar el proceso:
 
     lsof -i :8080
 
-Cambiar el puerto en pulso.toml:
+Cambiar el puerto en chuspapulse.toml:
 
     [servidor]
     puerto = 9090
@@ -113,7 +113,7 @@ Cambiar el puerto en pulso.toml:
 
 ### Que ocurre
 
-Algunos collectors requieren permisos especiales. Si pulso se ejecuta sin privilegios, algunos valores seran 0.
+Algunos collectors requieren permisos especiales. Si chuspapulse se ejecuta sin privilegios, algunos valores seran 0.
 
 ### Log esperado
 
@@ -121,8 +121,8 @@ Algunos collectors requieren permisos especiales. Si pulso se ejecuta sin privil
 
 ### Como recuperarse
 
-    sudo ./pulso --config pulso.toml
+    sudo ./chuspapulse --config chuspapulse.toml
 
 O usar setcap:
 
-    sudo setcap cap_sys_ptrace+ep ./pulso
+    sudo setcap cap_sys_ptrace+ep ./chuspapulse
