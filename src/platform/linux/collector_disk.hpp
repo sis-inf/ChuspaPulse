@@ -5,7 +5,7 @@
 #include "../../collectors/icollector.hpp"
 #include "../../core/types.hpp"
 
-namespace ChuspaPulse::platform::linux_platform {
+namespace chuspapulse::platform::linux_platform {
 
 /**
  * @brief Collector que mide el espacio de disco en el sistema de archivos raíz.
@@ -25,7 +25,7 @@ namespace ChuspaPulse::platform::linux_platform {
  *       de CollectorDisk que usa ErrorRecoleccion. Esto permite integrarla
  *       con capas que capturen std::exception de forma genérica.
  */
-class CollectorDiskLinux : public ChuspaPulse::collectors::ICollector {
+class CollectorDiskLinux : public chuspapulse::collectors::ICollector {
 public:
     /// @brief Retorna el nombre identificador de este collector.
     /// @return "disk"
@@ -34,7 +34,7 @@ public:
     /// @brief Recolecta las métricas de espacio de disco del sistema.
     /// @return Vector con disk.total_bytes, disk.used_bytes y disk.free_bytes.
     /// @throws std::runtime_error si statvfs("/", ...) falla.
-    std::vector<ChuspaPulse::core::Metrica> recolectar() override;
+    std::vector<chuspapulse::core::Metrica> recolectar() override;
 };
 
-} // namespace ChuspaPulse::platform::linux_platform
+} // namespace chuspapulse::platform::linux_platform
