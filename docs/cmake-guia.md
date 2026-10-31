@@ -1,10 +1,10 @@
-# Guía de CMake del proyecto Pulso
+# Guía de CMake del proyecto ChuspaPulse
 
 ## Introducción
 
-El proyecto **Pulso** utiliza **CMake** como sistema de construcción para organizar la compilación del código fuente, administrar las dependencias externas y generar los ejecutables del proyecto. La configuración del proceso de compilación se encuentra distribuida en diferentes archivos `CMakeLists.txt`, cada uno con una función específica dentro de la estructura del proyecto.
+El proyecto **ChuspaPulse** utiliza **CMake** como sistema de construcción para organizar la compilación del código fuente, administrar las dependencias externas y generar los ejecutables del proyecto. La configuración del proceso de compilación se encuentra distribuida en diferentes archivos `CMakeLists.txt`, cada uno con una función específica dentro de la estructura del proyecto.
 
-Esta guía tiene como objetivo explicar cómo está organizado el sistema de build de Pulso, describiendo la función de cada archivo de configuración, los comandos necesarios para compilar el proyecto y el procedimiento para agregar nuevos archivos fuente. Está dirigida principalmente a estudiantes y colaboradores que comienzan a trabajar con CMake y desean comprender la estructura utilizada en este repositorio.
+Esta guía tiene como objetivo explicar cómo está organizado el sistema de build de ChuspaPulse, describiendo la función de cada archivo de configuración, los comandos necesarios para compilar el proyecto y el procedimiento para agregar nuevos archivos fuente. Está dirigida principalmente a estudiantes y colaboradores que comienzan a trabajar con CMake y desean comprender la estructura utilizada en este repositorio.
 
 ---
 
@@ -12,7 +12,7 @@ Esta guía tiene como objetivo explicar cómo está organizado el sistema de bui
 
 CMake es una herramienta que permite definir de forma organizada el proceso de compilación de un proyecto. En lugar de crear manualmente archivos de construcción para cada sistema operativo o compilador, CMake utiliza archivos llamados `CMakeLists.txt`, donde se especifican las reglas necesarias para construir el proyecto.
 
-En Pulso, CMake permite:
+En ChuspaPulse, CMake permite:
 
 * Mantener una estructura organizada del proyecto.
 * Configurar el estándar de C++ utilizado.
@@ -27,7 +27,7 @@ Gracias a esta organización, resulta más sencillo incorporar nuevos módulos y
 
 # Estructura del sistema de build
 
-El sistema de compilación de Pulso está dividido en varios archivos `CMakeLists.txt`, cada uno con una responsabilidad específica.
+El sistema de compilación de ChuspaPulse está dividido en varios archivos `CMakeLists.txt`, cada uno con una responsabilidad específica.
 
 ## CMakeLists.txt principal
 
@@ -36,7 +36,7 @@ El archivo ubicado en la raíz del proyecto es el punto de entrada del sistema d
 Entre sus principales funciones se encuentran:
 
 * Definir la versión mínima de CMake requerida.
-* Registrar el proyecto con el nombre **Pulso**.
+* Registrar el proyecto con el nombre **ChuspaPulse**.
 * Configurar el estándar **C++17**.
 * Definir las opciones de compilación.
 * Configurar los directorios donde se generan los ejecutables y bibliotecas.
@@ -55,7 +55,7 @@ Este archivo controla la compilación del ejecutable principal del proyecto.
 Primero crea el ejecutable mediante:
 
 ```cmake
-add_executable(pulso main.cpp)
+add_executable(chuspapulse main.cpp)
 ```
 
 Posteriormente incorpora todos los archivos fuente utilizando `target_sources()`.
@@ -95,7 +95,7 @@ Cada prueba incluye los encabezados necesarios, enlaza las bibliotecas correspon
 
 ## cmake/Dependencies.cmake
 
-Este archivo centraliza la administración de las dependencias externas utilizadas por Pulso.
+Este archivo centraliza la administración de las dependencias externas utilizadas por ChuspaPulse.
 
 Las bibliotecas se descargan automáticamente mediante `FetchContent`, evitando que el desarrollador tenga que agregarlas manualmente.
 
@@ -142,7 +142,7 @@ Cuando esta opción está habilitada, el sistema incorpora el directorio `tests`
 
 Si la opción permanece deshabilitada, únicamente se genera el ejecutable principal.
 
-## PULSO_BUILD_TESTS
+## CHUSPAPULSE_BUILD_TESTS
 
 Esta opción mantiene compatibilidad con configuraciones anteriores del proyecto y se sincroniza con `BUILD_TESTS`. Cuando cualquiera de las dos opciones se activa, ambas quedan habilitadas para permitir la compilación de las pruebas.
 
@@ -150,7 +150,7 @@ Esta opción mantiene compatibilidad con configuraciones anteriores del proyecto
 
 La opción `BUILD_WITH_ASAN` suele utilizarse en proyectos C++ para habilitar **AddressSanitizer (ASan)**, una herramienta que ayuda a detectar errores de memoria durante la ejecución, como accesos fuera de límites, uso de memoria liberada o fugas de memoria.
 
-En la versión actual del proyecto Pulso esta opción no se encuentra configurada en los archivos `CMakeLists.txt` revisados. Si se implementa en el futuro, permitirá realizar compilaciones orientadas a la depuración y detección de errores de memoria.
+En la versión actual del proyecto ChuspaPulse esta opción no se encuentra configurada en los archivos `CMakeLists.txt` revisados. Si se implementa en el futuro, permitirá realizar compilaciones orientadas a la depuración y detección de errores de memoria.
 
 ---
 
@@ -193,4 +193,4 @@ Seguir estas prácticas facilita el mantenimiento del proyecto y reduce la posib
 
 # Conclusión
 
-El sistema de construcción de Pulso utiliza una estructura modular basada en CMake que facilita la organización del código, la administración de dependencias y la compilación tanto del ejecutable principal como de las pruebas. Comprender la función de cada archivo `CMakeLists.txt` permite realizar modificaciones de forma ordenada, incorporar nuevos módulos con mayor facilidad y mantener un proceso de compilación consistente para todos los colaboradores del proyecto.
+El sistema de construcción de ChuspaPulse utiliza una estructura modular basada en CMake que facilita la organización del código, la administración de dependencias y la compilación tanto del ejecutable principal como de las pruebas. Comprender la función de cada archivo `CMakeLists.txt` permite realizar modificaciones de forma ordenada, incorporar nuevos módulos con mayor facilidad y mantener un proceso de compilación consistente para todos los colaboradores del proyecto.
