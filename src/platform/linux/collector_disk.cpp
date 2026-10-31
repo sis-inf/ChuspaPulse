@@ -6,13 +6,13 @@
 #include <ctime>
 #include <stdexcept>
 
-namespace ChuspaPulse::platform::linux_platform {
+namespace chuspapulse::platform::linux_platform {
 
 std::string CollectorDiskLinux::nombre() const {
     return "disk";
 }
 
-std::vector<ChuspaPulse::core::Metrica> CollectorDiskLinux::recolectar() {
+std::vector<chuspapulse::core::Metrica> CollectorDiskLinux::recolectar() {
     struct statvfs buf{};
 
     // statvfs(3) sobre el punto de montaje raíz.
@@ -47,4 +47,4 @@ std::vector<ChuspaPulse::core::Metrica> CollectorDiskLinux::recolectar() {
     };
 }
 
-} // namespace ChuspaPulse::platform::linux_platform
+} // namespace chuspapulse::platform::linux_platform
