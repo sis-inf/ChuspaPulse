@@ -57,29 +57,29 @@ cmake --build build -- -Wall -Wextra -Wpedantic
 ```
 ## Directamente con Clang++
 ```bash
-clang++ -std=c++17 -Wall -Wextra -Wpedantic main.cpp -o pulso
+clang++ -std=c++17 -Wall -Wextra -Wpedantic main.cpp -o chuspapulse
 ```
 ---
 
 ## Build estático (binario standalone)
 
-Por defecto, el binario de Pulso enlaza dinámicamente con las librerías del sistema (`libgcc`, `libstdc++`, etc.). Para producir un binario standalone que no dependa de estas librerías en tiempo de ejecución, usa la opción `PULSO_STATIC_LINK`:
+Por defecto, el binario de ChuspaPulse enlaza dinámicamente con las librerías del sistema (`libgcc`, `libstdc++`, etc.). Para producir un binario standalone que no dependa de estas librerías en tiempo de ejecución, usa la opción `CHUSPAPULSE_STATIC_LINK`:
 
 ```bash
-cmake -B build -DPULSO_STATIC_LINK=ON
+cmake -B build -DCHUSPAPULSE_STATIC_LINK=ON
 cmake --build build
 ```
 
 Puedes verificar las dependencias dinámicas del binario con:
 
 ```bash
-ldd build/bin/pulso
+ldd build/bin/chuspapulse
 ```
 
-Con `PULSO_STATIC_LINK=ON`, la salida mostrará significativamente menos dependencias dinámicas. Con `PULSO_STATIC_LINK=OFF` (por defecto), el comportamiento es idéntico al build estándar.
+Con `CHUSPAPULSE_STATIC_LINK=ON`, la salida mostrará significativamente menos dependencias dinámicas. Con `CHUSPAPULSE_STATIC_LINK=OFF` (por defecto), el comportamiento es idéntico al build estándar.
 
 ### Limitaciones conocidas del enlace estático
 
-- **glibc no se enlaza estáticamente de forma confiable en Linux.** El enlace estático completo con glibc (`-static`) puede causar problemas en tiempo de ejecución relacionados con resolución de nombres DNS y NSS. Por eso `PULSO_STATIC_LINK` solo enlaza estáticamente `libgcc` y `libstdc++`, no glibc.
+- **glibc no se enlaza estáticamente de forma confiable en Linux.** El enlace estático completo con glibc (`-static`) puede causar problemas en tiempo de ejecución relacionados con resolución de nombres DNS y NSS. Por eso `CHUSPAPULSE_STATIC_LINK` solo enlaza estáticamente `libgcc` y `libstdc++`, no glibc.
 - **SQLite y las dependencias de FetchContent** se enlazan estáticamente por defecto al compilarse como librerías estáticas (`.a`), independientemente de esta opción.
 - Esta opción es útil para distribución en contenedores Docker o sistemas donde no se puede garantizar la versión de `libstdc++` instalada.
