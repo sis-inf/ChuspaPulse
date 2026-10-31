@@ -1,6 +1,6 @@
 # Checklist de Producción
 
-Lista de verificación accionable antes de desplegar Pulso en un servidor real.
+Lista de verificación accionable antes de desplegar ChuspaPulse en un servidor real.
 Revisa cada ítem y márcalo antes de exponer el agente en producción.
 
 ---
@@ -35,11 +35,11 @@ puerto = 8080
 
 - [ ] Configuraste `retencion_dias` para evitar crecimiento ilimitado de la base de datos.
 - [ ] Verificaste el espacio disponible en disco antes de desplegar.
-- [ ] Tienes un proceso de backup periódico de `pulso.db`.
+- [ ] Tienes un proceso de backup periódico de `chuspapulse.db`.
 
 ```toml
 [storage]
-ruta_db = "pulso.db"
+ruta_db = "chuspapulse.db"
 retencion_dias = 30
 ```
 
@@ -53,7 +53,7 @@ retencion_dias = 30
 - [ ] No hay errores ni advertencias en la salida de `--check`.
 
 ```bash
-./pulso --check
+./chuspapulse --check
 ```
 
 ---
@@ -70,21 +70,21 @@ retencion_dias = 30
 
 ## 🔄 Arranque automático con systemd
 
-- [ ] Instalaste Pulso como servicio systemd para reinicio automático ante fallos.
+- [ ] Instalaste ChuspaPulse como servicio systemd para reinicio automático ante fallos.
 - [ ] El servicio está habilitado para arrancar con el sistema.
 - [ ] Verificaste que el servicio arranca correctamente tras un reinicio.
 
 ```ini
-# /etc/systemd/system/pulso.service
+# /etc/systemd/system/chuspapulse.service
 [Unit]
-Description=Pulso - Monitor de infraestructura
+Description=ChuspaPulse - Monitor de infraestructura
 After=network.target
 
 [Service]
 Type=simple
-User=pulso
-WorkingDirectory=/opt/pulso
-ExecStart=/opt/pulso/pulso --daemon
+User=chuspapulse
+WorkingDirectory=/opt/chuspapulse
+ExecStart=/opt/chuspapulse/chuspapulse --daemon
 Restart=on-failure
 RestartSec=5
 
@@ -95,18 +95,18 @@ WantedBy=multi-user.target
 ```bash
 # Habilitar e iniciar el servicio
 sudo systemctl daemon-reload
-sudo systemctl enable pulso
-sudo systemctl start pulso
+sudo systemctl enable chuspapulse
+sudo systemctl start chuspapulse
 
 # Verificar que está corriendo
-sudo systemctl status pulso
+sudo systemctl status chuspapulse
 ```
 
 ---
 
 ## 🌐 Red y firewall
 
-- [ ] El puerto de Pulso está restringido por firewall a IPs confiables.
+- [ ] El puerto de ChuspaPulse está restringido por firewall a IPs confiables.
 - [ ] El servidor no está expuesto directamente a internet sin protección adicional.
 - [ ] Verificaste que el puerto configurado no está en uso por otro proceso.
 
