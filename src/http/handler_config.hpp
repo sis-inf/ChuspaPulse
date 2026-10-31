@@ -4,7 +4,7 @@
 
 #include "config/config.hpp"
 
-namespace pulso::http {
+namespace chuspapulse::http {
 
 /**
  * @brief Genera la respuesta JSON para el endpoint GET /config.
@@ -24,15 +24,15 @@ namespace pulso::http {
  * }
  * @endcode
  *
- * @param config  Configuración activa cargada por `pulso::config::cargar()`.
+ * @param config  Configuración activa cargada por `chuspapulse::config::cargar()`.
  * @return        String con el JSON listo para enviar como cuerpo HTTP.
  *
  * @note  La función es pura (sin efectos secundarios) y thread-safe: puede
  *        invocarse desde el callback de httplib sin sincronización adicional.
  *
- * @see pulso::config::Config
- * @see pulso::config::cargar()
+ * @see chuspapulse::config::Config
+ * @see chuspapulse::config::cargar()
  */
-std::string handleConfig(const pulso::config::Config& config);
+std::string handleConfig(const chuspapulse::config::Config& config);
 
-} // namespace pulso::http
+} // namespace chuspapulse::http
