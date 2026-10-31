@@ -3,11 +3,11 @@
 
 #include <httplib.h>
 
-namespace pulso::http {
+namespace chuspapulse::http {
 
 void registrarPrometheus(
     httplib::Server& servidor,
-    const pulso::storage::Storage& storage)
+    const chuspapulse::storage::Storage& storage)
 {
     servidor.Get("/metrics/prometheus",
         [&storage](const httplib::Request& /*req*/, httplib::Response& res)
@@ -21,7 +21,7 @@ void registrarPrometheus(
                 return;
             }
 
-            pulso::formatters::FormatterPrometheus formatter;
+            chuspapulse::formatters::FormatterPrometheus formatter;
             std::string body = formatter.formatear(*snapshot);
 
             res.status = 200;
@@ -29,4 +29,4 @@ void registrarPrometheus(
         });
 }
 
-} // namespace pulso::http
+} // namespace chuspapulse::http
