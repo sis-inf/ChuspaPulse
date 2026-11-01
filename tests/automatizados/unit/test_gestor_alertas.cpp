@@ -4,8 +4,8 @@
 #include "alertas/alerta_umbral.hpp"
 #include "core/MetricSnapshot.hpp"
 
-using namespace pulso;
-using namespace pulso::alertas;
+using namespace chuspapulse;
+using namespace chuspapulse::alertas;
 
 TEST(GestorAlertasTest, CallbackSeLlamaCuandoAlertaSeDispara)
 {
