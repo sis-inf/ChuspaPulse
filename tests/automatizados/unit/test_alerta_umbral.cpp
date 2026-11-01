@@ -3,8 +3,8 @@
 #include "alertas/alerta_umbral.hpp"
 #include "core/MetricSnapshot.hpp"
 
-using namespace pulso::alertas;
-using namespace pulso;
+using namespace chuspapulse::alertas;
+using namespace chuspapulse;
 
 TEST(AlertaUmbralTest, OperadorMayorDisparaCuandoSuperaUmbral)
 {
