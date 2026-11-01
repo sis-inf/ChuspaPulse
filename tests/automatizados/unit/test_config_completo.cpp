@@ -27,7 +27,7 @@ protected:
 
 TEST_F(ConfigCompletoTest, ValoresPorDefecto)
 {
-    auto cfg = pulso::config::porDefecto();
+    auto cfg = chuspapulse::config::porDefecto();
 
     EXPECT_EQ(cfg.servidor.puerto, 8080);
     EXPECT_EQ(cfg.sampler.intervalo_segundos, 10);
@@ -46,7 +46,7 @@ TEST_F(ConfigCompletoTest, CargaArchivoValido)
 
     out.close();
 
-    auto cfg = pulso::config::cargar(archivo_);
+    auto cfg = chuspapulse::config::cargar(archivo_);
 
     EXPECT_EQ(cfg.servidor.puerto, 9090);
     EXPECT_EQ(cfg.sampler.intervalo_segundos, 5);
@@ -63,7 +63,7 @@ TEST_F(ConfigCompletoTest, IntervaloInvalidoLanzaExcepcion)
     out.close();
 
     EXPECT_THROW(
-        pulso::config::cargar(archivo_),
+        chuspapulse::config::cargar(archivo_),
         std::invalid_argument
     );
 }
@@ -78,7 +78,7 @@ TEST_F(ConfigCompletoTest, CampoDesconocidoSeIgnora)
     out.close();
 
     EXPECT_NO_THROW(
-        pulso::config::cargar(archivo_)
+        chuspapulse::config::cargar(archivo_)
     );
 }
 
@@ -91,7 +91,7 @@ TEST_F(ConfigCompletoTest, NivelLogNoDefaultSeRespeta)
 
     out.close();
 
-    auto cfg = pulso::config::cargar(archivo_);
+    auto cfg = chuspapulse::config::cargar(archivo_);
 
     EXPECT_EQ(cfg.nivel_log, "debug");
 }
