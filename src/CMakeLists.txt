@@ -1,6 +1,6 @@
-add_executable(pulso main.cpp)
+add_executable(chuspapulse main.cpp)
 
-target_sources(pulso PRIVATE
+target_sources(chuspapulse PRIVATE
     cli/arg_parser.cpp
     collectors/bateria/bateria_collector.cpp
     collectors/cpu/cpu_usage.cpp
@@ -41,19 +41,19 @@ target_sources(pulso PRIVATE
 # Collector de CPU para Windows: solo se compila en plataforma WIN32.
 # En Linux/macOS este archivo queda completamente excluido del build.
 if(WIN32)
-    target_sources(pulso PRIVATE
+    target_sources(chuspapulse PRIVATE
         platform/windows/collector_cpu.cpp
         platform/windows/uptime_collector.cpp
     )
 endif()
 
-target_compile_features(pulso PRIVATE cxx_std_17)
+target_compile_features(chuspapulse PRIVATE cxx_std_17)
 
-target_include_directories(pulso PRIVATE
+target_include_directories(chuspapulse PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_link_libraries(pulso PRIVATE
+target_link_libraries(chuspapulse PRIVATE
     httplib
     nlohmann_json
     tomlplusplus
@@ -61,4 +61,4 @@ target_link_libraries(pulso PRIVATE
     sqlite3
 )
 
-target_compile_options(pulso PRIVATE -Wall -Wextra -Wpedantic -O2)
+target_compile_options(chuspapulse PRIVATE -Wall -Wextra -Wpedantic -O2)
