@@ -7,7 +7,7 @@
 #include "../icollector.hpp"
 #include "core/types.hpp"
 
-namespace ChuspaPulse::collectors::memory {
+namespace chuspapulse::collectors::memory {
 
 /**
  * @brief Contiene la informacion de uso de memoria RAM del sistema.
@@ -34,11 +34,11 @@ RamInfo getRamUsage(const std::string& path = "/proc/meminfo");
 /**
  * @brief Collector de métricas de memoria RAM.
  */
-class CollectorMemory : public ChuspaPulse::collectors::ICollector {
+class CollectorMemory : public chuspapulse::collectors::ICollector {
 public:
     std::string nombre() const override;
 
-    std::vector<ChuspaPulse::core::Metrica> recolectar() override;
+    std::vector<chuspapulse::core::Metrica> recolectar() override;
 };
 
-} // namespace ChuspaPulse::collectors::memory
+} // namespace chuspapulse::collectors::memory
