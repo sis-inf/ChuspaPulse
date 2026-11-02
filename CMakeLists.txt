@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(pulso VERSION 0.1.0 LANGUAGES CXX)
+project(chuspapulse VERSION 0.1.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -7,20 +7,20 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Criterio de aceptación: Desactivado (OFF) por defecto para compilaciones limpias
 option(BUILD_TESTS "Build tests" OFF)
-option(PULSO_BUILD_TESTS "Build tests (Legacy)" OFF)
+option(CHUSPAPULSE_BUILD_TESTS "Build tests (Legacy)" OFF)
 option(BUILD_WITH_ASAN "Build tests with AddressSanitizer" OFF)
 # Enlace estático: OFF por defecto para no cambiar el comportamiento estándar de build.
-# Activar con -DPULSO_STATIC_LINK=ON para producir un binario standalone sin dependencias dinámicas.
-option(PULSO_STATIC_LINK "Link statically against libgcc, libstdc++ and system libs" OFF)
+# Activar con -DCHUSPAPULSE_STATIC_LINK=ON para producir un binario standalone sin dependencias dinámicas.
+option(CHUSPAPULSE_STATIC_LINK "Link statically against libgcc, libstdc++ and system libs" OFF)
 
-if(PULSO_STATIC_LINK)
-    target_link_options(pulso PRIVATE -static-libgcc -static-libstdc++)
+if(CHUSPAPULSE_STATIC_LINK)
+    target_link_options(chuspapulse PRIVATE -static-libgcc -static-libstdc++)
 endif()
 
 # Si el usuario activa cualquiera de las dos opciones, sincronizamos el estado
-if(BUILD_TESTS OR PULSO_BUILD_TESTS)
+if(BUILD_TESTS OR CHUSPAPULSE_BUILD_TESTS)
     set(BUILD_TESTS ON CACHE BOOL "Build tests" FORCE)
-    set(PULSO_BUILD_TESTS ON CACHE BOOL "Build tests (Legacy)" FORCE)
+    set(CHUSPAPULSE_BUILD_TESTS ON CACHE BOOL "Build tests (Legacy)" FORCE)
 endif()
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
