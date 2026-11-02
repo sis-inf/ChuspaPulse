@@ -5,7 +5,7 @@
 #include <string>
 #include <cstdlib>
 
-#define PULSO_VERSION "0.1.0"
+#define CHUSPAPULSE_VERSION "0.1.0"
 
 /**
  * @brief Procesa la lista de metricas y actualiza la configuracion.
@@ -13,7 +13,7 @@
  * Ejemplo:
  * --metrics cpu,ram
  */
-static void parse_metrics(const std::string& metrics, pulso::config::MonitorConfig& config)
+static void parse_metrics(const std::string& metrics, chuspapulse::config::MonitorConfig& config)
 {
     config.cpu = false;
     config.ram = false;
@@ -42,7 +42,7 @@ static void parse_metrics(const std::string& metrics, pulso::config::MonitorConf
 void print_help()
 {
     std::cout << "Uso:\n";
-    std::cout << "  pulso [opciones]\n\n";
+    std::cout << "  chuspapulse [opciones]\n\n";
 
     std::cout << "Opciones:\n";
 
@@ -54,7 +54,7 @@ void print_help()
     std::cout << "  --version         Mostrar version\n";
 }
 
-bool parse_arguments(int argc, char* argv[], pulso::cli::CliOptions& options)
+bool parse_arguments(int argc, char* argv[], chuspapulse::cli::CliOptions& options)
 {
     for (int i = 1; i < argc; ++i)
     {
@@ -67,8 +67,8 @@ bool parse_arguments(int argc, char* argv[], pulso::cli::CliOptions& options)
         }
         else if (arg == "--version")
         {
-            std::cout << "pulso v"
-                      << PULSO_VERSION
+            std::cout << "chuspapulse v"
+                      << CHUSPAPULSE_VERSION
                       << " (C++17) - 2026\n";
 
             std::exit(0);
