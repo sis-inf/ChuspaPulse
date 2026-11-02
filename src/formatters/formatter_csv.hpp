@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-namespace ChuspaPulse::formatters {
+namespace chuspapulse::formatters {
 
 /**
  * @brief Formateador de métricas en formato CSV.
@@ -33,7 +33,7 @@ public:
      * @param snapshot El snapshot a serializar.
      * @return Cadena CSV con cabecera o fila de datos.
      */
-    std::string formatear(const ChuspaPulse::core::Snapshot& snapshot) const override;
+    std::string formatear(const chuspapulse::core::Snapshot& snapshot) const override;
 
     /**
      * @brief Serializa una lista de snapshots en formato CSV.
@@ -42,13 +42,13 @@ public:
      * @return Cadena CSV completa con cabecera y filas de datos.
      */
     std::string formatearHistorial(
-        const std::vector<ChuspaPulse::core::Snapshot>& snapshots) const override;
+        const std::vector<chuspapulse::core::Snapshot>& snapshots) const override;
 
 private:
     mutable bool cabecераEmitida_ = false;
 
     static std::string cabecera();
-    static std::string filaDeSnapshot(const ChuspaPulse::core::Snapshot& snapshot);
+    static std::string filaDeSnapshot(const chuspapulse::core::Snapshot& snapshot);
 };
 
-} // namespace ChuspaPulse::formatters
+} // namespace chuspapulse::formatters
