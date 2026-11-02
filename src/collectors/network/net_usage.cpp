@@ -34,7 +34,7 @@ NetUsage getNetUsage(const std::string& ruta = "/proc/net/dev") {
     std::string linea;
 
     std::getline(archivo, linea);
-    std::getline(archivo, linea); 
+    std::getline(archivo, linea);
 
     while (std::getline(archivo, linea)) {
         std::istringstream flujo(linea);
@@ -70,13 +70,13 @@ NetUsage getNetUsage(const std::string& ruta = "/proc/net/dev") {
     return uso;
 }
 
-namespace pulso::collectors::network {
+namespace chuspapulse::collectors::network {
 
 std::string NetworkCollector::nombre() const {
     return "network";
 }
 
-std::vector<pulso::core::Metrica> NetworkCollector::recolectar() {
+std::vector<chuspapulse::core::Metrica> NetworkCollector::recolectar() {
     const NetUsage uso = getNetUsage("/proc/net/dev");
     const std::int64_t ahora = static_cast<std::int64_t>(std::time(nullptr));
 
@@ -86,4 +86,4 @@ std::vector<pulso::core::Metrica> NetworkCollector::recolectar() {
     };
 }
 
-}  // namespace pulso::collectors::network
+}  // namespace chuspapulse::collectors::network
