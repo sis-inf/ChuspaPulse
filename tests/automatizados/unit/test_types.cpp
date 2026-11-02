@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <string>
 
-using namespace pulso::core;
+using namespace chuspapulse::core;
 
 TEST(TestConstruccionMetrica, ValoresExplicitos) {
     Metrica metrica{
