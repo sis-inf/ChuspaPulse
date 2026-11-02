@@ -6,7 +6,7 @@
 #include <stdexcept>
 #include <chrono>
 
-namespace pulso::collectors::memory {
+namespace chuspapulse::collectors::memory {
 
 RamInfo getRamUsage(const std::string& path) {
     std::ifstream file(path);
@@ -62,7 +62,7 @@ std::string CollectorMemory::nombre() const {
     return "memory";
 }
 
-std::vector<pulso::core::Metrica> CollectorMemory::recolectar() {
+std::vector<chuspapulse::core::Metrica> CollectorMemory::recolectar() {
 
     RamInfo ram = getRamUsage();
 
@@ -82,4 +82,4 @@ std::vector<pulso::core::Metrica> CollectorMemory::recolectar() {
     };
 }
 
-} // namespace pulso::collectors::memory
+} // namespace chuspapulse::collectors::memory
