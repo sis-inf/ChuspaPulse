@@ -63,7 +63,7 @@ clang++ -std=c++17 -Wall -Wextra -Wpedantic main.cpp -o pulso
 
 ## Build estático (binario standalone)
 
-Por defecto, el binario de Pulso enlaza dinámicamente con las librerías del sistema (`libgcc`, `libstdc++`, etc.). Para producir un binario standalone que no dependa de estas librerías en tiempo de ejecución, usa la opción `PULSO_STATIC_LINK`:
+Por defecto, el binario de ChuspaPulse enlaza dinámicamente con las librerías del sistema (`libgcc`, `libstdc++`, etc.). Para producir un binario standalone que no dependa de estas librerías en tiempo de ejecución, usa la opción `PULSO_STATIC_LINK`:
 
 ```bash
 cmake -B build -DPULSO_STATIC_LINK=ON
