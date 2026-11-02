@@ -1,12 +1,12 @@
-# Guía de instalación de Pulso
+# Guía de instalación de ChuspaPulse
 
-Este documento describe los pasos necesarios para instalar y ejecutar Pulso en un entorno local.
+Este documento describe los pasos necesarios para instalar y ejecutar ChuspaPulse en un entorno local.
 
 ---
 
 ## Requisitos previos
 
-Antes de instalar Pulso, asegúrese de contar con lo siguiente:
+Antes de instalar ChuspaPulse, asegúrese de contar con lo siguiente:
 
 | Requisito | Versión mínima | Notas |
 |---|---|---|
@@ -39,8 +39,8 @@ sudo apt install g++ cmake git
 Ejecute el siguiente comando para clonar el proyecto:
 
 ```bash
-git clone https://github.com/sis-inf/pulso.git
-cd pulso
+git clone https://github.com/sis-inf/ChuspaPulse.git
+cd ChuspaPulse
 ```
 
 ---
@@ -78,13 +78,13 @@ cmake --build build --config Release
 ### Linux
  
 ```bash
-./build/bin/pulso
+./build/bin/ChuspaPulse
 ```
  
 ### Windows
  
 ```bash
-build\bin\Release\pulso.exe
+build\bin\Release\ChuspaPulse.exe
 ```
  
 ---
@@ -92,10 +92,10 @@ build\bin\Release\pulso.exe
 ## Notas adicionales
  
 - En Linux, si aparecen errores de permisos al acceder a `/proc`, verifique que el usuario tenga los permisos necesarios. No se recomienda modificar permisos del sistema sin conocer su impacto.
-- Para compilar sin ejecutar los tests, agregue `-DPULSO_BUILD_TESTS=OFF` al comando de configuración:
+- Para compilar sin ejecutar los tests, agregue `-DChuspaPulse_BUILD_TESTS=OFF` al comando de configuración:
 
 ```bash
-cmake -B build -DPULSO_BUILD_TESTS=OFF
+cmake -B build -DChuspaPulse_BUILD_TESTS=OFF
 ```
 
 ---
