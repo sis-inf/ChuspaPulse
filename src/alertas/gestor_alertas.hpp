@@ -7,7 +7,7 @@
 #include <string>
 #include "alerta_umbral.hpp"
 
-namespace ChuspaPulse::alertas {
+namespace chuspapulse::alertas {
 
 /**
  * @brief Registro de una alerta disparada y guardada en el historial.
@@ -65,7 +65,7 @@ public:
      *
      * @param snap Snapshot con las métricas actuales del sistema.
      */
-    void evaluar(const ChuspaPulse::MetricSnapshot& snap) const;
+    void evaluar(const chuspapulse::MetricSnapshot& snap) const;
 
     /**
      * @brief Devuelve la cantidad de alertas registradas.
@@ -93,4 +93,4 @@ private:
     std::function<void(const std::string&)> callback_;
 };
 
-} // namespace ChuspaPulse::alertas
+} // namespace chuspapulse::alertas
