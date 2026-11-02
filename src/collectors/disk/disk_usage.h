@@ -17,12 +17,12 @@ struct DiskInfo {
 /// @return Estructura DiskInfo con espacio total, usado y libre.
 DiskInfo GetDiskUsage();
 
-namespace pulso::collectors::disk {
+namespace chuspapulse::collectors::disk {
 
-class DiskCollector : public pulso::collectors::ICollector {
+class DiskCollector : public chuspapulse::collectors::ICollector {
 public:
   std::string nombre() const override;
-  std::vector<pulso::core::Metrica> recolectar() override;
+  std::vector<chuspapulse::core::Metrica> recolectar() override;
 };
 
-}  // namespace pulso::collectors::disk
+}  // namespace chuspapulse::collectors::disk
