@@ -1,15 +1,15 @@
-# Casos de Uso - Proyecto Pulso
+# Casos de Uso - Proyecto ChuspaPulse
 
-Este documento define los actores y las funcionalidades principales del agente de monitoreo **Pulso**.
+Este documento define los actores y las funcionalidades principales del agente de monitoreo **ChuspaPulse**.
 
 ## 1. Actores del Sistema
 - **Administrador de Sistemas (SysAdmin):** Responsable de configurar el agente y visualizar las métricas consolidadas.
-- **Agente Pulso:** Actor automatizado que recolecta y envía datos de rendimiento en segundo plano.
+- **Agente ChuspaPulse:** Actor automatizado que recolecta y envía datos de rendimiento en segundo plano.
 
 ## 2. Casos de Uso Principales
 
 ### CU-01: Registro de Métricas de CPU
-- **Actor:** Agente Pulso
+- **Actor:** Agente ChuspaPulse
 - **Descripción:** El agente captura el porcentaje de uso de la CPU en intervalos definidos.
 - **Flujo Principal:**
   1. El agente inicia el ciclo de captura.
@@ -21,7 +21,7 @@ Este documento define los actores y las funcionalidades principales del agente d
 - **Descripción:** Permite al administrador obtener un resumen completo del estado actual del sistema desde la terminal.
 - **Flujo Principal:**
   1. El administrador ejecuta `./pulso --status` desde la terminal.
-  2. El Agente Pulso consulta las métricas actuales al sistema operativo.
+  2. El Agente ChuspaPulse consulta las métricas actuales al sistema operativo.
   3. Se muestra el estado general: procesos activos, uso de recursos y estado de la red.
 
 ### CU-03: Visualización de Estado de Red
@@ -29,20 +29,20 @@ Este documento define los actores y las funcionalidades principales del agente d
 - **Descripción:** Permite ver la velocidad de descarga, subida y el estado de la conexión de red del sistema.
 - **Flujo Principal:**
   1. El administrador solicita ver el estado del sistema vía menú o `--status`.
-  2. El Agente Pulso consulta las métricas de red al sistema operativo.
+  2. El Agente ChuspaPulse consulta las métricas de red al sistema operativo.
   3. Se muestra la velocidad de descarga, subida en Mbps y el estado de conexión.
 
 ### CU-04: Navegación por el Menú Interactivo
 - **Actor:** Administrador de Sistemas
-- **Descripción:** Permite al administrador interactuar con Pulso a través de un menú de opciones en la terminal.
+- **Descripción:** Permite al administrador interactuar con ChuspaPulse a través de un menú de opciones en la terminal.
 - **Flujo Principal:**
   1. El administrador ejecuta `./pulso` sin argumentos.
-  2. Pulso presenta el menú con las opciones: Ver estado, Actualizar datos, Salir.
+  2. ChuspaPulse presenta el menú con las opciones: Ver estado, Actualizar datos, Salir.
   3. El administrador selecciona una opción ingresando el número correspondiente.
-  4. Pulso ejecuta la acción y muestra el resultado.
+  4. ChuspaPulse ejecuta la acción y muestra el resultado.
 
 ### CU-05: Recolección de Métricas de Memoria RAM
-- **Actor:** Agente Pulso
+- **Actor:** Agente ChuspaPulse
 - **Descripción:** El agente captura el estado actual de la memoria RAM del sistema, incluyendo uso total y disponible.
 - **Flujo Principal:**
   1. El agente consulta la memoria RAM al sistema operativo.
