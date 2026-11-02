@@ -7,12 +7,12 @@
 
 namespace fs = std::filesystem;
 
-static pulso::core::Snapshot crearSnapshot(std::int64_t timestamp) {
-    pulso::core::Snapshot s;
+static chuspapulse::core::Snapshot crearSnapshot(std::int64_t timestamp) {
+    chuspapulse::core::Snapshot s;
     s.timestamp = timestamp;
 
     auto addMetric = [&](const std::string& name, const std::string& unit, double value) {
-        pulso::core::Metrica m;
+        chuspapulse::core::Metrica m;
         m.nombre    = name;
         m.unidad    = unit;
         m.valor     = value;
@@ -58,21 +58,21 @@ protected:
 
 // 1. Base recién creada devuelve std::nullopt en last()
 TEST_F(StorageTest, Test_BaseVacia_UltimoDevuelveNullopt) {
-    pulso::storage::Storage storage(dbPath_);
+    chuspapulse::storage::Storage storage(dbPath_);
     auto resultado = storage.last();
     EXPECT_FALSE(resultado.has_value());
 }
 
 // 2. Base recién creada devuelve vector vacío en history()
 TEST_F(StorageTest, Test_BaseVacia_HistorialDevuelveVectorVacio) {
-    pulso::storage::Storage storage(dbPath_);
+    chuspapulse::storage::Storage storage(dbPath_);
     auto resultado = storage.history(0);
     EXPECT_TRUE(resultado.empty());
 }
 
 // 3. Insertar un snapshot y verificar que last() lo devuelve con todos sus campos
 TEST_F(StorageTest, Test_GuardarYLeerUltimo) {
-    pulso::storage::Storage storage(dbPath_);
+    chuspapulse::storage::Storage storage(dbPath_);
     auto snap = crearSnapshot(1000);
     storage.save(snap);
 
@@ -94,7 +94,7 @@ TEST_F(StorageTest, Test_GuardarYLeerUltimo) {
 
 // 4. Insertar tres snapshots y verificar que last() devuelve el de mayor timestamp
 TEST_F(StorageTest, Test_GuardarVarios_UltimoDevuelveElMasReciente) {
-    pulso::storage::Storage storage(dbPath_);
+    chuspapulse::storage::Storage storage(dbPath_);
     storage.save(crearSnapshot(100));
     storage.save(crearSnapshot(300));
     storage.save(crearSnapshot(200));
@@ -106,7 +106,7 @@ TEST_F(StorageTest, Test_GuardarVarios_UltimoDevuelveElMasReciente) {
 
 // 5. Insertar cinco snapshots, consultar un rango que cubra solo tres
 TEST_F(StorageTest, Test_HistorialFiltraPorRango) {
-    pulso::storage::Storage storage(dbPath_);
+    chuspapulse::storage::Storage storage(dbPath_);
     storage.save(crearSnapshot(100));
     storage.save(crearSnapshot(200));
     storage.save(crearSnapshot(300));
@@ -123,7 +123,7 @@ TEST_F(StorageTest, Test_HistorialFiltraPorRango) {
 
 // 6. Insertar 100 snapshots y consultar con limite=10, verificar que devuelve 10
 TEST_F(StorageTest, Test_HistorialRespetalimite) {
-    pulso::storage::Storage storage(dbPath_);
+    chuspapulse::storage::Storage storage(dbPath_);
     for (int i = 1; i <= 100; ++i) {
         storage.save(crearSnapshot(static_cast<std::int64_t>(i)));
     }
@@ -134,7 +134,7 @@ TEST_F(StorageTest, Test_HistorialRespetalimite) {
 
 // 7. Insertar N snapshots y verificar que total() devuelve N
 TEST_F(StorageTest, Test_TotalCuentaCorrectamente) {
-    pulso::storage::Storage storage(dbPath_);
+    chuspapulse::storage::Storage storage(dbPath_);
     const int N = 7;
     for (int i = 1; i <= N; ++i) {
         storage.save(crearSnapshot(static_cast<std::int64_t>(i)));
@@ -146,12 +146,12 @@ TEST_F(StorageTest, Test_TotalCuentaCorrectamente) {
 // 8. Persistencia: crear, guardar, destruir, reabrir y verificar que los datos siguen
 TEST_F(StorageTest, Test_PersistenciaTrasReabrir) {
     {
-        pulso::storage::Storage storage(dbPath_);
+        chuspapulse::storage::Storage storage(dbPath_);
         storage.save(crearSnapshot(9999));
     } // destruido aquí
 
     // Nueva instancia con el mismo archivo
-    pulso::storage::Storage storage2(dbPath_);
+    chuspapulse::storage::Storage storage2(dbPath_);
     auto resultado = storage2.last();
     ASSERT_TRUE(resultado.has_value());
     EXPECT_EQ(resultado->timestamp, 9999);
@@ -159,7 +159,7 @@ TEST_F(StorageTest, Test_PersistenciaTrasReabrir) {
 
 // 9. Con setMaxEntries(3) se conservan solo los 3 snapshots más recientes (FIFO)
 TEST_F(StorageTest, Test_SetMaxEntries_DescartaAntiguosFIFO) {
-    pulso::storage::Storage storage(dbPath_);
+    chuspapulse::storage::Storage storage(dbPath_);
     storage.setMaxEntries(3);
 
     storage.save(crearSnapshot(100));
