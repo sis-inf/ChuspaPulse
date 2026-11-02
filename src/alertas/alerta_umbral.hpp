@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include "../core/MetricSnapshot.hpp"
 
-namespace ChuspaPulse::alertas {
+namespace chuspapulse::alertas {
 
 /**
  * @brief Alerta que se dispara cuando una métrica supera un umbral configurable.
@@ -29,7 +29,7 @@ public:
      * @return true si la métrica supera el umbral según el operador configurado.
      * @throws std::invalid_argument si la métrica no existe en el snapshot.
      */
-    bool evaluar(const ChuspaPulse::MetricSnapshot& snap) const;
+    bool evaluar(const chuspapulse::MetricSnapshot& snap) const;
 
     /**
      * @brief Devuelve un mensaje descriptivo sobre la alerta.
@@ -49,4 +49,4 @@ private:
     char        operador_; ///< Operador de comparación: '>' o '<'
 };
 
-} // namespace ChuspaPulse::alertas
+} // namespace chuspapulse::alertas
