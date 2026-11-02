@@ -12,7 +12,7 @@
 #include <stdexcept>
 #include <cstdlib>
 
-namespace pulso::config {
+namespace chuspapulse::config {
 
 namespace {
 
@@ -53,27 +53,27 @@ T leer(const toml::table& tabla,
 /// Aplica variables de entorno con prioridad sobre TOML.
 void aplicarEnv(Config& cfg)
 {
-    if (const char* v = std::getenv("PULSO_SERVIDOR_HOST")) {
+    if (const char* v = std::getenv("CHUSPAPULSE_SERVIDOR_HOST")) {
         cfg.servidor.host = v;
     }
 
-    if (const char* v = std::getenv("PULSO_SERVIDOR_PUERTO")) {
+    if (const char* v = std::getenv("CHUSPAPULSE_SERVIDOR_PUERTO")) {
         cfg.servidor.puerto = static_cast<uint16_t>(std::stoi(v));
     }
 
-    if (const char* v = std::getenv("PULSO_SAMPLER_INTERVALO_SEGUNDOS")) {
+    if (const char* v = std::getenv("CHUSPAPULSE_SAMPLER_INTERVALO_SEGUNDOS")) {
         cfg.sampler.intervalo_segundos = std::stoll(v);
     }
 
-    if (const char* v = std::getenv("PULSO_STORAGE_RUTA_DB")) {
+    if (const char* v = std::getenv("CHUSPAPULSE_STORAGE_RUTA_DB")) {
         cfg.storage.ruta_db = v;
     }
 
-    if (const char* v = std::getenv("PULSO_NIVEL_LOG")) {
+    if (const char* v = std::getenv("CHUSPAPULSE_NIVEL_LOG")) {
         cfg.nivel_log = v;
     }
 
-    if (const char* v = std::getenv("PULSO_OUTPUT_FORMAT")) {
+    if (const char* v = std::getenv("CHUSPAPULSE_OUTPUT_FORMAT")) {
         cfg.output_format = v;
     }
 }
@@ -225,4 +225,4 @@ Config porDefecto()
     return Config{};
 }
 
-} // namespace pulso::config
+} // namespace chuspapulse::config
