@@ -2,7 +2,7 @@
 
 # ---------------------------------------------------------------------------
 # Etapa 1: builder
-# Compila el binario `pulso` con CMake en modo Release.
+# Compila el binario `chuspapulse` con CMake en modo Release.
 # git y ca-certificates son necesarios porque CMake descarga las dependencias
 # (httplib, nlohmann_json, tomlplusplus, SQLiteCpp) con FetchContent.
 # ---------------------------------------------------------------------------
@@ -34,18 +34,18 @@ FROM ubuntu:22.04
 RUN apt-get update \
     && apt-get install -y --no-install-recommends libsqlite3-0 \
     && rm -rf /var/lib/apt/lists/* \
-    && useradd --system --no-create-home --shell /usr/sbin/nologin pulso \
+    && useradd --system --no-create-home --shell /usr/sbin/nologin chuspapulse \
     && mkdir -p /data \
-    && chown pulso:pulso /data
+    && chown chuspapulse:chuspapulse /data
 
-COPY --from=builder /src/build/bin/pulso /usr/local/bin/pulso
+COPY --from=builder /src/build/bin/chuspapulse /usr/local/bin/chuspapulse
 
-# /data es donde el DaemonSet monta el volumen; pulso.db se crea en el
+# /data es donde el DaemonSet monta el volumen; chuspapulse.db se crea en el
 # directorio de trabajo, por lo que queda en ese volumen.
 WORKDIR /data
 
 EXPOSE 8080
 
-USER pulso
+USER chuspapulse
 
-ENTRYPOINT ["/usr/local/bin/pulso"]
+ENTRYPOINT ["/usr/local/bin/chuspapulse"]
