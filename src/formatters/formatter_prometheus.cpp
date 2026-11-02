@@ -4,7 +4,7 @@
 #include <iomanip>
 #include <sstream>
 
-namespace pulso::formatters {
+namespace chuspapulse::formatters {
 
 std::string FormatterPrometheus::formato() const {
     return "prometheus";
@@ -15,7 +15,7 @@ std::string FormatterPrometheus::contentType() const {
 }
 
 std::string FormatterPrometheus::formatear(
-    const pulso::core::Snapshot& snapshot) const {
+    const chuspapulse::core::Snapshot& snapshot) const {
 
     if (snapshot.metricas.empty()) {
         return "";
@@ -25,10 +25,10 @@ std::string FormatterPrometheus::formatear(
     output << std::setprecision(15);
 
     for (const auto& metrica : snapshot.metricas) {
-        std::string nombre = "pulso_" + metrica.nombre;
+        std::string nombre = "chuspapulse_" + metrica.nombre;
         std::replace(nombre.begin(), nombre.end(), '.', '_');
 
-        output << "# HELP " << nombre << " Metrica de pulso\n";
+        output << "# HELP " << nombre << " Metrica de chuspapulse\n";
         output << "# TYPE " << nombre << " gauge\n";
         output << nombre << " " << metrica.valor << "\n\n";
     }
@@ -37,7 +37,7 @@ std::string FormatterPrometheus::formatear(
 }
 
 std::string FormatterPrometheus::formatearHistorial(
-    const std::vector<pulso::core::Snapshot>& snapshots) const {
+    const std::vector<chuspapulse::core::Snapshot>& snapshots) const {
 
     if (snapshots.empty()) {
         return "";
@@ -46,4 +46,4 @@ std::string FormatterPrometheus::formatearHistorial(
     return formatear(snapshots.back());
 }
 
-} // namespace pulso::formatters
+} // namespace chuspapulse::formatters
