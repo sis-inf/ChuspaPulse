@@ -30,7 +30,7 @@ graph TD
     D --> J["Detección de anomalías"]
     E --> K[Cliente HTTP]
     F --> L[Notificaciones]
-    G --> M[ChuspaPulse.log]
+    G --> M[chuspapulse.log]
 ```
 
 ## 2. Visión General del Sistema
