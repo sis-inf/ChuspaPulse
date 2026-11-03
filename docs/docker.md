@@ -6,10 +6,10 @@ Este documento describe el estado actual del soporte para Docker en ChuspaPulse 
 
 Actualmente el repositorio no incluye un `Dockerfile`, un archivo `.dockerignore` ni una configuración oficial mediante `docker-compose`.
 
-La aplicación utiliza un archivo de configuración TOML (`chuspa.toml`) y permite indicar una ruta alternativa mediante la opción de línea de comandos:
+La aplicación utiliza un archivo de configuración TOML (`chuspapulse.toml`) y permite indicar una ruta alternativa mediante la opción de línea de comandos:
 
 ```bash
-./chuspa --config ruta/al/archivo.toml
+./chuspapulse --config ruta/al/archivo.toml
 ```
 
 La configuración por defecto es la siguiente:
@@ -18,14 +18,14 @@ La configuración por defecto es la siguiente:
 | ------- | ----- |
 | Host | `0.0.0.0` |
 | Puerto | `8080` |
-| Base de datos SQLite | `chuspa.db` |
+| Base de datos SQLite | `chuspapulse.db` |
 
 ## Construcción de la imagen
 
 Si el proyecto incorpora un `Dockerfile` en la raíz del repositorio, la imagen podrá construirse mediante:
 
 ```bash
-docker build -t chuspa .
+docker build -t chuspapulse .
 ```
 
 ## Variables de entorno
@@ -34,7 +34,7 @@ Actualmente ChuspaPulse **no implementa variables de entorno** para modificar la
 
 La configuración se realiza mediante:
 
-- El archivo `chuspa.toml`.
+- El archivo `chuspapulse.toml`.
 - La opción `--config` para indicar un archivo de configuración alternativo.
 
 ## Persistencia de la base de datos
@@ -42,10 +42,10 @@ La configuración se realiza mediante:
 Por defecto, la aplicación almacena la base de datos SQLite en el archivo:
 
 ```text
-chuspa.db
+chuspapulse.db
 ```
 
-Si la aplicación se ejecuta dentro de un contenedor Docker, se recomienda montar un volumen para conservar el archivo `chuspa.db` entre reinicios.
+Si la aplicación se ejecuta dentro de un contenedor Docker, se recomienda montar un volumen para conservar el archivo `chuspapulse.db` entre reinicios.
 
 Ejemplo:
 
@@ -53,15 +53,15 @@ Ejemplo:
 docker run \
   -p 8080:8080 \
   -v $(pwd)/data:/app \
-  -v $(pwd)/chuspa.toml:/app/chuspa.toml:ro \
-  chuspa \
-  --config /app/chuspa.toml
+  -v $(pwd)/chuspapulse.toml:/app/chuspapulse.toml:ro \
+  chuspapulse \
+  --config /app/chuspapulse.toml
 ```
 
 En este ejemplo:
 
 - `./data` almacena la base de datos SQLite de forma persistente.
-- `chuspa.toml` se monta como un archivo de solo lectura.
+- `chuspapulse.toml` se monta como un archivo de solo lectura.
 - La aplicación utiliza el archivo de configuración indicado mediante `--config`.
 
 ## Integración con Prometheus
@@ -82,8 +82,8 @@ Este ejemplo asume que ChuspaPulse escucha en el puerto `8080` y expone las mét
 
 - Actualmente el repositorio no incluye un `Dockerfile` oficial.
 - No existen variables de entorno para configurar la aplicación.
-- La configuración se realiza mediante `chuspa.toml` y la opción `--config`.
-- La base de datos SQLite se almacena en `chuspa.db`.
+- La configuración se realiza mediante `chuspapulse.toml` y la opción `--config`.
+- La base de datos SQLite se almacena en `chuspapulse.db`.
 - Si se utiliza Docker, se recomienda montar un volumen para conservar la base de datos entre reinicios del contenedor.
 
 
