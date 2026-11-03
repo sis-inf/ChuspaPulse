@@ -72,7 +72,7 @@ jobs:
               fs.mkdirSync(dirPath, { recursive: true });
             }
             
-            const headerContent = `#ifndef PULSO_VERSION_HPP\n#define PULSO_VERSION_HPP\n#define PULSO_VERSION "0.1.0"\n#endif\n`;
+            const headerContent = `#ifndef CHUSPAPULSE_VERSION_HPP\n#define CHUSPAPULSE_VERSION_HPP\n#define CHUSPAPULSE_VERSION "0.1.0"\n#endif\n`;
             fs.writeFileSync(filePath, headerContent, 'utf8');
 
       - name: Instalar dependencias (Linux)
