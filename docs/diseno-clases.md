@@ -1,6 +1,6 @@
-# Diseño inicial de clases C++ — Sistema Pulso
+# Diseño inicial de clases C++ — Sistema ChuspaPulse
 
-Este documento describe las clases principales que compondran el sistema Pulso.
+Este documento describe las clases principales que compondran el sistema ChuspaPulse.
 Cada clase se presenta con su responsabilidad, atributos principales y metodos principales.
 
 ---
@@ -14,7 +14,7 @@ Cada clase se presenta con su responsabilidad, atributos principales y metodos p
 | **Metodos principales** | `run()`, `showStatus()`, `showWelcome()`, `handleOption(int option)` |
 
 **Descripcion:**
-`SystemMonitor` actua como controlador central. Inicializa los modulos de informacion, gestiona el menu interactivo y delega a cada modulo especializado la recoleccion de sus datos. Corresponde a la salida del comando `./pulso` y `./pulso --status`.
+`SystemMonitor` actua como controlador central. Inicializa los modulos de informacion, gestiona el menu interactivo y delega a cada modulo especializado la recoleccion de sus datos. Corresponde a la salida del comando `./ChuspaPulse` y `./ChuspaPulse --status`.
 
 ---
 
