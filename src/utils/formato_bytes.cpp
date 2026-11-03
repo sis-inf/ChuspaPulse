@@ -6,7 +6,7 @@
 #include <sstream>
 #include <iomanip>
 
-namespace ChuspaPulse::utils {
+namespace chuspapulse::utils {
 
 namespace {
 
@@ -40,4 +40,4 @@ std::string formatearBytesHumanos(double bytes) {
     return oss.str();
 }
 
-} // namespace ChuspaPulse::utils
+} // namespace chuspapulse::utils
