@@ -45,13 +45,18 @@ De esta forma es posible reutilizar una configuración base y modificar solament
 El perfil puede indicarse al ejecutar ChuspaPulse mediante el parámetro:
 
 ```bash
+
 ChuspaPulse --config ChuspaPulse.toml --perfil desarrollo
+
+
 ```
 
 o bien:
 
 ```bash
+
 ChuspaPulse --config ChuspaPulse.toml --perfil produccion
+
 ```
 
 ---
