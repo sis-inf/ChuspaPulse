@@ -46,10 +46,10 @@
  *       respectivamente. Si un valor total es 0, el porcentaje de la barra
  *       se muestra como 0%.
  *
- * @see ChuspaPulse::core::Snapshot
- * @see ChuspaPulse::core::Metrica
+ * @see chuspapulse::core::Snapshot
+ * @see chuspapulse::core::Metrica
  */
-std::string formatAsTable(const ChuspaPulse::core::Snapshot& snap);
+std::string formatAsTable(const chuspapulse::core::Snapshot& snap);
 
 /**
  * @brief Imprime métricas clave-valor directamente en `std::cout` (legacy).
