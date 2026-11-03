@@ -6,7 +6,7 @@
 #include <iostream>
 #include <sstream>
 
-namespace ChuspaPulse::utils::logging {
+namespace chuspapulse::utils::logging {
 
 namespace {
 
@@ -69,4 +69,4 @@ void Logger::error(const std::string& mensaje) {
     imprimir(mutex_, LogLevel::ERROR, nivelMinimo_, mensaje);
 }
 
-} // namespace ChuspaPulse::utils::logging
+} // namespace chuspapulse::utils::logging
