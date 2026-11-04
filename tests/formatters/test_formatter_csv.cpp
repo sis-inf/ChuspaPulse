@@ -12,12 +12,12 @@ const std::string CABECERA =
     "timestamp,cpu_pct,ram_used_mb,ram_total_mb,"
     "disk_used_gb,disk_total_gb,net_rx_kb,net_tx_kb\n";
 
-pulso::core::Metrica crearMetrica(
+chuspapulse::core::Metrica crearMetrica(
     const std::string& nombre,
     double valor,
     const std::string& unidad,
     std::int64_t timestamp) {
-    pulso::core::Metrica metrica;
+    chuspapulse::core::Metrica metrica;
     metrica.nombre = nombre;
     metrica.valor = valor;
     metrica.unidad = unidad;
@@ -28,8 +28,8 @@ pulso::core::Metrica crearMetrica(
 // Snapshot con valores conocidos:
 //   cpu 45.5 %, RAM 2048 MB de 8192 MB, disco 100 GB de 500 GB,
 //   red rx 2 KB y tx 1 KB.
-pulso::core::Snapshot crearSnapshotCompleto(std::int64_t timestamp) {
-    pulso::core::Snapshot snapshot;
+chuspapulse::core::Snapshot crearSnapshotCompleto(std::int64_t timestamp) {
+    chuspapulse::core::Snapshot snapshot;
     snapshot.timestamp = timestamp;
     snapshot.metricas = {
         crearMetrica("cpu.usage", 45.5, "porcentaje", timestamp),
@@ -49,14 +49,14 @@ const std::string FILA_COMPLETA =
 } // namespace
 
 TEST(TestFormatterCSV, Test_FormatoYContentType) {
-    pulso::formatters::FormatterCSV formatter;
+    chuspapulse::formatters::FormatterCSV formatter;
 
     EXPECT_EQ(formatter.formato(), "csv");
     EXPECT_EQ(formatter.contentType(), "text/csv");
 }
 
 TEST(TestFormatterCSV, Test_PrimeraLlamadaIncluyeCabeceraYFila) {
-    pulso::formatters::FormatterCSV formatter;
+    chuspapulse::formatters::FormatterCSV formatter;
 
     EXPECT_EQ(
         formatter.formatear(crearSnapshotCompleto(1700000000)),
@@ -64,7 +64,7 @@ TEST(TestFormatterCSV, Test_PrimeraLlamadaIncluyeCabeceraYFila) {
 }
 
 TEST(TestFormatterCSV, Test_SegundaLlamadaSoloEmiteFila) {
-    pulso::formatters::FormatterCSV formatter;
+    chuspapulse::formatters::FormatterCSV formatter;
 
     formatter.formatear(crearSnapshotCompleto(1700000000));
 
@@ -74,9 +74,9 @@ TEST(TestFormatterCSV, Test_SegundaLlamadaSoloEmiteFila) {
 }
 
 TEST(TestFormatterCSV, Test_SnapshotVacioUsaCeros) {
-    pulso::formatters::FormatterCSV formatter;
+    chuspapulse::formatters::FormatterCSV formatter;
 
-    pulso::core::Snapshot snapshot;
+    chuspapulse::core::Snapshot snapshot;
     snapshot.timestamp = 1000;
 
     EXPECT_EQ(
@@ -85,9 +85,9 @@ TEST(TestFormatterCSV, Test_SnapshotVacioUsaCeros) {
 }
 
 TEST(TestFormatterCSV, Test_AliasNetRxNetTx) {
-    pulso::formatters::FormatterCSV formatter;
+    chuspapulse::formatters::FormatterCSV formatter;
 
-    pulso::core::Snapshot snapshot;
+    chuspapulse::core::Snapshot snapshot;
     snapshot.timestamp = 2000;
     snapshot.metricas = {
         crearMetrica("net.rx", 4096.0, "bytes", 2000),
@@ -100,15 +100,15 @@ TEST(TestFormatterCSV, Test_AliasNetRxNetTx) {
 }
 
 TEST(TestFormatterCSV, Test_HistorialVacioSoloCabecera) {
-    pulso::formatters::FormatterCSV formatter;
+    chuspapulse::formatters::FormatterCSV formatter;
 
     EXPECT_EQ(formatter.formatearHistorial({}), CABECERA);
 }
 
 TEST(TestFormatterCSV, Test_HistorialConDosSnapshots) {
-    pulso::formatters::FormatterCSV formatter;
+    chuspapulse::formatters::FormatterCSV formatter;
 
-    std::vector<pulso::core::Snapshot> historial = {
+    std::vector<chuspapulse::core::Snapshot> historial = {
         crearSnapshotCompleto(1700000000),
         crearSnapshotCompleto(1700000010),
     };
