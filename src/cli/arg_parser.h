@@ -3,7 +3,7 @@
 #include "../config/config.hpp"
 #include <string>
 
-namespace pulso::cli {
+namespace chuspapulse::cli {
 
 /**
  * @brief Opciones extendidas de linea de comandos.
@@ -12,7 +12,7 @@ namespace pulso::cli {
  * para el modo 'once' y formato de salida.
  */
 struct CliOptions {
-    pulso::config::MonitorConfig monitor;
+    chuspapulse::config::MonitorConfig monitor;
     bool once = false;
     std::string format = "json";
 };
@@ -42,4 +42,4 @@ bool parse_arguments(int argc, char* argv[], CliOptions& options);
  */
 void print_help();
 
-} // namespace pulso::cli
+} // namespace chuspapulse::cli
