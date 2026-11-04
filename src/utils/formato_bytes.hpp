@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace ChuspaPulse::utils {
+namespace chuspapulse::utils {
 
 /**
  * @brief Formatea un valor en bytes a una representacion legible para
@@ -26,4 +26,4 @@ namespace ChuspaPulse::utils {
  */
 std::string formatearBytesHumanos(double bytes);
 
-} // namespace ChuspaPulse::utils
+} // namespace chuspapulse::utils
