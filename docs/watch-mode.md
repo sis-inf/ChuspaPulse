@@ -11,7 +11,7 @@ Este modo está pensado para realizar monitoreo continuo sin necesidad de ejecut
 Para iniciar el modo de visualización en vivo:
 
 ```bash
-pulso --watch
+ChuspaPulse --watch
 ```
 
 Al ejecutarse, el modo `--watch` muestra la información de las métricas actualizada en la terminal.
@@ -25,7 +25,7 @@ El intervalo de actualización puede modificarse mediante la opción `--watch-in
 Ejemplo:
 
 ```bash
-pulso --watch --watch-interval 2000
+ChuspaPulse --watch --watch-interval 2000
 ```
 
 El valor está expresado en milisegundos. En este ejemplo:
@@ -36,7 +36,7 @@ El valor está expresado en milisegundos. En este ejemplo:
 Otro ejemplo:
 
 ```bash
-pulso --watch --watch-interval 5000
+ChuspaPulse --watch --watch-interval 5000
 ```
 
 Actualiza la información cada 5 segundos.
@@ -47,8 +47,8 @@ Actualiza la información cada 5 segundos.
 
 | Opción | Descripción | Ejemplo |
 |--------|-------------|---------|
-| `--watch` | Activa el modo interactivo de visualización en vivo | `pulso --watch` |
-| `--watch-interval <ms>` | Define cada cuánto tiempo se actualiza la información | `pulso --watch --watch-interval 2000` |
+| `--watch` | Activa el modo interactivo de visualización en vivo | `ChuspaPulse --watch` |
+| `--watch-interval <ms>` | Define cada cuánto tiempo se actualiza la información | `ChuspaPulse --watch --watch-interval 2000` |
 
 ---
 
@@ -58,7 +58,7 @@ Al utilizar el modo `--watch`, la información se muestra en una tabla que se ac
 
 ```text
 +--------------------------------+
-|       PULSO - WATCH MODE       |
+|    CHUSPAPULSE - WATCH MODE    |
 +--------------------------------+
 | Métrica        | Valor         |
 +--------------------------------+
@@ -80,7 +80,7 @@ La tabla se refresca automáticamente utilizando el intervalo configurado.
 ### Monitoreo con intervalo predeterminado
 
 ```bash
-pulso --watch
+ChuspaPulse --watch
 ```
 
 Utiliza el intervalo establecido por defecto.
@@ -90,7 +90,7 @@ Utiliza el intervalo establecido por defecto.
 ### Monitoreo con actualización cada 3 segundos
 
 ```bash
-pulso --watch --watch-interval 3000
+ChuspaPulse --watch --watch-interval 3000
 ```
 
 La información se actualiza cada 3000 milisegundos.
@@ -100,7 +100,7 @@ La información se actualiza cada 3000 milisegundos.
 ### Monitoreo con actualización rápida
 
 ```bash
-pulso --watch --watch-interval 500
+ChuspaPulse --watch --watch-interval 500
 ```
 
 Permite observar cambios con mayor frecuencia.
@@ -122,7 +122,7 @@ Ejemplo:
 ```text
 ^C
 Finalizando modo watch...
-Pulso detenido correctamente.
+ChuspaPulse detenido correctamente.
 ```
 
 ---
