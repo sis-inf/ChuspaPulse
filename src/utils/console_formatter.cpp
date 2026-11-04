@@ -148,7 +148,7 @@ static std::string separador() {
  * @param snap  Snapshot de métricas del agente ChuspaPulse.
  * @return      Tabla ASCII lista para imprimir, terminada en `\n`.
  */
-std::string formatAsTable(const ChuspaPulse::core::Snapshot& snap) {
+std::string formatAsTable(const chuspapulse::core::Snapshot& snap) {
 
     // ── 1. Extraer métricas del snapshot ─────────────────────────────────────
 
