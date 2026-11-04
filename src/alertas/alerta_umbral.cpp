@@ -2,7 +2,7 @@
 #include <stdexcept>
 #include <string>
 
-namespace ChuspaPulse::alertas {
+namespace chuspapulse::alertas {
 
 AlertaUmbral::AlertaUmbral(const std::string& metrica, float umbral, char operador)
     : metrica_(metrica), umbral_(umbral), operador_(operador)
@@ -15,7 +15,7 @@ AlertaUmbral::AlertaUmbral(const std::string& metrica, float umbral, char operad
     }
 }
 
-bool AlertaUmbral::evaluar(const ChuspaPulse::MetricSnapshot& snap) const {
+bool AlertaUmbral::evaluar(const chuspapulse::MetricSnapshot& snap) const {
     double valor = 0.0;
     bool encontrado = true;
 
@@ -53,4 +53,4 @@ std::string AlertaUmbral::mensaje() const {
            " " + std::to_string(umbral_);
 }
 
-} // namespace ChuspaPulse::alertas
+} // namespace chuspapulse::alertas
