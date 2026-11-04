@@ -1,6 +1,6 @@
 # Diagnóstico (GET /diagnostico)
 
-El endpoint `GET /diagnostico` permite realizar un autochequeo del estado general de Pulso. Su respuesta resume el estado de los componentes principales del sistema para facilitar tareas de monitoreo y diagnóstico.
+El endpoint `GET /diagnostico` permite realizar un autochequeo del estado general de ChuspaPulse. Su respuesta resume el estado de los componentes principales del sistema para facilitar tareas de monitoreo y diagnóstico.
 
 ## Estructura de la respuesta
 
