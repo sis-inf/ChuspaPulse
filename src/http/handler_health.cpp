@@ -12,7 +12,7 @@
 #include <unistd.h>
 #endif
 
-namespace pulso::http {
+namespace chuspapulse::http {
 
 std::string handleHealth(std::chrono::steady_clock::time_point start_time) {
 
@@ -33,11 +33,11 @@ std::string handleHealth(std::chrono::steady_clock::time_point start_time) {
     json << "{"
          << "\"status\":\"ok\","
          << "\"uptime_seconds\":" << uptime << ","
-         << "\"version\":\"" << pulso::APP_VERSION << "\","
+         << "\"version\":\"" << chuspapulse::APP_VERSION << "\","
          << "\"hostname\":\"" << hostname << "\""
          << "}";
 
     return json.str();
 }
 
-} // namespace pulso::http
+} // namespace chuspapulse::http
