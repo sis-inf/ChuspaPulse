@@ -8,6 +8,7 @@ y este proyecto sigue el versionado [SemVer](https://semver.org/lang/es/).
 ## [v0.1.0] - 2026-08-30
 
 ### Añadido
+- feat(formatters): tabular métricas en columnas con ancho fijo en formatter_text (#1427)
 - fix(http): activar endpoint GET /config (#833)
 - fix(collectors): instanciar collectors de procesos, loadavg, uptime y temperatura (#825)
 - fix(http): activar endpoint GET /alerts (#837)
@@ -27,10 +28,6 @@ y este proyecto sigue el versionado [SemVer](https://semver.org/lang/es/).
 ## [0.1.0] - 2026-04-22
 
 ### Añadido
-
-* Inicio del proyecto Pulso
-* Creación del repositorio
-*
 
 - Inicio del proyecto Pulso
 - Creación del repositorio
