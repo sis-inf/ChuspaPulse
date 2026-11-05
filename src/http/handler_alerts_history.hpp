@@ -4,7 +4,7 @@
 
 #include "../alertas/gestor_alertas.hpp"
 
-namespace pulso::http {
+namespace chuspapulse::http {
 
 /**
  * @brief Registra el endpoint GET /alerts/history.
@@ -16,6 +16,6 @@ namespace pulso::http {
  */
 void registrarAlertsHistory(
     httplib::Server& servidor,
-    const pulso::alertas::GestorAlertas& gestor);
+    const chuspapulse::alertas::GestorAlertas& gestor);
 
-} // namespace pulso::http
+} // namespace chuspapulse::http
