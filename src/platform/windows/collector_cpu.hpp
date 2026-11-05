@@ -7,12 +7,12 @@
 #include <string>
 #include <vector>
 
-namespace ChuspaPulse::platform::windows_platform {
+namespace chuspapulse::platform::windows_platform {
 
 /**
  * @brief Collector de uso de CPU para plataforma Windows.
  *
- * Implementa ChuspaPulse::collectors::ICollector usando la API de Windows
+ * Implementa chuspapulse::collectors::ICollector usando la API de Windows
  * GetSystemTimes() para calcular el porcentaje de uso de CPU con dos
  * lecturas separadas por un breve intervalo, replicando la semantica
  * de CollectorCPU (Linux).
@@ -27,7 +27,7 @@ namespace ChuspaPulse::platform::windows_platform {
  * Solo se compila en Windows (_WIN32 definido). En Linux/macOS este
  * archivo queda completamente excluido de la compilacion.
  */
-class CollectorCPUWindows : public ChuspaPulse::collectors::ICollector {
+class CollectorCPUWindows : public chuspapulse::collectors::ICollector {
 public:
     /**
      * @brief Retorna el nombre identificador del collector.
@@ -41,12 +41,12 @@ public:
      *        con un breve intervalo (120 ms) entre lecturas.
      *
      * @return Vector con las metricas cpu.usage y cpu.cores.
-     * @throws ChuspaPulse::collectors::ErrorRecoleccion si GetSystemTimes
+     * @throws chuspapulse::collectors::ErrorRecoleccion si GetSystemTimes
      *         falla (no deberia ocurrir en condiciones normales).
      */
-    std::vector<ChuspaPulse::core::Metrica> recolectar() override;
+    std::vector<chuspapulse::core::Metrica> recolectar() override;
 };
 
-} // namespace ChuspaPulse::platform::windows_platform
+} // namespace chuspapulse::platform::windows_platform
 
 #endif // _WIN32
