@@ -185,6 +185,26 @@ Config cargar(const std::string& ruta)
             );
         }
 
+        // Validar umbrales (porcentajes entre 0.0 y 100.0)
+        if (!(cfg.umbrales.cpu_max >= 0.0 &&
+              cfg.umbrales.cpu_max <= 100.0)) {
+
+            throw std::invalid_argument(
+                "Valor inválido para cpu_max: " +
+                std::to_string(cfg.umbrales.cpu_max) +
+                " (debe estar entre 0.0 y 100.0)"
+            );
+        }
+
+        if (!(cfg.umbrales.ram_max >= 0.0 &&
+              cfg.umbrales.ram_max <= 100.0)) {
+
+            throw std::invalid_argument(
+                "Valor inválido para ram_max: " +
+                std::to_string(cfg.umbrales.ram_max) +
+                " (debe estar entre 0.0 y 100.0)"
+            );
+        }
 
         // Validar intervalo
         if (cfg.sampler.intervalo_segundos <= 0) {
