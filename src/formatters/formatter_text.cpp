@@ -56,16 +56,25 @@ std::string FormatterText::formatear(
         }
     }
 
-    // Formatear línea: timestamp | CPU: 45.3% | RAM: 2.1 GB/8.0 GB | Disco: 120.0 GB/500.0 GB | Red: 1.2 KB/s/800.0 B/s
+    // Preparar valores formateados como strings para aplicarles ancho fijo
+    std::ostringstream cpu_oss;
+    cpu_oss << std::fixed << std::setprecision(1) << cpu_pct << "%";
+
+    std::string ram_str = chuspapulse::utils::formatearBytesHumanos(ram_usado_bytes) + "/" +
+                          chuspapulse::utils::formatearBytesHumanos(ram_total_bytes);
+    std::string disco_str = chuspapulse::utils::formatearBytesHumanos(disco_usado_bytes) + "/" +
+                            chuspapulse::utils::formatearBytesHumanos(disco_total_bytes);
+    std::string red_str = chuspapulse::utils::formatearBytesHumanos(net_rx_bytes) + "/s/" +
+                          chuspapulse::utils::formatearBytesHumanos(net_tx_bytes) + "/s";
+
+    // Formatear línea tabulada con anchos fijos usando std::setw y std::left
     std::ostringstream oss;
-    oss << formatearTimestamp(snapshot.timestamp)
-        << " | CPU: " << std::fixed << std::setprecision(1) << cpu_pct << "%"
-        << " | RAM: " << chuspapulse::utils::formatearBytesHumanos(ram_usado_bytes)
-        << "/" << chuspapulse::utils::formatearBytesHumanos(ram_total_bytes)
-        << " | Disco: " << chuspapulse::utils::formatearBytesHumanos(disco_usado_bytes)
-        << "/" << chuspapulse::utils::formatearBytesHumanos(disco_total_bytes)
-        << " | Red: " << chuspapulse::utils::formatearBytesHumanos(net_rx_bytes) << "/s"
-        << "/" << chuspapulse::utils::formatearBytesHumanos(net_tx_bytes) << "/s";
+    oss << std::left
+        << std::setw(20) << formatearTimestamp(snapshot.timestamp)
+        << " | " << "CPU: " << std::setw(6) << cpu_oss.str()
+        << " | " << "RAM: " << std::setw(18) << ram_str
+        << " | " << "Disco: " << std::setw(22) << disco_str
+        << " | " << "Red: " << red_str;
 
     return oss.str();
 }
