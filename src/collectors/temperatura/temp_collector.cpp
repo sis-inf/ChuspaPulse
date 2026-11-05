@@ -14,6 +14,10 @@ constexpr const char* kZoneName = "thermal_zone0";
 
 constexpr float kMilliCelsiusDivisor = 1000.0f;
 
+// Rango fisico plausible para una lectura de temperatura (grados C).
+constexpr float kMinCelsiusPlausible = 0.0f;
+constexpr float kMaxCelsiusPlausible = 150.0f;
+
 } // namespace
 
 TempInfo getTempInfo()
@@ -37,8 +41,20 @@ TempInfo getTempInfo()
         };
     }
 
+    const float celsius =
+        static_cast<float>(raw_millicelsius) / kMilliCelsiusDivisor;
+
+    // Descartar lecturas fuera del rango fisico plausible.
+    if (celsius < kMinCelsiusPlausible || celsius > kMaxCelsiusPlausible) {
+        return TempInfo{
+            /* cpu_celsius */ 0.0f,
+            /* zona        */ kZoneName,
+            /* disponible  */ false
+        };
+    }
+
     return TempInfo{
-        /* cpu_celsius */ static_cast<float>(raw_millicelsius) / kMilliCelsiusDivisor,
+        /* cpu_celsius */ celsius,
         /* zona        */ kZoneName,
         /* disponible  */ true
     };
