@@ -5,7 +5,7 @@
 #include <string>
 #include <ctime>
 
-namespace ChuspaPulse::platform::linux_platform {
+namespace chuspapulse::platform::linux_platform {
 
 std::string CollectorNetworkLinux::nombre() const {
     return "network";
@@ -18,7 +18,7 @@ std::string CollectorNetworkLinux::nombre() const {
  * Retorna métricas acumuladas de recepción y transmisión expresadas
  * en bytes.
  */
-std::vector<ChuspaPulse::core::Metrica> CollectorNetworkLinux::recolectar() {
+std::vector<chuspapulse::core::Metrica> CollectorNetworkLinux::recolectar() {
     // /proc/net/dev tiene dos líneas de cabecera antes de los datos:
     //
     //   Inter-|   Receive                                                |  Transmit
@@ -35,7 +35,7 @@ std::vector<ChuspaPulse::core::Metrica> CollectorNetworkLinux::recolectar() {
 
     std::ifstream file("/proc/net/dev");
     if (!file.is_open()) {
-        throw ChuspaPulse::collectors::ErrorRecoleccion(
+        throw chuspapulse::collectors::ErrorRecoleccion(
             "No se pudo abrir /proc/net/dev"
         );
     }
@@ -44,7 +44,7 @@ std::vector<ChuspaPulse::core::Metrica> CollectorNetworkLinux::recolectar() {
     std::string linea;
     for (int i = 0; i < 2; ++i) {
         if (!std::getline(file, linea)) {
-            throw ChuspaPulse::collectors::ErrorRecoleccion(
+            throw chuspapulse::collectors::ErrorRecoleccion(
                 "Formato inesperado en /proc/net/dev: cabecera incompleta"
             );
         }
@@ -85,7 +85,7 @@ std::vector<ChuspaPulse::core::Metrica> CollectorNetworkLinux::recolectar() {
 
         // Columna 0: rx_bytes
         if (!(iss >> rx_bytes)) {
-            throw ChuspaPulse::collectors::ErrorRecoleccion(
+            throw chuspapulse::collectors::ErrorRecoleccion(
                 "Formato inesperado en /proc/net/dev: no se pudo leer rx_bytes"
                 " para la interfaz " + iface
             );
@@ -95,7 +95,7 @@ std::vector<ChuspaPulse::core::Metrica> CollectorNetworkLinux::recolectar() {
         //               rx_frame, rx_compressed, rx_multicast
         for (int i = 0; i < 7; ++i) {
             if (!(iss >> campo)) {
-                throw ChuspaPulse::collectors::ErrorRecoleccion(
+                throw chuspapulse::collectors::ErrorRecoleccion(
                     "Formato inesperado en /proc/net/dev: campos RX incompletos"
                     " para la interfaz " + iface
                 );
@@ -105,7 +105,7 @@ std::vector<ChuspaPulse::core::Metrica> CollectorNetworkLinux::recolectar() {
         // Columna 8: tx_bytes
         long long tx_bytes = 0;
         if (!(iss >> tx_bytes)) {
-            throw ChuspaPulse::collectors::ErrorRecoleccion(
+            throw chuspapulse::collectors::ErrorRecoleccion(
                 "Formato inesperado en /proc/net/dev: no se pudo leer tx_bytes"
                 " para la interfaz " + iface
             );
@@ -117,7 +117,7 @@ std::vector<ChuspaPulse::core::Metrica> CollectorNetworkLinux::recolectar() {
     }
 
     if (!hay_interfaces) {
-        throw ChuspaPulse::collectors::ErrorRecoleccion(
+        throw chuspapulse::collectors::ErrorRecoleccion(
             "No se encontraron interfaces de red activas en /proc/net/dev"
         );
     }
@@ -131,4 +131,4 @@ std::vector<ChuspaPulse::core::Metrica> CollectorNetworkLinux::recolectar() {
     };
 }
 
-} // namespace ChuspaPulse::platform::linux_platform
+} // namespace chuspapulse::platform::linux_platform
