@@ -35,11 +35,11 @@ El downsampling es el proceso de reducir la resolucion de datos antiguos reempla
 - Mantener datos completos los ultimos 90 dias (retencion)
 - Compactar datos mas antiguos a resolucion horaria (downsampling)
 
-## Configuracion en pulso.toml
+## Configuracion en ChuspaPulse.toml
 
     [storage]
     habilitado = true
-    ruta = "/var/lib/pulso/datos.db"
+    ruta = "/var/lib/ChuspaPulse/datos.db"
     retencion_dias = 90
     downsampling = true
     downsampling_intervalo = "1h"
@@ -53,7 +53,7 @@ Con esta configuracion:
 
 Los datos compactados se almacenan en la tabla snapshots_horarios de la base de datos SQLite. Para consultarlos:
 
-    sqlite3 /var/lib/pulso/datos.db
+    sqlite3 /var/lib/ChuspaPulse/datos.db
 
 Consultar promedios horarios de CPU del ultimo mes:
 
@@ -78,12 +78,12 @@ Consultar el maximo de CPU por dia:
 
 Verificar el tamano de la base de datos antes y despues:
 
-    du -sh /var/lib/pulso/datos.db
+    du -sh /var/lib/ChuspaPulse/datos.db
 
 Contar snapshots originales vs compactados:
 
-    sqlite3 /var/lib/pulso/datos.db "SELECT COUNT(*) FROM snapshots;"
-    sqlite3 /var/lib/pulso/datos.db "SELECT COUNT(*) FROM snapshots_horarios;"
+    sqlite3 /var/lib/ChuspaPulse/datos.db "SELECT COUNT(*) FROM snapshots;"
+    sqlite3 /var/lib/ChuspaPulse/datos.db "SELECT COUNT(*) FROM snapshots_horarios;"
 
 ## Advertencias
 
@@ -91,4 +91,4 @@ Contar snapshots originales vs compactados:
 - No desactivar el downsampling mientras haya datos en snapshots_horarios ya que podria generar inconsistencias
 - Hacer un respaldo de la base de datos antes de activar el downsampling por primera vez:
 
-    cp /var/lib/pulso/datos.db /var/lib/pulso/datos.db.bak
+    cp /var/lib/ChuspaPulse/datos.db /var/lib/ChuspaPulse/datos.db.bak
