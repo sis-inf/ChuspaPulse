@@ -18,7 +18,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Inicializar CodeQL
-        uses: github/codeql-action/init@v4.37.3
+        uses: github/codeql-action/init@v4.39.1
         with:
           languages: cpp # CAMBIO 2: Cambiado de javascript-typescript a cpp
           # build-mode: manual # Descomenta esto si la compilación automática falla
@@ -31,7 +31,7 @@ jobs:
           cmake --build build --parallel
 
       - name: Análisis de CodeQL
-        uses: github/codeql-action/analyze@v4.37.3
+        uses: github/codeql-action/analyze@v4.39.1
 
       - name: Escaneo de dependencias con OSV-Scanner
         uses: google/osv-scanner-action/scan@v1
