@@ -4,7 +4,7 @@
 #include <httplib.h>
 #include <string>
 
-namespace ChuspaPulse {
+namespace chuspapulse {
 namespace http {
 
     /**
@@ -13,6 +13,6 @@ namespace http {
     std::string handleVersion();
 
 } // namespace http
-} // namespace ChuspaPulse
+} // namespace chuspapulse
 
 #endif 
