@@ -269,7 +269,7 @@ int main(int argc, char* argv[]) {
     }
 
     // --config se maneja aqui (manteniendo logica original)
-    std::string config_path = "pulso.toml";
+    std::string config_path = "chuspapulse.toml";
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
         if (arg == "--config" && i + 1 < argc) {
@@ -380,7 +380,7 @@ int main(int argc, char* argv[]) {
     chuspapulse::storage::inicializarEsquema(storage);
 
 
-    // Gestor de alertas con umbrales leídos desde pulso.toml
+    // Gestor de alertas con umbrales leídos desde chuspapulse.toml
         // Conexión propia a la misma base de datos para guardar y consultar alertas
     SQLite::Database alertasDb(
         cfg.storage.ruta_db,
