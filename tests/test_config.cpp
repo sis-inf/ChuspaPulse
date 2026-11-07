@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include "config/config.hpp"
 
-namespace pulso::config {
+namespace chuspapulse::config {
 
 TEST(ConfigSamplerTest, DefaultValues) {
     Config config;
@@ -9,7 +9,7 @@ TEST(ConfigSamplerTest, DefaultValues) {
     ASSERT_EQ(config.sampler.intervalo_segundos, 10);
     ASSERT_EQ(config.servidor.host,              "0.0.0.0");
     ASSERT_EQ(config.servidor.puerto,            8080);
-    ASSERT_EQ(config.storage.ruta_db,            "pulso.db");
+    ASSERT_EQ(config.storage.ruta_db,            "chuspapulse.db");
     ASSERT_EQ(config.nivel_log,                  "info");
 }
 
@@ -36,4 +36,4 @@ TEST(ErrorConfigTest, WhatPreservesMessage) {
     EXPECT_STREQ(error.what(), "error de prueba");
 }
 
-} // namespace pulso::config
+} // namespace chuspapulse::config
