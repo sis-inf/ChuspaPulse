@@ -7,7 +7,7 @@
 #include <sstream>
 #include <ctime>
 
-namespace pulso::http {
+namespace chuspapulse::http {
 
 void HandleMetrics(
   httplib::Server& servidor,
@@ -17,7 +17,7 @@ void HandleMetrics(
     const httplib::Request& req,
     httplib::Response&      res)
   {
-    auto& logger = pulso::utils::logging::Logger::instancia();
+    auto& logger = chuspapulse::utils::logging::Logger::instancia();
 
     auto metrics = system_monitor.getMetrics();
 
@@ -30,7 +30,7 @@ void HandleMetrics(
     int status_code = 0;
 
     if (!metrics.empty()) {
-      pulso::formatters::FormatterJSON formatter;
+      chuspapulse::formatters::FormatterJSON formatter;
 
       std::string body         = formatter.formatear(metrics);
       std::string content_type = formatter.contentType();
@@ -54,4 +54,4 @@ void HandleMetrics(
   });
 }
 
-} // namespace pulso::http
+} // namespace chuspapulse::http
