@@ -5,7 +5,7 @@
 #include "../../collectors/error_recoleccion.hpp"
 #include "../../core/types.hpp"
 
-namespace pulso::platform::linux_platform {
+namespace chuspapulse::platform::linux_platform {
 
 /**
  * @brief Implementación Linux del collector de métricas de red.
@@ -30,7 +30,7 @@ namespace pulso::platform::linux_platform {
  * @throws ErrorRecoleccion si /proc/net/dev no puede leerse
  *         o tiene un formato inválido.
  */
-class CollectorNetworkLinux : public pulso::collectors::ICollector {
+class CollectorNetworkLinux : public chuspapulse::collectors::ICollector {
 public:
     /// @brief Retorna el nombre identificador de este collector.
     /// @return "network"
@@ -38,9 +38,9 @@ public:
 
     /// @brief Recolecta las métricas de red del sistema.
     /// @return Vector con network.rx_bytes y network.tx_bytes en bytes.
-    /// @throws pulso::collectors::ErrorRecoleccion si /proc/net/dev no puede abrirse
+    /// @throws chuspapulse::collectors::ErrorRecoleccion si /proc/net/dev no puede abrirse
     ///         o si el formato del archivo es inesperado.
-    std::vector<pulso::core::Metrica> recolectar() override;
+    std::vector<chuspapulse::core::Metrica> recolectar() override;
 };
 
-} // namespace pulso::platform::linux_platform
+} // namespace chuspapulse::platform::linux_platform
