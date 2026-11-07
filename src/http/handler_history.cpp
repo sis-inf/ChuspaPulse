@@ -4,12 +4,12 @@
 #include <ctime>
 #include <string>
 
-namespace pulso::http {
+namespace chuspapulse::http {
 
 void registrarHistory(
     httplib::Server& servidor,
-    const pulso::storage::Storage& storage,
-    const pulso::formatters::IFormatter& formatter)
+    const chuspapulse::storage::Storage& storage,
+    const chuspapulse::formatters::IFormatter& formatter)
 {
     servidor.Get("/metrics/history",
         [&](const httplib::Request& req, httplib::Response& res)
@@ -82,4 +82,4 @@ void registrarHistory(
     });
 }
 
-} // namespace pulso::http
+} // namespace chuspapulse::http
