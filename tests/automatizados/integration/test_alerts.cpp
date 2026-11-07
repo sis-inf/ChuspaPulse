@@ -13,11 +13,11 @@ class AlertsEndpointTest : public ::testing::Test {
 protected:
     void SetUp() override {
         // Regla de prueba: alerta si cpu > 80
-        gestor_.addAlerta(pulso::alertas::AlertaUmbral("cpu", 80.0f, '>'));
+        gestor_.addAlerta(chuspapulse::alertas::AlertaUmbral("cpu", 80.0f, '>'));
 
         server_.Get("/alerts", [this](const httplib::Request&, httplib::Response& res) {
             res.status = 200;
-            res.set_content(pulso::http::handleAlerts(gestor_, snapshot_),
+            res.set_content(chuspapulse::http::handleAlerts(gestor_, snapshot_),
                             "application/json");
         });
 
@@ -31,15 +31,15 @@ protected:
         if (thread_.joinable()) thread_.join();
     }
 
-    pulso::alertas::GestorAlertas gestor_;
-    pulso::MetricSnapshot snapshot_;
+    chuspapulse::alertas::GestorAlertas gestor_;
+    chuspapulse::MetricSnapshot snapshot_;
     httplib::Server server_;
     std::thread thread_;
     int port_ = 0;
 };
 
 TEST_F(AlertsEndpointTest, SinAlertasActivasDevuelveListaVacia) {
-    snapshot_ = pulso::MetricSnapshot(10.0, 10.0, 10.0, 1.0, 1.0);  // cpu bajo el umbral
+    snapshot_ = chuspapulse::MetricSnapshot(10.0, 10.0, 10.0, 1.0, 1.0);  // cpu bajo el umbral
 
     httplib::Client cli("127.0.0.1", port_);
     auto res = cli.Get("/alerts");
@@ -50,7 +50,7 @@ TEST_F(AlertsEndpointTest, SinAlertasActivasDevuelveListaVacia) {
 }
 
 TEST_F(AlertsEndpointTest, ConAlertasActivasIncluyeLaAlerta) {
-    snapshot_ = pulso::MetricSnapshot(95.0, 10.0, 10.0, 1.0, 1.0);  // cpu sobre el umbral
+    snapshot_ = chuspapulse::MetricSnapshot(95.0, 10.0, 10.0, 1.0, 1.0);  // cpu sobre el umbral
 
     httplib::Client cli("127.0.0.1", port_);
     auto res = cli.Get("/alerts");
