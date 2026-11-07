@@ -4,13 +4,34 @@ Este documento describe los pasos básicos para instalar las herramientas necesa
 
 ## 1. Instalar dependencias
 
-En distribuciones basadas en Debian o Ubuntu, ejecutar:
+El proyecto requiere un compilador de C++17, CMake 3.16 o superior, Git y los archivos de desarrollo de SQLite3.
+
+Git es necesario porque CMake descarga varias dependencias con FetchContent durante la configuración, por lo que la primera compilación requiere conexión a internet.
+
+### Distribuciones basadas en Debian (Debian, Ubuntu, Linux Mint)
 
 ```bash
-sudo apt install g++ cmake
+sudo apt update
+sudo apt install build-essential cmake git libsqlite3-dev
 ```
 
-`g++` permite compilar código C++, mientras que `cmake` permite configurar el proceso de compilación del proyecto.
+### Distribuciones basadas en RHEL (Fedora, CentOS Stream, Rocky Linux, AlmaLinux)
+
+```bash
+sudo dnf install gcc-c++ cmake git sqlite-devel
+```
+
+En versiones antiguas de CentOS o RHEL se puede usar `yum` en lugar de `dnf`.
+
+Las siguientes dependencias no se instalan manualmente: CMake las descarga automáticamente al configurar el proyecto.
+
+| Dependencia | Uso |
+|---|---|
+| cpp-httplib | servidor HTTP de métricas |
+| nlohmann/json | serialización JSON |
+| toml++ | lectura del archivo de configuración |
+| SQLiteCpp | almacenamiento de métricas |
+| GoogleTest | pruebas automatizadas |
 
 ## 2. Configurar el proyecto
 
@@ -22,7 +43,53 @@ cmake -B build
 
 Este comando crea la carpeta `build` y genera los archivos necesarios para la compilación.
 
-## 3. Nota sobre permisos en `/proc`
+Para compilar también la suite de pruebas, agregar la opción `BUILD_TESTS`:
+
+```bash
+cmake -B build -DBUILD_TESTS=ON
+```
+
+Esta opción está desactivada por defecto. Al activarla, CMake descarga GoogleTest y agrega los ejecutables de prueba.
+
+## 3. Compilar
+
+```bash
+cmake --build build
+```
+
+El binario resultante queda en `build/bin/`.
+
+## 4. Ejecutar las pruebas con ctest
+
+Las pruebas se ejecutan con `ctest` una vez compilado el proyecto con `-DBUILD_TESTS=ON`:
+
+```bash
+ctest --test-dir build --output-on-failure
+```
+
+La opción `--output-on-failure` muestra la salida completa de las pruebas que fallan.
+
+Si la versión instalada de CMake es anterior a la 3.20 y no reconoce `--test-dir`, ejecutar desde la carpeta de compilación:
+
+```bash
+cd build
+ctest --output-on-failure
+```
+
+Otras opciones útiles:
+
+```bash
+# Listar las pruebas sin ejecutarlas
+ctest --test-dir build -N
+
+# Ejecutar una prueba específica por nombre
+ctest --test-dir build -R test_formatter_json
+
+# Ejecutar en paralelo con 4 procesos
+ctest --test-dir build -j4
+```
+
+## 5. Nota sobre permisos en `/proc`
 
 En Linux, algunos programas pueden acceder a información del sistema mediante `/proc`.
 
