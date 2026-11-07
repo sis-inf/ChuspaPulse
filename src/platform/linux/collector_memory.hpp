@@ -5,7 +5,7 @@
 #include "../../collectors/error_recoleccion.hpp"
 #include "../../core/types.hpp"
 
-namespace pulso::platform::linux_platform {
+namespace chuspapulse::platform::linux_platform {
 
 /**
  * @brief Collector que mide el uso de memoria RAM desde /proc/meminfo.
@@ -27,7 +27,7 @@ namespace pulso::platform::linux_platform {
  * La invariante memory.used_bytes <= memory.total_bytes se mantiene siempre
  * porque MemAvailable <= MemTotal en cualquier sistema Linux.
  */
-class CollectorMemoryLinux : public pulso::collectors::ICollector {
+class CollectorMemoryLinux : public chuspapulse::collectors::ICollector {
 public:
     /// @brief Retorna el nombre identificador de este collector.
     /// @return "memory"
@@ -36,9 +36,9 @@ public:
     /// @brief Recolecta las métricas de uso de memoria RAM del sistema.
     /// @return Vector con memory.total_bytes, memory.used_bytes y
     ///         memory.available_bytes, todos en bytes.
-    /// @throws pulso::collectors::ErrorRecoleccion si /proc/meminfo no puede
+    /// @throws chuspapulse::collectors::ErrorRecoleccion si /proc/meminfo no puede
     ///         abrirse o si los campos requeridos no están presentes.
-    std::vector<pulso::core::Metrica> recolectar() override;
+    std::vector<chuspapulse::core::Metrica> recolectar() override;
 };
 
-} // namespace pulso::platform::linux_platform
+} // namespace chuspapulse::platform::linux_platform
