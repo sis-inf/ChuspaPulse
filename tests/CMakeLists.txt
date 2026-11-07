@@ -1,5 +1,5 @@
 enable_testing()
-message(STATUS "Tests are enabled (PULSO_BUILD_TESTS=ON)")
+message(STATUS "Tests are enabled (CHUSPAPULSE_BUILD_TESTS=ON)")
 find_package(GTest REQUIRED)
 include(GoogleTest)
 
