@@ -8,7 +8,7 @@
 #include "alertas/gestor_alertas.hpp"
 #include "core/MetricSnapshot.hpp"
 
-namespace pulso::http {
+namespace chuspapulse::http {
 
 namespace {
 
@@ -36,8 +36,8 @@ std::string formatearTimestamp(std::chrono::system_clock::time_point tp) {
 
 } // namespace
 
-std::string handleAlerts(const pulso::alertas::GestorAlertas& gestor,
-                         const pulso::MetricSnapshot& snap) {
+std::string handleAlerts(const chuspapulse::alertas::GestorAlertas& gestor,
+                         const chuspapulse::MetricSnapshot& snap) {
     const std::string timestamp = formatearTimestamp(snap.timestamp);
 
     std::ostringstream json;
@@ -73,4 +73,4 @@ std::string handleAlerts(const pulso::alertas::GestorAlertas& gestor,
     return json.str();
 }
 
-} // namespace pulso::http
+} // namespace chuspapulse::http
