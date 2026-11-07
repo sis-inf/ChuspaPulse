@@ -1,28 +1,28 @@
-# Integración de Pulso con Grafana
+# Integración de ChuspaPulse con Grafana
 
 ## Introducción
 
-Pulso permite exponer métricas en un formato compatible con Prometheus, lo que permite utilizar herramientas de visualización como Grafana para crear paneles de monitoreo.
+ChuspaPulse permite exponer métricas en un formato compatible con Prometheus, lo que permite utilizar herramientas de visualización como Grafana para crear paneles de monitoreo.
 
 La integración utiliza el siguiente flujo:
 
 ```text
-Pulso → Prometheus → Grafana
+ChuspaPulse → Prometheus → Grafana
 ```
 
-Pulso expone sus métricas mediante un endpoint HTTP compatible con Prometheus. Prometheus recopila estas métricas y Grafana las utiliza como fuente de datos para generar visualizaciones.
+ChuspaPulse expone sus métricas mediante un endpoint HTTP compatible con Prometheus. Prometheus recopila estas métricas y Grafana las utiliza como fuente de datos para generar visualizaciones.
 
 ## Requisitos
 
 Antes de configurar Grafana se necesita:
 
-- Una instancia de Pulso ejecutándose.
+- Una instancia de ChuspaPulse ejecutándose.
 - Prometheus instalado y configurado.
 - Una instancia de Grafana instalada.
 
 ## Configuración de Prometheus
 
-Pulso expone sus métricas mediante el endpoint:
+ChuspaPulse expone sus métricas mediante el endpoint:
 
 ```text
 /metrics/prometheus
@@ -40,11 +40,11 @@ El proyecto incluye un ejemplo de configuración para Prometheus ubicado en:
 examples/prometheus.yml
 ```
 
-Este archivo contiene la configuración necesaria para recopilar las métricas de Pulso:
+Este archivo contiene la configuración necesaria para recopilar las métricas de ChuspaPulse:
 
 ```yaml
 scrape_configs:
-  - job_name: pulso
+  - job_name: ChuspaPulse
     metrics_path: /metrics/prometheus
     static_configs:
       - targets:
@@ -61,7 +61,7 @@ docker run -p 9090:9090 \
 
 ## Configurar Prometheus como fuente de datos en Grafana
 
-Para conectar Grafana con las métricas generadas por Pulso:
+Para conectar Grafana con las métricas generadas por ChuspaPulse:
 
 1. Ingresar a la interfaz web de Grafana.
 2. Acceder a la sección **Data Sources**.
@@ -74,16 +74,16 @@ http://localhost:9090
 
 5. Guardar la configuración y verificar la conexión.
 
-Después de completar estos pasos, Grafana consulta las métricas almacenadas por Prometheus, que previamente fueron recopiladas desde Pulso.
+Después de completar estos pasos, Grafana consulta las métricas almacenadas por Prometheus, que previamente fueron recopiladas desde ChuspaPulse.
 
 ## Consultas PromQL de ejemplo
 
 ### Uso de CPU
 
-Muestra el valor actual del uso de CPU reportado por Pulso:
+Muestra el valor actual del uso de CPU reportado por ChuspaPulse:
 
 ```promql
-pulso_cpu_usage
+ChuspaPulse_cpu_usage
 ```
 
 ### Uso de memoria RAM
@@ -91,26 +91,26 @@ pulso_cpu_usage
 Muestra el uso actual de memoria RAM:
 
 ```promql
-pulso_memory_usage
+ChuspaPulse_memory_usage
 ```
 
 ### Tráfico recibido
 
-Muestra el tráfico recibido medido por Pulso:
+Muestra el tráfico recibido medido por ChuspaPulse:
 
 ```promql
-pulso_rx_bytes
+ChuspaPulse_rx_bytes
 ```
 
 ## Métricas disponibles
 
-Pulso exporta las siguientes métricas compatibles con Prometheus:
+ChuspaPulse exporta las siguientes métricas compatibles con Prometheus:
 
 | Métrica | Descripción |
 |---------|-------------|
-| `pulso_cpu_usage` | Uso de CPU |
-| `pulso_memory_usage` | Uso de memoria RAM |
-| `pulso_disk_usage` | Uso de disco |
-| `pulso_rx_bytes` | Tráfico recibido |
-| `pulso_tx_bytes` | Tráfico enviado |
+| `ChuspaPulse_cpu_usage` | Uso de CPU |
+| `ChuspaPulse_memory_usage` | Uso de memoria RAM |
+| `ChuspaPulse_disk_usage` | Uso de disco |
+| `ChuspaPulse_rx_bytes` | Tráfico recibido |
+| `ChuspaPulse_tx_bytes` | Tráfico enviado |
 
