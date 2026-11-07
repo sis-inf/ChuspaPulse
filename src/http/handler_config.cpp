@@ -4,7 +4,7 @@
 #include <sstream>
 #include <string>
 
-namespace pulso::http {
+namespace chuspapulse::http {
 
 /**
  * @brief Escapa caracteres especiales JSON en un string.
@@ -32,10 +32,10 @@ static std::string jsonEscape(const std::string& s) {
  * Convierte `sampler.intervalo_segundos` a milisegundos multiplicando por
  * 1000, ya que la issue especifica el campo como `interval_ms`.
  *
- * @param config  Configuración activa de la instancia Pulso.
+ * @param config  Configuración activa de la instancia ChuspaPulse.
  * @return        String JSON con los cinco campos públicos.
  */
-std::string handleConfig(const pulso::config::Config& config) {
+std::string handleConfig(const chuspapulse::config::Config& config) {
     const int interval_ms = config.sampler.intervalo_segundos * 1000;
 
     std::ostringstream json;
@@ -44,10 +44,10 @@ std::string handleConfig(const pulso::config::Config& config) {
          << "\"http_port\":"     << config.servidor.puerto                 << ","
          << "\"log_level\":\""   << jsonEscape(config.nivel_log)   << "\","
          << "\"output_format\":\"" << jsonEscape(config.output_format) << "\","
-         << "\"version\":\""     << pulso::APP_VERSION << "\""
+         << "\"version\":\""     << chuspapulse::APP_VERSION << "\""
          << "}";
 
     return json.str();
 }
 
-} // namespace pulso::http
+} // namespace chuspapulse::http
