@@ -4,13 +4,13 @@
 #include <string>
 #include <ctime>
 
-namespace ChuspaPulse::platform::linux_platform {
+namespace chuspapulse::platform::linux_platform {
 
 std::string CollectorMemoryLinux::nombre() const {
     return "memory";
 }
 
-std::vector<ChuspaPulse::core::Metrica> CollectorMemoryLinux::recolectar() {
+std::vector<chuspapulse::core::Metrica> CollectorMemoryLinux::recolectar() {
     // /proc/meminfo tiene el formato:
     //   FieldName:   <valor> kB
     // Se leen línea por línea buscando MemTotal y MemAvailable.
@@ -18,7 +18,7 @@ std::vector<ChuspaPulse::core::Metrica> CollectorMemoryLinux::recolectar() {
 
     std::ifstream file("/proc/meminfo");
     if (!file.is_open()) {
-        throw ChuspaPulse::collectors::ErrorRecoleccion(
+        throw chuspapulse::collectors::ErrorRecoleccion(
             "No se pudo abrir /proc/meminfo"
         );
     }
@@ -45,12 +45,12 @@ std::vector<ChuspaPulse::core::Metrica> CollectorMemoryLinux::recolectar() {
     }
 
     if (memTotalKB < 0) {
-        throw ChuspaPulse::collectors::ErrorRecoleccion(
+        throw chuspapulse::collectors::ErrorRecoleccion(
             "No se encontró el campo MemTotal en /proc/meminfo"
         );
     }
     if (memAvailableKB < 0) {
-        throw ChuspaPulse::collectors::ErrorRecoleccion(
+        throw chuspapulse::collectors::ErrorRecoleccion(
             "No se encontró el campo MemAvailable en /proc/meminfo"
         );
     }
@@ -73,4 +73,4 @@ std::vector<ChuspaPulse::core::Metrica> CollectorMemoryLinux::recolectar() {
     };
 }
 
-} // namespace ChuspaPulse::platform::linux_platform
+} // namespace chuspapulse::platform::linux_platform
