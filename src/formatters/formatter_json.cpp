@@ -4,7 +4,7 @@
 
 using json = nlohmann::json;
 
-namespace pulso::formatters {
+namespace chuspapulse::formatters {
 
 std::string FormatterJSON::formato() const {
     return "json";
@@ -15,7 +15,7 @@ std::string FormatterJSON::contentType() const {
 }
 
 std::string FormatterJSON::formatear(
-    const pulso::core::Snapshot& snapshot
+    const chuspapulse::core::Snapshot& snapshot
 ) const {
 
     json resultado;
@@ -36,7 +36,7 @@ std::string FormatterJSON::formatear(
 }
 
 std::string FormatterJSON::formatearHistorial(
-    const std::vector<pulso::core::Snapshot>& snapshots
+    const std::vector<chuspapulse::core::Snapshot>& snapshots
 ) const {
 
     json resultado;
