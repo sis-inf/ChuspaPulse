@@ -9,7 +9,7 @@
 #include <cctype>
 #include <string>
 
-namespace pulso::collectors {
+namespace chuspapulse::collectors {
 
 // Estructura interna para leer /proc/stat
 struct CPUStat {
@@ -90,7 +90,7 @@ std::string CollectorCPU::nombre() const {
 }
 
 // Función principal
-std::vector<pulso::core::Metrica> CollectorCPU::recolectar() {
+std::vector<chuspapulse::core::Metrica> CollectorCPU::recolectar() {
     CPUStat a = leerCPU();
 
     std::this_thread::sleep_for(std::chrono::milliseconds(120));
@@ -104,9 +104,9 @@ std::vector<pulso::core::Metrica> CollectorCPU::recolectar() {
     if (usage > 100) usage = 100;
 
     return {
-        pulso::core::Metrica{"cpu.usage", usage, "porcentaje"},
-        pulso::core::Metrica{"cpu.cores", cores, "cantidad"}
+        chuspapulse::core::Metrica{"cpu.usage", usage, "porcentaje"},
+        chuspapulse::core::Metrica{"cpu.cores", cores, "cantidad"}
     };
 }
 
-} // namespace pulso::collectors
+} // namespace chuspapulse::collectors
