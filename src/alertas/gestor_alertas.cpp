@@ -2,10 +2,10 @@
 
 #include <chrono>
 
-namespace pulso::alertas {
+namespace chuspapulse::alertas {
 namespace {
 
-double valorDeMetrica(const std::string& metrica, const pulso::MetricSnapshot& snap) {
+double valorDeMetrica(const std::string& metrica, const chuspapulse::MetricSnapshot& snap) {
     if (metrica == "cpu" || metrica == "cpu.usage_pct") return snap.cpu;
     if (metrica == "ram") return snap.ram;
     if (metrica == "disk") return snap.disk;
@@ -26,7 +26,7 @@ void GestorAlertas::setCallback(std::function<void(const std::string&)> callback
     callback_ = callback;
 }
 
-void GestorAlertas::evaluar(const pulso::MetricSnapshot& snap) const {
+void GestorAlertas::evaluar(const chuspapulse::MetricSnapshot& snap) const {
     if (alertas_.empty()) {
         return;
     }
@@ -105,4 +105,4 @@ std::vector<RegistroAlerta> GestorAlertas::obtenerHistorial(
     return historial;
 }
 
-} // namespace pulso::alertas
+} // namespace chuspapulse::alertas
