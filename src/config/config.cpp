@@ -206,6 +206,16 @@ Config cargar(const std::string& ruta)
             );
         }
 
+        if (!(cfg.umbrales.disco_max >= 0.0 &&
+              cfg.umbrales.disco_max <= 100.0)) {
+
+            throw std::invalid_argument(
+                "Valor inválido para disco_max: " +
+                std::to_string(cfg.umbrales.disco_max) +
+                " (debe estar entre 0.0 y 100.0)"
+            );
+        }
+
         // Validar intervalo
         if (cfg.sampler.intervalo_segundos <= 0) {
 
