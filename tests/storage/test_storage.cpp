@@ -2,8 +2,12 @@
 #include <filesystem>
 #include <cstdint>
 #include <string>
+#include <fstream>
+#include <set>
+#include <SQLiteCpp/SQLiteCpp.h>
 
 #include "storage/storage.hpp"
+#include "storage/schema.hpp"
 
 namespace fs = std::filesystem;
 
@@ -175,4 +179,105 @@ TEST_F(StorageTest, Test_SetMaxEntries_DescartaAntiguosFIFO) {
     EXPECT_EQ(resultado[0].timestamp, 300);
     EXPECT_EQ(resultado[1].timestamp, 400);
     EXPECT_EQ(resultado[2].timestamp, 500);
+}
+
+// 10. El esquema crea la tabla snapshots con las columnas que usan las consultas
+TEST_F(StorageTest, Test_Esquema_CreaColumnasDeSnapshots) {
+    SQLite::Database db(dbPath_, SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE);
+    chuspapulse::storage::inicializarEsquema(db);
+
+    std::set<std::string> columnas;
+    SQLite::Statement query(db, "PRAGMA table_info(snapshots);");
+    while (query.executeStep()) {
+        columnas.insert(query.getColumn(1).getString());
+    }
+
+    const std::set<std::string> esperadas = {
+        "timestamp", "cpu_usage", "cpu_cores",
+        "memory_total", "memory_used", "memory_available",
+        "disk_total", "disk_used", "disk_free",
+        "network_rx_bytes", "network_tx_bytes"
+    };
+    EXPECT_EQ(columnas, esperadas);
+}
+
+// 11. El esquema crea la tabla alerts y los índices por timestamp
+TEST_F(StorageTest, Test_Esquema_CreaTablaAlertasEIndices) {
+    SQLite::Database db(dbPath_, SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE);
+    chuspapulse::storage::inicializarEsquema(db);
+
+    EXPECT_TRUE(db.tableExists("alerts"));
+
+    std::set<std::string> indices;
+    SQLite::Statement query(db,
+        "SELECT name FROM sqlite_master WHERE type = 'index';");
+    while (query.executeStep()) {
+        indices.insert(query.getColumn(0).getString());
+    }
+    EXPECT_EQ(indices.count("idx_snapshots_timestamp"), 1u);
+    EXPECT_EQ(indices.count("idx_alerts_timestamp"), 1u);
+}
+
+// 12. Inicializar el esquema dos veces no falla ni borra datos
+TEST_F(StorageTest, Test_Esquema_EsIdempotente) {
+    SQLite::Database db(dbPath_, SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE);
+    chuspapulse::storage::inicializarEsquema(db);
+    db.exec("INSERT INTO snapshots (timestamp) VALUES (1);");
+
+    EXPECT_NO_THROW(chuspapulse::storage::inicializarEsquema(db));
+
+    SQLite::Statement query(db, "SELECT COUNT(*) FROM snapshots;");
+    ASSERT_TRUE(query.executeStep());
+    EXPECT_EQ(query.getColumn(0).getInt64(), 1);
+}
+
+// 13. Guardar y recuperar conserva el valor y la unidad de todas las métricas
+TEST_F(StorageTest, Test_GuardarYLeer_ConservaTodasLasMetricas) {
+    chuspapulse::storage::Storage storage(dbPath_);
+    auto original = crearSnapshot(1234);
+    storage.save(original);
+
+    auto resultado = storage.last();
+    ASSERT_TRUE(resultado.has_value());
+    ASSERT_EQ(resultado->metricas.size(), original.metricas.size());
+
+    for (const auto& esperada : original.metricas) {
+        bool encontrada = false;
+        for (const auto& m : resultado->metricas) {
+            if (m.nombre == esperada.nombre) {
+                EXPECT_DOUBLE_EQ(m.valor, esperada.valor) << m.nombre;
+                EXPECT_EQ(m.unidad, esperada.unidad) << m.nombre;
+                EXPECT_EQ(m.timestamp, 1234) << m.nombre;
+                encontrada = true;
+            }
+        }
+        EXPECT_TRUE(encontrada) << esperada.nombre;
+    }
+}
+
+// 14. exportToCSV escribe la cabecera y una fila por snapshot
+TEST_F(StorageTest, Test_ExportarCSV_UnaFilaPorSnapshot) {
+    const std::string csvPath = dbPath_ + ".csv";
+    {
+        chuspapulse::storage::Storage storage(dbPath_);
+        storage.save(crearSnapshot(100));
+        storage.save(crearSnapshot(200));
+        storage.exportToCSV(csvPath);
+    }
+
+    std::ifstream archivo(csvPath);
+    ASSERT_TRUE(archivo.is_open());
+
+    std::string linea;
+    std::getline(archivo, linea);
+    EXPECT_EQ(linea.rfind("timestamp,cpu_usage,", 0), 0u);
+
+    int filas = 0;
+    while (std::getline(archivo, linea)) {
+        if (!linea.empty()) ++filas;
+    }
+    EXPECT_EQ(filas, 2);
+
+    archivo.close();
+    fs::remove(csvPath);
 }
