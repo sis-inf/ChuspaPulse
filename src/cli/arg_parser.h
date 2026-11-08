@@ -15,6 +15,7 @@ struct CliOptions {
     chuspapulse::config::MonitorConfig monitor;
     bool once = false;
     std::string format = "json";
+    std::string config_path = "pulso.toml";
 };
 
 /**
@@ -25,6 +26,7 @@ struct CliOptions {
  * - --metrics <lista>
  * - --once
  * - --format json|csv|prometheus|text
+ * - --config <ruta>
  * - -h, --help
  * - --version
  *

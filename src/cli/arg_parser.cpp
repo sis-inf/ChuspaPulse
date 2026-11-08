@@ -4,8 +4,12 @@
 #include <sstream>
 #include <string>
 #include <cstdlib>
+#include <filesystem>
+#include <fstream>
 
 #define CHUSPAPULSE_VERSION "0.1.0"
+
+namespace chuspapulse::cli {
 
 /**
  * @brief Procesa la lista de metricas y actualiza la configuracion.
@@ -123,7 +127,31 @@ bool parse_arguments(int argc, char* argv[], chuspapulse::cli::CliOptions& optio
         }
         else if (arg == "--config")
         {
-            if (i + 1 < argc) ++i;
+            if (i + 1 >= argc || std::string(argv[i + 1]).rfind("-", 0) == 0)
+            {
+                std::cerr << "Error: falta ruta para --config\n";
+                std::cerr << "Uso: --config <ruta>\n";
+                return false;
+            }
+
+            std::string ruta = argv[++i];
+
+            if (!std::filesystem::is_regular_file(ruta))
+            {
+                std::cerr << "Error: el archivo de configuracion no existe: "
+                          << ruta << "\n";
+                return false;
+            }
+
+            std::ifstream archivo(ruta);
+            if (!archivo.is_open())
+            {
+                std::cerr << "Error: no se puede leer el archivo de configuracion: "
+                          << ruta << "\n";
+                return false;
+            }
+
+            options.config_path = ruta;
         }
         else
         {
@@ -136,3 +164,5 @@ bool parse_arguments(int argc, char* argv[], chuspapulse::cli::CliOptions& optio
 
     return true;
 }
+
+} // namespace chuspapulse::cli
