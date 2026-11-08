@@ -79,6 +79,22 @@ void aplicarEnv(Config& cfg)
 }
 
 
+/// Valida que output_format sea uno de los formatos soportados.
+void validarOutputFormat(const Config& cfg)
+{
+    if (cfg.output_format != "json" &&
+        cfg.output_format != "csv" &&
+        cfg.output_format != "prometheus" &&
+        cfg.output_format != "text") {
+
+        throw std::invalid_argument(
+            "Valor inválido para output_format: " +
+            cfg.output_format
+        );
+    }
+}
+
+
 /// Construye un Config a partir de un toml::table ya parseado.
 Config mapear(const toml::table& doc)
 {
@@ -141,6 +157,7 @@ Config cargar(const std::string& ruta)
     if (!std::filesystem::exists(ruta)) {
         Config cfg = porDefecto();
         aplicarEnv(cfg);
+        validarOutputFormat(cfg);
         return cfg;
     }
 
@@ -164,15 +181,7 @@ Config cargar(const std::string& ruta)
 
 
         // Validar output_format
-        if (cfg.output_format != "json" &&
-            cfg.output_format != "csv" &&
-            cfg.output_format != "prometheus") {
-
-            throw std::invalid_argument(
-                "Valor inválido para output_format: " +
-                cfg.output_format
-            );
-        }
+        validarOutputFormat(cfg);
 
 
         // Validar puerto

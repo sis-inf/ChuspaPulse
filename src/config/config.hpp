@@ -64,7 +64,7 @@ struct Config {
     UmbralesConfig umbrales;
     std::string    nivel_log = "info";
     /// Formato de salida de métricas.
-    /// Valores válidos: json, csv, prometheus
+    /// Valores válidos: json, csv, prometheus, text
     std::string    output_format = "json";
 };
 
