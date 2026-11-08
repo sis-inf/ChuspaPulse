@@ -18,13 +18,13 @@ cmake -B build -S .
 cmake --build build
 ```
 
-El ejecutable queda en `build/bin/chuspapulse`. Ejecútalo indicando el intervalo de lectura en milisegundos:
+El ejecutable queda en `build/bin/chuspapulse`. Para ejecutarlo:
 
 ```bash
-./build/bin/chuspapulse --interval 1000
+./build/bin/chuspapulse
 ```
 
-Por defecto, el servidor HTTP escucha en el puerto `8080`.
+Por defecto, el servidor HTTP escucha en el puerto `8080`. El intervalo entre muestreos y el resto de opciones se cambian con el archivo de configuración o con variables de entorno (ver más abajo).
 
 ### Producción
 
@@ -42,8 +42,8 @@ docker run -d -p 8080:8080 -v chuspapulse-data:/data chuspapulse
 Datos que conviene tener en cuenta:
 
 - **Puerto:** el valor por defecto es `8080`, definido en `config.servidor.puerto`.
-- **Base de datos:** las métricas se guardan en un archivo SQLite. Por defecto es `chuspapulse.db`, relativo al directorio de ejecución. En Docker queda en `/data`, que es el volumen.
-- **Configuración:** el archivo `pulso.toml` del repositorio muestra todas las opciones con sus valores por defecto.
+- **Base de datos:** las métricas se guardan en un archivo SQLite. Por defecto es `chuspapulse.db`, relativo al directorio de ejecución. Se puede cambiar con `CHUSPAPULSE_STORAGE_RUTA_DB` o con `storage.ruta_db` en el archivo de configuración; por ejemplo, para usar un archivo llamado `pulso.db` dentro del volumen: `CHUSPAPULSE_STORAGE_RUTA_DB=/data/pulso.db`. En Docker, el archivo se crea en `/data`, que es el volumen.
+- **Configuración:** el archivo `pulso.toml` del repositorio contiene los valores por defecto de las opciones.
 
 ## Variables de entorno
 
@@ -51,8 +51,8 @@ Datos que conviene tener en cuenta:
 |---|---|---|
 | `CHUSPAPULSE_SERVIDOR_HOST` | Dirección en la que escucha el servidor HTTP (por defecto `0.0.0.0`) | `127.0.0.1` |
 | `CHUSPAPULSE_SERVIDOR_PUERTO` | Puerto del servidor HTTP (por defecto `8080`) | `9090` |
-| `CHUSPAPULSE_SAMPLER_INTERVALO_SEGUNDOS` | Intervalo entre muestreos, en segundos (por defecto `10`) | `30` |
-| `CHUSPAPULSE_STORAGE_RUTA_DB` | Ruta del archivo SQLite (por defecto `chuspapulse.db`) | `/data/chuspapulse.db` |
+| `CHUSPAPULSE_SAMPLER_INTERVALO_SEGUNDOS` | Intervalo entre muestreos, en segundos; debe ser mayor que 0 (por defecto `10`) | `30` |
+| `CHUSPAPULSE_STORAGE_RUTA_DB` | Ruta del archivo SQLite (por defecto `chuspapulse.db`) | `/data/pulso.db` |
 | `CHUSPAPULSE_NIVEL_LOG` | Nivel de log: `debug`, `info`, `warn` o `error` (por defecto `info`) | `debug` |
 | `CHUSPAPULSE_OUTPUT_FORMAT` | Formato de salida de métricas: `json`, `csv` o `prometheus` (por defecto `json`) | `prometheus` |
 
@@ -72,4 +72,12 @@ El binario se genera en `build/bin/`, no en `build/`. Ejecuta `./build/bin/chusp
 
 ### Error "Valor inválido para puerto"
 
-El puerto debe estar entre 1 y 65535. Revisa el valor de `servidor.puerto` en el archivo de configuración o de `CHUSPAPULSE_SERVIDOR_PUERTO`.
+El puerto configurado no es válido. Revisa el valor de `servidor.puerto` en el archivo de configuración o de `CHUSPAPULSE_SERVIDOR_PUERTO` y usa un número de puerto válido, como `8080`.
+
+### Error "Valor inválido para intervalo_segundos"
+
+El intervalo del sampler debe ser mayor que 0. Revisa `sampler.intervalo_segundos` o `CHUSPAPULSE_SAMPLER_INTERVALO_SEGUNDOS`.
+
+### Error "Valor inválido para output_format"
+
+El formato de salida solo admite `json`, `csv` o `prometheus`. Revisa la clave `output_format` o `CHUSPAPULSE_OUTPUT_FORMAT`.
