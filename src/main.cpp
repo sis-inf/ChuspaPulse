@@ -481,19 +481,24 @@ server.Get("/config", handle_config);
     pulso::http::registrarAlertsHistory(server, gestorAlertas);
 
 
-    // Arrancar servidor HTTP en thread separado
-    std::thread http_thread([&]() {
+    // Arrancar servidor HTTP en thread separado.
+    // Host y puerto se copian porque cfg puede reemplazarse al recibir SIGHUP.
+    const std::string http_host = cfg.servidor.host;
+    const int http_puerto = cfg.servidor.puerto;
+    std::thread http_thread([&, http_host, http_puerto]() {
         log.info("Servidor HTTP escuchando en " +
-                 cfg.servidor.host + ":" +
-                 std::to_string(cfg.servidor.puerto));
-        server.listen(cfg.servidor.host.c_str(), cfg.servidor.puerto);
+                 http_host + ":" +
+                 std::to_string(http_puerto));
+        server.listen(http_host.c_str(), http_puerto);
     });
 
     // Esperar senal de shutdown (bucle infinito)
     while (isRunning.load()) {
         // SIGHUP: releer y validar la configuracion sin detener el proceso.
-        // La configuracion en uso no se modifica; los cambios validos se
-        // informan y se aplican al reiniciar.
+        // Si es valida pasa a ser la configuracion activa; el servidor, la
+        // base de datos, el sampler, el logger y los umbrales siguen con los
+        // valores del arranque hasta reiniciar. Si es invalida se conserva
+        // la activa.
         if (consume_reload_request()) {
             log.info("SIGHUP recibido: recargando configuracion desde " + config_path);
 
@@ -514,6 +519,8 @@ server.Get("/config", handle_config);
                     log.warn("Configuracion recargada y valida. Campos modificados "
                              "que requieren reiniciar el agente: " + lista);
                 }
+
+                cfg = recargada;
             } else {
                 log.error("No se pudo recargar la configuracion: " + error +
                           ". Se conserva la configuracion activa.");
