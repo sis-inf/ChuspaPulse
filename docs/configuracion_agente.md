@@ -152,6 +152,27 @@ $env:CHUSPAPULSE_NIVEL_LOG = "debug"
 
 Con el archivo anterior, estas variables hacen que el servidor escuche en el puerto 9090 y que el nivel de log sea `debug`, aunque el archivo diga `puerto = 8080` y `nivel_log = "info"`. El resto de las claves conserva el valor del archivo.
 
+## Recarga de la configuración con `SIGHUP`
+
+En plataformas con `SIGHUP` (Linux y macOS), el agente en modo daemon vuelve a leer y validar el archivo de configuración sin detenerse:
+
+```bash
+kill -HUP <pid>
+```
+
+Qué ocurre al recibir la señal:
+
+1. Se vuelve a leer el mismo archivo indicado al iniciar (`pulso.toml` o el de `--config`), con las variables de entorno aplicadas como en el arranque.
+2. Se aplican las mismas validaciones que al iniciar.
+3. Si la configuración es válida, reemplaza a la configuración activa y el log informa los campos que cambiaron, con un mensaje de nivel `WARN`. Si no cambió nada, se registra un mensaje `INFO`.
+4. Si la configuración es inválida (TOML mal formado, valor fuera de rango o archivo inexistente), se registra un mensaje `ERROR` con el motivo y el agente sigue funcionando con la configuración activa, sin cambios.
+
+Limitación actual: el servidor HTTP, la base de datos, el sampler, los umbrales de alerta y el nivel de log toman sus valores al iniciar. Aunque la configuración recargada pase a ser la activa, esos componentes siguen usando los valores del arranque hasta que se reinicia el agente.
+
+Como cada recarga se compara contra la configuración activa, un segundo `SIGHUP` sin nuevos cambios en el archivo informa "sin cambios", aunque los cambios de la recarga anterior todavía no se hayan aplicado por falta de reinicio.
+
+En plataformas sin `SIGHUP` (Windows) la señal no existe, no se registra ningún manejador y el inicio del agente no cambia.
+
 ## Notas y limitaciones conocidas
 
 - **Variable `CHUSPAPULSE_CONFIG`:** `docs/variables-entorno.md` la menciona para elegir la ruta del archivo, pero el código no la lee. La ruta solo se cambia con `--config`.

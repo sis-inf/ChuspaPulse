@@ -264,4 +264,51 @@ Config porDefecto()
     return Config{};
 }
 
+
+bool recargar(const std::string& ruta, Config& destino, std::string& error)
+{
+    if (!std::filesystem::exists(ruta)) {
+        error = "El archivo de configuración no existe: " + ruta;
+        return false;
+    }
+
+    try {
+        Config nueva = cargar(ruta);
+        destino = nueva;
+        return true;
+    }
+    catch (const std::exception& e) {
+        error = e.what();
+        return false;
+    }
+}
+
+
+std::vector<std::string> camposModificados(const Config& antes,
+                                           const Config& despues)
+{
+    std::vector<std::string> campos;
+
+    if (antes.servidor.host != despues.servidor.host)
+        campos.push_back("servidor.host");
+    if (antes.servidor.puerto != despues.servidor.puerto)
+        campos.push_back("servidor.puerto");
+    if (antes.sampler.intervalo_segundos != despues.sampler.intervalo_segundos)
+        campos.push_back("sampler.intervalo_segundos");
+    if (antes.storage.ruta_db != despues.storage.ruta_db)
+        campos.push_back("storage.ruta_db");
+    if (antes.umbrales.cpu_max != despues.umbrales.cpu_max)
+        campos.push_back("umbrales.cpu_max");
+    if (antes.umbrales.ram_max != despues.umbrales.ram_max)
+        campos.push_back("umbrales.ram_max");
+    if (antes.umbrales.disco_max != despues.umbrales.disco_max)
+        campos.push_back("umbrales.disco_max");
+    if (antes.nivel_log != despues.nivel_log)
+        campos.push_back("nivel_log");
+    if (antes.output_format != despues.output_format)
+        campos.push_back("output_format");
+
+    return campos;
+}
+
 } // namespace chuspapulse::config

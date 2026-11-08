@@ -2,13 +2,19 @@
 #include <httplib.h>
 
 #include <array>
+#include <csignal>
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 #include "config/config.hpp"
+
+// Definidas en utils/signal_handler.cpp
+void setupSignalHandler();
+bool consume_reload_request();
 
 // Test de integración para validar el endpoint /config
 TEST(IntegrationConfigTest, GetConfigReturns200) {
@@ -181,4 +187,75 @@ TEST_F(IntegrationCargaConfigTest, NivelLogNoPermitidoLanzaInvalidArgument) {
   const std::string ruta = escribirArchivo("nivel_log = \"verbose\"\n");
 
   EXPECT_THROW(cargar(ruta), std::invalid_argument);
+}
+
+TEST_F(IntegrationCargaConfigTest, RecargarArchivoValidoActualizaLaConfiguracion) {
+  Config cfg = chuspapulse::config::porDefecto();
+  const std::string ruta = escribirArchivo(kTomlValido);
+  std::string error;
+
+  EXPECT_TRUE(chuspapulse::config::recargar(ruta, cfg, error));
+  EXPECT_TRUE(error.empty());
+  EXPECT_EQ(cfg.servidor.puerto, 9090);
+  EXPECT_EQ(cfg.nivel_log, "debug");
+  EXPECT_EQ(cfg.storage.ruta_db, "desde_toml.db");
+}
+
+TEST_F(IntegrationCargaConfigTest, RecargarTomlMalFormadoConservaLaConfiguracion) {
+  Config cfg = cargar(escribirArchivo(kTomlValido));
+  const Config anterior = cfg;
+  const std::string ruta = escribirArchivo("[servidor\npuerto = \n");
+  std::string error;
+
+  EXPECT_FALSE(chuspapulse::config::recargar(ruta, cfg, error));
+  EXPECT_FALSE(error.empty());
+  EXPECT_TRUE(chuspapulse::config::camposModificados(anterior, cfg).empty());
+}
+
+TEST_F(IntegrationCargaConfigTest, RecargarValorInvalidoConservaLaConfiguracion) {
+  Config cfg = cargar(escribirArchivo(kTomlValido));
+  const Config anterior = cfg;
+  const std::string ruta = escribirArchivo("[servidor]\npuerto = 70000\n");
+  std::string error;
+
+  EXPECT_FALSE(chuspapulse::config::recargar(ruta, cfg, error));
+  EXPECT_NE(error.find("puerto"), std::string::npos);
+  EXPECT_TRUE(chuspapulse::config::camposModificados(anterior, cfg).empty());
+}
+
+TEST_F(IntegrationCargaConfigTest, RecargarArchivoInexistenteConservaLaConfiguracion) {
+  Config cfg = cargar(escribirArchivo(kTomlValido));
+  const Config anterior = cfg;
+  std::string error;
+
+  EXPECT_FALSE(chuspapulse::config::recargar(rutaInexistente(), cfg, error));
+  EXPECT_NE(error.find("no existe"), std::string::npos);
+  EXPECT_TRUE(chuspapulse::config::camposModificados(anterior, cfg).empty());
+}
+
+TEST_F(IntegrationCargaConfigTest, CamposModificadosIndicaLosCambios) {
+  const Config antes = chuspapulse::config::porDefecto();
+  const Config despues = cargar(escribirArchivo(kTomlValido));
+
+  const std::vector<std::string> esperado = {
+      "servidor.host",   "servidor.puerto", "sampler.intervalo_segundos",
+      "storage.ruta_db", "nivel_log",       "output_format",
+  };
+
+  EXPECT_EQ(chuspapulse::config::camposModificados(antes, despues), esperado);
+  EXPECT_TRUE(chuspapulse::config::camposModificados(antes, antes).empty());
+}
+
+TEST(SenalRecargaTest, SighupSolicitaRecargaSinTerminarElProceso) {
+#ifdef SIGHUP
+  setupSignalHandler();
+  consume_reload_request();
+
+  ASSERT_EQ(std::raise(SIGHUP), 0);
+
+  EXPECT_TRUE(consume_reload_request());
+  EXPECT_FALSE(consume_reload_request());
+#else
+  GTEST_SKIP() << "La plataforma no tiene SIGHUP";
+#endif
 }
