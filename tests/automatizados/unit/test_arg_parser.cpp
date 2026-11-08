@@ -119,3 +119,73 @@ TEST_F(ArgParserTest, ConfigConRutaValidaSeGuarda)
     EXPECT_TRUE(parsear({"--config", archivo_}, opciones));
     EXPECT_EQ(opciones.config_path, archivo_);
 }
+
+TEST_F(ArgParserTest, MetricsConNombreValidoSeAplica)
+{
+    chuspapulse::cli::CliOptions opciones;
+
+    EXPECT_TRUE(parsear({"--metrics", "cpu"}, opciones));
+    EXPECT_TRUE(opciones.monitor.cpu);
+    EXPECT_FALSE(opciones.monitor.ram);
+    EXPECT_FALSE(opciones.monitor.disk);
+}
+
+TEST_F(ArgParserTest, MetricsConVariosNombresValidosSeAplican)
+{
+    chuspapulse::cli::CliOptions opciones;
+
+    EXPECT_TRUE(parsear({"--metrics", "cpu,ram,disk"}, opciones));
+    EXPECT_TRUE(opciones.monitor.cpu);
+    EXPECT_TRUE(opciones.monitor.ram);
+    EXPECT_TRUE(opciones.monitor.disk);
+}
+
+TEST_F(ArgParserTest, MetricsConNombreDesconocidoFalla)
+{
+    chuspapulse::cli::CliOptions opciones;
+
+    testing::internal::CaptureStderr();
+    EXPECT_FALSE(parsear({"--metrics", "gpu"}, opciones));
+    std::string salida = testing::internal::GetCapturedStderr();
+
+    EXPECT_NE(salida.find("metricas desconocidas: gpu"), std::string::npos);
+    EXPECT_NE(salida.find("Metricas validas: cpu, ram, disk"),
+              std::string::npos);
+}
+
+TEST_F(ArgParserTest, MetricsMezcladasReportaDesconocidasSinModificarConfig)
+{
+    chuspapulse::cli::CliOptions opciones;
+
+    testing::internal::CaptureStderr();
+    EXPECT_FALSE(parsear({"--metrics", "cpu,gpu,red"}, opciones));
+    std::string salida = testing::internal::GetCapturedStderr();
+
+    EXPECT_NE(salida.find("metricas desconocidas: gpu, red"),
+              std::string::npos);
+    EXPECT_TRUE(opciones.monitor.cpu);
+    EXPECT_TRUE(opciones.monitor.ram);
+    EXPECT_TRUE(opciones.monitor.disk);
+}
+
+TEST_F(ArgParserTest, MetricsConListaVaciaFalla)
+{
+    chuspapulse::cli::CliOptions opciones;
+
+    testing::internal::CaptureStderr();
+    EXPECT_FALSE(parsear({"--metrics", ""}, opciones));
+    std::string salida = testing::internal::GetCapturedStderr();
+
+    EXPECT_NE(salida.find("lista de --metrics esta vacia"), std::string::npos);
+}
+
+TEST_F(ArgParserTest, MetricsConElementoVacioFalla)
+{
+    chuspapulse::cli::CliOptions opciones;
+
+    testing::internal::CaptureStderr();
+    EXPECT_FALSE(parsear({"--metrics", "cpu,"}, opciones));
+    std::string salida = testing::internal::GetCapturedStderr();
+
+    EXPECT_NE(salida.find("metricas desconocidas: \"\""), std::string::npos);
+}
