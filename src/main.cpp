@@ -268,14 +268,8 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    // --config se maneja aqui (manteniendo logica original)
-    std::string config_path = "pulso.toml";
-    for (int i = 1; i < argc; ++i) {
-        std::string arg = argv[i];
-        if (arg == "--config" && i + 1 < argc) {
-            config_path = argv[++i];
-        }
-    }
+    // --config ya fue validado por parse_arguments
+    std::string config_path = cli_opts.config_path;
 
     // -------------------------------------------------------------------------
     // 2. Cargar configuracion
