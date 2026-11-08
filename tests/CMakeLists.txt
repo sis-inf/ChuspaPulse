@@ -35,6 +35,20 @@ target_link_libraries(test_config PRIVATE
 )
 gtest_discover_tests(test_config)
 
+add_executable(test_config_completo
+    automatizados/unit/test_config_completo.cpp
+    ${PROJECT_SOURCE_DIR}/src/config/config.cpp
+)
+target_include_directories(test_config_completo PRIVATE
+    ${PROJECT_SOURCE_DIR}/src
+)
+target_link_libraries(test_config_completo PRIVATE
+    GTest::gtest
+    GTest::gtest_main
+    tomlplusplus::tomlplusplus
+)
+gtest_discover_tests(test_config_completo)
+
 add_executable(test_storage
     storage/test_storage.cpp
 )
