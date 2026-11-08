@@ -160,3 +160,63 @@ TEST_F(ConfigCompletoTest, PuertoEnvInvalidoLanzaExcepcion)
 
     unsetenv("CHUSPAPULSE_SERVIDOR_PUERTO");
 }
+
+TEST_F(ConfigCompletoTest, OutputFormatTextSeAcepta)
+{
+    std::ofstream out(archivo_);
+
+    out
+        << "output_format = \"text\"\n";
+
+    out.close();
+
+    auto cfg = chuspapulse::config::cargar(archivo_);
+
+    EXPECT_EQ(cfg.output_format, "text");
+}
+
+TEST_F(ConfigCompletoTest, OutputFormatsSoportadosSeAceptan)
+{
+    for (const std::string formato : {"json", "csv", "prometheus"}) {
+        std::ofstream out(archivo_);
+
+        out
+            << "output_format = \"" << formato << "\"\n";
+
+        out.close();
+
+        auto cfg = chuspapulse::config::cargar(archivo_);
+
+        EXPECT_EQ(cfg.output_format, formato);
+    }
+}
+
+TEST_F(ConfigCompletoTest, OutputFormatInvalidoLanzaExcepcion)
+{
+    std::ofstream out(archivo_);
+
+    out
+        << "output_format = \"xml\"\n";
+
+    out.close();
+
+    try {
+        chuspapulse::config::cargar(archivo_);
+        FAIL() << "Se esperaba std::invalid_argument";
+    } catch (const std::invalid_argument& e) {
+        EXPECT_NE(std::string(e.what()).find("output_format: xml"),
+                  std::string::npos);
+    }
+}
+
+TEST_F(ConfigCompletoTest, OutputFormatInvalidoPorEnvSinArchivoLanzaExcepcion)
+{
+    setenv("CHUSPAPULSE_OUTPUT_FORMAT", "xml", 1);
+
+    EXPECT_THROW(
+        chuspapulse::config::cargar("no_existe.toml"),
+        std::invalid_argument
+    );
+
+    unsetenv("CHUSPAPULSE_OUTPUT_FORMAT");
+}

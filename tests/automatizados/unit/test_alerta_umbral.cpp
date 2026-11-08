@@ -46,21 +46,69 @@ TEST(AlertaUmbralTest, LanzaInvalidArgumentSiElOperadorEsInvalido)
 
 TEST(AlertaUmbralTest, MensajeRetornaStringNoVacio)
 {
-    AlertaUmbral alerta("temperatura", 38.0f, '>');
-    
+    AlertaUmbral alerta("cpu", 38.0f, '>');
+
     std::string msg = alerta.mensaje();
     EXPECT_FALSE(msg.empty());
 }
 
-TEST(AlertaUmbralTest, EvaluarLanzaInvalidArgumentSiLaMetricaNoExiste)
+TEST(AlertaUmbralTest, ConstructorLanzaInvalidArgumentSiLaMetricaNoExiste)
 {
-    AlertaUmbral alerta("temperatura", 38.0f, '>');
+    EXPECT_THROW(
+        AlertaUmbral("temperatura", 38.0f, '>'),
+        std::invalid_argument
+    );
+}
 
-    MetricSnapshot snap;
-    snap.cpu = 50.0;
-    snap.ram = 40.0;
+TEST(AlertaUmbralTest, ErrorDeMetricaIdentificaLaMetricaInvalida)
+{
+    try {
+        AlertaUmbral("temperatura", 38.0f, '>');
+        FAIL() << "Se esperaba std::invalid_argument";
+    } catch (const std::invalid_argument& e) {
+        EXPECT_NE(std::string(e.what()).find("'temperatura'"), std::string::npos);
+    }
+}
 
-    EXPECT_THROW(alerta.evaluar(snap), std::invalid_argument);
+TEST(AlertaUmbralTest, ConstructorLanzaInvalidArgumentSiLaMetricaEstaVacia)
+{
+    EXPECT_THROW(
+        AlertaUmbral("", 50.0f, '>'),
+        std::invalid_argument
+    );
+}
+
+TEST(AlertaUmbralTest, ErrorDeOperadorIdentificaElOperadorInvalido)
+{
+    try {
+        AlertaUmbral("cpu", 50.0f, '=');
+        FAIL() << "Se esperaba std::invalid_argument";
+    } catch (const std::invalid_argument& e) {
+        const std::string msg = e.what();
+        EXPECT_NE(msg.find("Operador no válido"), std::string::npos);
+        EXPECT_NE(msg.find("'='"), std::string::npos);
+    }
+}
+
+TEST(AlertaUmbralTest, ConstructorAceptaTodasLasMetricasValidas)
+{
+    for (const std::string metrica :
+         {"cpu", "cpu.usage_pct", "ram", "disk", "rx_bytes", "tx_bytes"}) {
+        EXPECT_NO_THROW(AlertaUmbral(metrica, 50.0f, '>')) << metrica;
+        EXPECT_NO_THROW(AlertaUmbral(metrica, 50.0f, '<')) << metrica;
+    }
+}
+
+TEST(AlertaUmbralTest, ValorActualDevuelveElCampoDeLaMetrica)
+{
+    const MetricSnapshot snap(10.0, 20.0, 30.0, 40.0, 50.0);
+
+    EXPECT_DOUBLE_EQ(AlertaUmbral("cpu", 1.0f, '>').valorActual(snap), 10.0);
+    EXPECT_DOUBLE_EQ(AlertaUmbral("cpu.usage_pct", 1.0f, '>').valorActual(snap), 10.0);
+    EXPECT_DOUBLE_EQ(AlertaUmbral("ram", 1.0f, '>').valorActual(snap), 20.0);
+    EXPECT_DOUBLE_EQ(AlertaUmbral("disk", 1.0f, '>').valorActual(snap), 30.0);
+    EXPECT_DOUBLE_EQ(AlertaUmbral("rx_bytes", 1.0f, '>').valorActual(snap), 40.0);
+    EXPECT_DOUBLE_EQ(AlertaUmbral("tx_bytes", 1.0f, '>').valorActual(snap), 50.0);
 }
 
 TEST(AlertaUmbralTest, GettersRetornanLosDatosDeConstruccion)

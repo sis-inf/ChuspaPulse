@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 namespace chuspapulse::config {
 
@@ -64,7 +65,7 @@ struct Config {
     UmbralesConfig umbrales;
     std::string    nivel_log = "info";
     /// Formato de salida de métricas.
-    /// Valores válidos: json, csv, prometheus
+    /// Valores válidos: json, csv, prometheus, text
     std::string    output_format = "json";
 };
 
@@ -84,5 +85,17 @@ Config porDefecto();
 /// (sin signo, espacios, decimales ni sufijos).
 /// Lanza std::invalid_argument con un mensaje explícito si no es válido.
 int parsearPuerto(const std::string& texto);
+
+/// Vuelve a leer y validar el archivo TOML ubicado en `ruta`.
+/// Si es válido, lo copia en `destino` y devuelve true.
+/// Si falla, deja `destino` sin cambios, describe el motivo en `error`
+/// y devuelve false. A diferencia de cargar(), un archivo inexistente
+/// se considera un error.
+bool recargar(const std::string& ruta, Config& destino, std::string& error);
+
+/// Devuelve los nombres de los campos que difieren entre `antes` y `despues`
+/// (por ejemplo "servidor.puerto" o "umbrales.cpu_max").
+std::vector<std::string> camposModificados(const Config& antes,
+                                           const Config& despues);
 
 } // namespace chuspapulse::config

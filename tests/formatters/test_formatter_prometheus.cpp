@@ -134,3 +134,67 @@ TEST(TestFormatterPrometheus, Test_HistorialConSnapshots_DevuelveSoloElUltimo) {
         formatter.formatearHistorial({s1, s2, s3}),
         formatter.formatear(s3));
 }
+
+TEST(TestFormatterPrometheus, Test_VariasInstanciasMismaMetrica_UnSoloHelpYType) {
+    chuspapulse::formatters::FormatterPrometheus formatter;
+
+    const auto snapshot = crearSnapshot(
+        1000,
+        {
+            {"cpu.usage{core=\"0\"}", 10.5, "porcentaje", 1000},
+            {"cpu.usage{core=\"1\"}", 20.5, "porcentaje", 1000},
+            {"cpu.usage{core=\"2\"}", 30.5, "porcentaje", 1000},
+        });
+
+    const std::vector<std::string> lineas =
+        obtenerLineas(formatter.formatear(snapshot));
+
+    const auto contar = [&lineas](const std::string& prefijo) {
+        return std::count_if(
+            lineas.begin(), lineas.end(),
+            [&prefijo](const std::string& linea) {
+                return linea.find(prefijo) == 0U;
+            });
+    };
+
+    EXPECT_EQ(contar("# HELP chuspapulse_cpu_usage "), 1);
+    EXPECT_EQ(contar("# TYPE chuspapulse_cpu_usage "), 1);
+
+    const std::vector<std::string> esperado = {
+        "# HELP chuspapulse_cpu_usage Metrica de chuspapulse",
+        "# TYPE chuspapulse_cpu_usage gauge",
+        "chuspapulse_cpu_usage{core=\"0\"} 10.5",
+        "chuspapulse_cpu_usage{core=\"1\"} 20.5",
+        "chuspapulse_cpu_usage{core=\"2\"} 30.5",
+    };
+
+    EXPECT_EQ(lineas, esperado);
+}
+
+TEST(TestFormatterPrometheus, Test_MetricasIntercaladas_SeAgrupanPorNombre) {
+    chuspapulse::formatters::FormatterPrometheus formatter;
+
+    const auto snapshot = crearSnapshot(
+        1000,
+        {
+            {"net.rx", 100.0, "bytes", 1000},
+            {"cpu.usage", 42.0, "porcentaje", 1000},
+            {"net.rx", 200.0, "bytes", 1000},
+        });
+
+    const std::vector<std::string> lineas =
+        obtenerLineas(formatter.formatear(snapshot));
+
+    const std::vector<std::string> esperado = {
+        "# HELP chuspapulse_net_rx Metrica de chuspapulse",
+        "# TYPE chuspapulse_net_rx gauge",
+        "chuspapulse_net_rx 100",
+        "chuspapulse_net_rx 200",
+        "",
+        "# HELP chuspapulse_cpu_usage Metrica de chuspapulse",
+        "# TYPE chuspapulse_cpu_usage gauge",
+        "chuspapulse_cpu_usage 42",
+    };
+
+    EXPECT_EQ(lineas, esperado);
+}

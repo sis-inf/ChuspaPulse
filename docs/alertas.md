@@ -25,6 +25,20 @@ El ciclo se repite cada `intervalo_segundos` (sección `[sampler]`).
 | RAM     | `memoria usada / memoria total * 100` | `>` |
 | Disco   | `disk.used / disk.total * 100` | `>` |
 
+## Validación de reglas
+
+Cada `AlertaUmbral` se valida al crearla, no al evaluarla. Si la métrica o el operador no son válidos, el constructor lanza `std::invalid_argument` con un mensaje que indica el dato inválido, y la regla no llega a guardarse.
+
+* **Métricas válidas:** `cpu`, `cpu.usage_pct`, `ram`, `disk`, `rx_bytes`, `tx_bytes`.
+* **Operadores válidos:** `>` y `<`.
+
+Ejemplos de error:
+
+```
+Métrica desconocida: 'temperatura'. Métricas válidas: cpu, cpu.usage_pct, ram, disk, rx_bytes, tx_bytes.
+Operador no válido: '='. Use '>' o '<'.
+```
+
 ## Configuración de umbrales (`pulso.toml`)
 
 Los umbrales se leen desde la sección `[umbrales]`. Todos son porcentajes (0 a 100):

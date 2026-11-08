@@ -79,6 +79,22 @@ void aplicarEnv(Config& cfg)
 }
 
 
+/// Valida que output_format sea uno de los formatos soportados.
+void validarOutputFormat(const Config& cfg)
+{
+    if (cfg.output_format != "json" &&
+        cfg.output_format != "csv" &&
+        cfg.output_format != "prometheus" &&
+        cfg.output_format != "text") {
+
+        throw std::invalid_argument(
+            "Valor inválido para output_format: " +
+            cfg.output_format
+        );
+    }
+}
+
+
 /// Construye un Config a partir de un toml::table ya parseado.
 Config mapear(const toml::table& doc)
 {
@@ -158,6 +174,7 @@ Config cargar(const std::string& ruta)
     if (!std::filesystem::exists(ruta)) {
         Config cfg = porDefecto();
         aplicarEnv(cfg);
+        validarOutputFormat(cfg);
         return cfg;
     }
 
@@ -181,15 +198,7 @@ Config cargar(const std::string& ruta)
 
 
         // Validar output_format
-        if (cfg.output_format != "json" &&
-            cfg.output_format != "csv" &&
-            cfg.output_format != "prometheus") {
-
-            throw std::invalid_argument(
-                "Valor inválido para output_format: " +
-                cfg.output_format
-            );
-        }
+        validarOutputFormat(cfg);
 
 
         // Validar umbrales (porcentajes entre 0.0 y 100.0)
@@ -291,6 +300,53 @@ int parsearPuerto(const std::string& texto)
     }
 
     return puerto;
+}
+
+
+bool recargar(const std::string& ruta, Config& destino, std::string& error)
+{
+    if (!std::filesystem::exists(ruta)) {
+        error = "El archivo de configuración no existe: " + ruta;
+        return false;
+    }
+
+    try {
+        Config nueva = cargar(ruta);
+        destino = nueva;
+        return true;
+    }
+    catch (const std::exception& e) {
+        error = e.what();
+        return false;
+    }
+}
+
+
+std::vector<std::string> camposModificados(const Config& antes,
+                                           const Config& despues)
+{
+    std::vector<std::string> campos;
+
+    if (antes.servidor.host != despues.servidor.host)
+        campos.push_back("servidor.host");
+    if (antes.servidor.puerto != despues.servidor.puerto)
+        campos.push_back("servidor.puerto");
+    if (antes.sampler.intervalo_segundos != despues.sampler.intervalo_segundos)
+        campos.push_back("sampler.intervalo_segundos");
+    if (antes.storage.ruta_db != despues.storage.ruta_db)
+        campos.push_back("storage.ruta_db");
+    if (antes.umbrales.cpu_max != despues.umbrales.cpu_max)
+        campos.push_back("umbrales.cpu_max");
+    if (antes.umbrales.ram_max != despues.umbrales.ram_max)
+        campos.push_back("umbrales.ram_max");
+    if (antes.umbrales.disco_max != despues.umbrales.disco_max)
+        campos.push_back("umbrales.disco_max");
+    if (antes.nivel_log != despues.nivel_log)
+        campos.push_back("nivel_log");
+    if (antes.output_format != despues.output_format)
+        campos.push_back("output_format");
+
+    return campos;
 }
 
 } // namespace chuspapulse::config
