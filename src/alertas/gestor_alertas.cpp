@@ -3,18 +3,6 @@
 #include <chrono>
 
 namespace chuspapulse::alertas {
-namespace {
-
-double valorDeMetrica(const std::string& metrica, const chuspapulse::MetricSnapshot& snap) {
-    if (metrica == "cpu" || metrica == "cpu.usage_pct") return snap.cpu;
-    if (metrica == "ram") return snap.ram;
-    if (metrica == "disk") return snap.disk;
-    if (metrica == "rx_bytes") return snap.rx_bytes;
-    if (metrica == "tx_bytes") return snap.tx_bytes;
-    return 0.0;
-}
-
-} // namespace
 
 GestorAlertas::GestorAlertas(SQLite::Database& db) : db_(&db) {}
 
@@ -53,7 +41,7 @@ void GestorAlertas::evaluar(const chuspapulse::MetricSnapshot& snap) const {
                 query.bind(1, static_cast<std::int64_t>(timestamp));
                 query.bind(2, alerta.metrica());
                 query.bind(3, static_cast<double>(alerta.umbral()));
-                query.bind(4, valorDeMetrica(alerta.metrica(), snap));
+                query.bind(4, alerta.valorActual(snap));
                 query.bind(5, alerta.mensaje());
                 query.exec();
             } catch (const std::exception& e) {

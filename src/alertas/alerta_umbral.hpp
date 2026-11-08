@@ -16,10 +16,12 @@ class AlertaUmbral {
 public:
     /**
      * @brief Construye una alerta de umbral.
-     * @param metrica  Nombre de la métrica a evaluar (ej: "cpu.usage_pct", "ram").
+     * @param metrica  Nombre de la métrica a evaluar: cpu, cpu.usage_pct, ram,
+     *                 disk, rx_bytes o tx_bytes.
      * @param umbral   Valor de referencia contra el cual comparar.
      * @param operador Operador de comparación: '>' o '<'.
-     * @throws std::invalid_argument si el operador no es '>' ni '<'.
+     * @throws std::invalid_argument si la métrica no existe o si el operador
+     *         no es '>' ni '<'. El mensaje indica el dato inválido.
      */
     AlertaUmbral(const std::string& metrica, float umbral, char operador);
 
@@ -27,9 +29,15 @@ public:
      * @brief Evalúa si la condición de alerta se cumple en el snapshot dado.
      * @param snap Snapshot con las métricas actuales del sistema.
      * @return true si la métrica supera el umbral según el operador configurado.
-     * @throws std::invalid_argument si la métrica no existe en el snapshot.
      */
     bool evaluar(const chuspapulse::MetricSnapshot& snap) const;
+
+    /**
+     * @brief Devuelve el valor actual de la métrica de esta alerta.
+     * @param snap Snapshot con las métricas actuales del sistema.
+     * @return Valor del campo del snapshot que corresponde a la métrica.
+     */
+    double valorActual(const chuspapulse::MetricSnapshot& snap) const;
 
     /**
      * @brief Devuelve un mensaje descriptivo sobre la alerta.
