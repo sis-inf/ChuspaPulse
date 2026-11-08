@@ -44,6 +44,19 @@ public:
      * @return Cadena con el nombre de la métrica, el operador y el umbral.
      */
     std::string mensaje() const;
+
+    /**
+     * @brief Mensaje que se emite cuando la alerta vuelve a la normalidad.
+     * @return Cadena "Alerta resuelta: <métrica> <operador> <umbral>".
+     */
+    std::string mensajeRecuperacion() const;
+
+    /// Estado de la última evaluación registrada: true si está activa.
+    /// Una alerta recién creada empieza en estado normal (false).
+    bool activa() const { return activa_; }
+    /// Registra el nuevo estado de la alerta (lo usa GestorAlertas).
+    void setActiva(bool activa) { activa_ = activa; }
+
     /// Nombre de la métrica que evalúa esta alerta.
     const std::string& metrica() const { return metrica_; }
     /// Valor umbral de referencia.
@@ -55,6 +68,7 @@ private:
     std::string metrica_;  ///< Nombre de la métrica a evaluar
     float       umbral_;   ///< Valor umbral de referencia
     char        operador_; ///< Operador de comparación: '>' o '<'
+    bool        activa_{false}; ///< Estado de la última evaluación
 };
 
 } // namespace chuspapulse::alertas

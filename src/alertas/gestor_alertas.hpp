@@ -56,16 +56,18 @@ public:
     /**
      * @brief Evalúa todas las alertas registradas contra el snapshot.
      *
-     * Solo llama el callback para las alertas que se disparan.
-     * Si no hay callback registrado, solo se omite la notificación: la alerta
-     * se sigue guardando si hay una base de datos configurada.
+     * Solo emite eventos ante transiciones de estado de cada alerta:
+     * - normal -> activa: llama el callback con mensaje() y, si hay una base
+     *   de datos configurada, inserta la alerta en la tabla `alerts`.
+     * - activa -> normal: llama el callback con mensajeRecuperacion().
+     * Mientras una alerta sigue activa (o sigue normal) en ciclos
+     * consecutivos no se emite nada. Cada alerta guarda su propio estado.
+     * Si no hay callback registrado, solo se omite la notificación.
      * Si no hay alertas registradas, no hace nada.
-     * Si hay una base de datos configurada, cada alerta disparada se
-     * inserta en la tabla `alerts`.
      *
      * @param snap Snapshot con las métricas actuales del sistema.
      */
-    void evaluar(const chuspapulse::MetricSnapshot& snap) const;
+    void evaluar(const chuspapulse::MetricSnapshot& snap);
 
     /**
      * @brief Devuelve la cantidad de alertas registradas.

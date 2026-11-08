@@ -14,16 +14,30 @@ void GestorAlertas::setCallback(std::function<void(const std::string&)> callback
     callback_ = callback;
 }
 
-void GestorAlertas::evaluar(const chuspapulse::MetricSnapshot& snap) const {
+void GestorAlertas::evaluar(const chuspapulse::MetricSnapshot& snap) {
     if (alertas_.empty()) {
         return;
     }
 
-    for (const auto& alerta : alertas_) {
-        if (!alerta.evaluar(snap)) {
+    for (auto& alerta : alertas_) {
+        const bool cumple = alerta.evaluar(snap);
+
+        // Sin cambio de estado (sigue activa o sigue normal): no se emite nada.
+        if (cumple == alerta.activa()) {
             continue;
         }
 
+        alerta.setActiva(cumple);
+
+        // Transición activa -> normal: se notifica la recuperación.
+        if (!cumple) {
+            if (callback_) {
+                callback_(alerta.mensajeRecuperacion());
+            }
+            continue;
+        }
+
+        // Transición normal -> activa: se notifica y se guarda en el historial.
         if (callback_) {
             callback_(alerta.mensaje());
         }

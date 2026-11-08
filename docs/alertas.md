@@ -5,7 +5,7 @@ El módulo `GestorAlertas` evalúa las métricas del sistema en cada ciclo de mu
 ## Componentes
 
 * **AlertaUmbral**: regla que compara una métrica contra un valor límite con el operador `>` o `<`.
-* **GestorAlertas**: guarda varias `AlertaUmbral`, las evalúa todas contra un snapshot y ejecuta un callback por cada alerta que se dispara.
+* **GestorAlertas**: guarda varias `AlertaUmbral`, las evalúa todas contra un snapshot y ejecuta un callback solo cuando una alerta cambia de estado (se activa o se resuelve).
 
 ## Cómo funciona
 
@@ -13,7 +13,20 @@ El módulo `GestorAlertas` evalúa las métricas del sistema en cada ciclo de mu
 2. Guarda el snapshot en la base de datos.
 3. Convierte el snapshot a porcentajes de CPU, RAM y disco.
 4. `GestorAlertas` evalúa cada alerta contra esos valores.
-5. Por cada alerta disparada, escribe un mensaje de nivel `WARN` en el log.
+5. Por cada alerta que cambia de estado, escribe un mensaje de nivel `WARN` en el log.
+
+## Estados y eventos
+
+Cada `AlertaUmbral` guarda su propio estado (`normal` o `activa`); una alerta recién creada empieza en `normal`. En cada ciclo solo se emiten eventos ante transiciones:
+
+| Transición | Evento | Se guarda en la tabla `alerts` |
+| ---------- | ------ | ------------------------------ |
+| normal → activa | callback con `Alerta: cpu > 80.000000` | Sí |
+| activa → activa | ninguno (no se repite) | No |
+| activa → normal | callback con `Alerta resuelta: cpu > 80.000000` | No |
+| normal → normal | ninguno | No |
+
+Si la métrica vuelve a superar el umbral después de resolverse, la alerta se notifica de nuevo. Las alertas son independientes entre sí: que una se active o se resuelva no cambia el estado de las demás.
 
 El ciclo se repite cada `intervalo_segundos` (sección `[sampler]`).
 
@@ -63,6 +76,7 @@ Alerta: cpu > 80.000000
 ## Comportamiento y limitaciones
 
 * Las alertas solo se evalúan en modo daemon, no con `--once`.
-* Mientras la métrica siga por encima del umbral, la advertencia se repite en cada ciclo. No existe un estado de "alerta resuelta".
+* Mientras la métrica siga por encima del umbral, la advertencia no se repite: se emite una sola vez al activarse y otra al resolverse.
+* El estado vive en memoria: al reiniciar el agente todas las alertas vuelven a `normal`.
 * Los mensajes son de nivel `WARN`: no se ven si `nivel_log` es `"error"`.
 * Las alertas no se consultan por la API. El endpoint `/alerts` está fuera del alcance de esta integración.
