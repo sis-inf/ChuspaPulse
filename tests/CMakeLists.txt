@@ -154,6 +154,7 @@ target_link_libraries(test_alerts_integration PRIVATE
     GTest::gtest
     GTest::gtest_main
     httplib
+    nlohmann_json::nlohmann_json
     Threads::Threads
     SQLiteCpp
     sqlite3
