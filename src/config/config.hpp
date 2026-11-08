@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 namespace chuspapulse::config {
 
@@ -78,5 +79,17 @@ Config cargar(const std::string& ruta);
 
 /// Devuelve una Config construida con todos los valores por defecto.
 Config porDefecto();
+
+/// Vuelve a leer y validar el archivo TOML ubicado en `ruta`.
+/// Si es válido, lo copia en `destino` y devuelve true.
+/// Si falla, deja `destino` sin cambios, describe el motivo en `error`
+/// y devuelve false. A diferencia de cargar(), un archivo inexistente
+/// se considera un error.
+bool recargar(const std::string& ruta, Config& destino, std::string& error);
+
+/// Devuelve los nombres de los campos que difieren entre `antes` y `despues`
+/// (por ejemplo "servidor.puerto" o "umbrales.cpu_max").
+std::vector<std::string> camposModificados(const Config& antes,
+                                           const Config& despues);
 
 } // namespace chuspapulse::config

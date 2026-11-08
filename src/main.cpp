@@ -59,6 +59,7 @@
 // Signal handler
 extern std::atomic<bool> isRunning;
 void setupSignalHandler();
+bool consume_reload_request();
 class CollectorProcesos : public pulso::collectors::ICollector {
 public:
     std::string nombre() const override {
@@ -490,6 +491,35 @@ server.Get("/config", handle_config);
 
     // Esperar senal de shutdown (bucle infinito)
     while (isRunning.load()) {
+        // SIGHUP: releer y validar la configuracion sin detener el proceso.
+        // La configuracion en uso no se modifica; los cambios validos se
+        // informan y se aplican al reiniciar.
+        if (consume_reload_request()) {
+            log.info("SIGHUP recibido: recargando configuracion desde " + config_path);
+
+            pulso::config::Config recargada = cfg;
+            std::string error;
+
+            if (pulso::config::recargar(config_path, recargada, error)) {
+                const auto campos = pulso::config::camposModificados(cfg, recargada);
+
+                if (campos.empty()) {
+                    log.info("Configuracion recargada y valida: sin cambios.");
+                } else {
+                    std::string lista;
+                    for (const auto& campo : campos) {
+                        if (!lista.empty()) lista += ", ";
+                        lista += campo;
+                    }
+                    log.warn("Configuracion recargada y valida. Campos modificados "
+                             "que requieren reiniciar el agente: " + lista);
+                }
+            } else {
+                log.error("No se pudo recargar la configuracion: " + error +
+                          ". Se conserva la configuracion activa.");
+            }
+        }
+
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 

@@ -86,6 +86,28 @@ target_link_libraries(test_ram_usage PRIVATE
     GTest::gtest_main
 )
 gtest_discover_tests(test_ram_usage)
+
+# GetConfigReturns200 necesita un agente escuchando en localhost:8080,
+# por eso se excluye de la ejecución automática.
+add_executable(test_config_integration
+    automatizados/integration/test_config.cpp
+    ${PROJECT_SOURCE_DIR}/src/config/config.cpp
+    ${PROJECT_SOURCE_DIR}/src/utils/signal_handler.cpp
+)
+target_include_directories(test_config_integration PRIVATE
+    ${PROJECT_SOURCE_DIR}/src
+)
+target_link_libraries(test_config_integration PRIVATE
+    tomlplusplus::tomlplusplus
+    httplib
+    GTest::gtest
+    GTest::gtest_main
+    Threads::Threads
+)
+gtest_discover_tests(test_config_integration
+    TEST_FILTER "-IntegrationConfigTest.GetConfigReturns200"
+)
+
 add_executable(test_alerta_umbral
     automatizados/unit/test_alerta_umbral.cpp
     ${PROJECT_SOURCE_DIR}/src/alertas/alerta_umbral.cpp
