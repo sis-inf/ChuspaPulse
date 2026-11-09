@@ -64,6 +64,8 @@ gtest_discover_tests(test_config_completo)
 
 add_executable(test_storage
     storage/test_storage.cpp
+    ${PROJECT_SOURCE_DIR}/src/storage/storage.cpp
+    ${PROJECT_SOURCE_DIR}/src/storage/schema.cpp
 )
 target_include_directories(test_storage PRIVATE
     ${PROJECT_SOURCE_DIR}/src

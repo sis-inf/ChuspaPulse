@@ -110,8 +110,8 @@ void Storage::exportToCSV(const std::string& ruta_archivo) const {
 void Storage::save(const chuspapulse::core::Snapshot& snapshot) {
     // Extraer métricas del snapshot por nombre
     auto getMetricValue = [&](const std::string& name) -> double {
-        for (const auto& m : snapshot.metrics) {
-            if (m.name == name) return m.value;
+        for (const auto& m : snapshot.metricas) {
+            if (m.nombre == name) return m.valor;
         }
         return 0.0;
     };
@@ -148,11 +148,11 @@ static chuspapulse::core::Snapshot rowToSnapshot(SQLite::Statement& query) {
     // Mapeo de columnas a métricas
     auto addMetric = [&](const std::string& name, const std::string& unit, double value) {
         chuspapulse::core::Metrica m;
-        m.name      = name;
-        m.value     = value;
-        m.unit      = unit;
+        m.nombre    = name;
+        m.valor     = value;
+        m.unidad    = unit;
         m.timestamp = snapshot.timestamp;
-        snapshot.metrics.push_back(m);
+        snapshot.metricas.push_back(m);
     };
 
     addMetric("cpu.usage",          "percent",  query.getColumn(1).getDouble());
@@ -240,11 +240,11 @@ chuspapulse::core::Snapshot Storage::getPromedio(uint32_t ventana_segundos) cons
             "disk.total", "disk.used", "disk.free",
             "network.rx_bytes", "network.tx_bytes"}) {
             chuspapulse::core::Metrica m;
-            m.name      = nombre;
-            m.value     = 0.0;
-            m.unit      = "";
+            m.nombre    = nombre;
+            m.valor     = 0.0;
+            m.unidad    = "";
             m.timestamp = ahora;
-            vacio.metrics.push_back(m);
+            vacio.metricas.push_back(m);
         }
         return vacio;
     }
@@ -254,9 +254,9 @@ chuspapulse::core::Snapshot Storage::getPromedio(uint32_t ventana_segundos) cons
     std::map<std::string, std::string> unidades;
 
     for (const auto& snap : snapshots) {
-        for (const auto& m : snap.metrics) {
-            acumulado[m.name] += m.value;
-            unidades[m.name]   = m.unit;
+        for (const auto& m : snap.metricas) {
+            acumulado[m.nombre] += m.valor;
+            unidades[m.nombre]   = m.unidad;
         }
     }
 
@@ -266,11 +266,11 @@ chuspapulse::core::Snapshot Storage::getPromedio(uint32_t ventana_segundos) cons
 
     for (auto& [nombre, total] : acumulado) {
         chuspapulse::core::Metrica m;
-        m.name      = nombre;
-        m.value     = total / static_cast<double>(snapshots.size());
-        m.unit      = unidades[nombre];
+        m.nombre    = nombre;
+        m.valor     = total / static_cast<double>(snapshots.size());
+        m.unidad    = unidades[nombre];
         m.timestamp = ahora;
-        promedio.metrics.push_back(m);
+        promedio.metricas.push_back(m);
     }
 
     return promedio;
