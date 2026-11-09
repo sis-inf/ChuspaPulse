@@ -3,7 +3,9 @@
 #include <fstream>
 #include <filesystem>
 #include <string>
+#include <vector>
 
+#include "cli/arg_parser.h"
 #include "config/config.hpp"
 
 namespace fs = std::filesystem;
@@ -24,6 +26,27 @@ protected:
         if (fs::exists(archivo_)) {
             fs::remove(archivo_);
         }
+    }
+
+    bool parsear(std::vector<std::string> args,
+                 chuspapulse::cli::CliOptions& opciones)
+    {
+        args.insert(args.begin(), "chuspapulse");
+
+        std::vector<char*> argv;
+        for (auto& a : args) {
+            argv.push_back(a.data());
+        }
+
+        return chuspapulse::cli::parse_arguments(
+            static_cast<int>(argv.size()), argv.data(), opciones);
+    }
+
+    void crearArchivoConIntervalo(int segundos)
+    {
+        std::ofstream out(archivo_);
+        out << "[sampler]\n"
+            << "intervalo_segundos = " << segundos << "\n";
     }
 };
 
@@ -156,4 +179,64 @@ TEST_F(ConfigCompletoTest, OutputFormatInvalidoPorEnvSinArchivoLanzaExcepcion)
     );
 
     unsetenv("CHUSPAPULSE_OUTPUT_FORMAT");
+}
+
+TEST_F(ConfigCompletoTest, SinIntervalCliSeUsaIntervaloPorDefecto)
+{
+    auto cfg = chuspapulse::config::porDefecto();
+    chuspapulse::cli::CliOptions opciones;
+
+    EXPECT_TRUE(parsear({"--once"}, opciones));
+    EXPECT_FALSE(opciones.interval_cli);
+    EXPECT_EQ(chuspapulse::cli::resolver_intervalo_ms(opciones, cfg), 10000);
+}
+
+TEST_F(ConfigCompletoTest, SinIntervalCliSeUsaIntervaloDelArchivo)
+{
+    crearArchivoConIntervalo(5);
+    auto cfg = chuspapulse::config::cargar(archivo_);
+    chuspapulse::cli::CliOptions opciones;
+
+    EXPECT_TRUE(parsear({}, opciones));
+    EXPECT_EQ(chuspapulse::cli::resolver_intervalo_ms(opciones, cfg), 5000);
+}
+
+TEST_F(ConfigCompletoTest, IntervalCliPrevaleceSobreArchivo)
+{
+    crearArchivoConIntervalo(5);
+    auto cfg = chuspapulse::config::cargar(archivo_);
+    chuspapulse::cli::CliOptions opciones;
+
+    EXPECT_TRUE(parsear({"--interval", "250"}, opciones));
+    EXPECT_TRUE(opciones.interval_cli);
+    EXPECT_EQ(chuspapulse::cli::resolver_intervalo_ms(opciones, cfg), 250);
+}
+
+TEST_F(ConfigCompletoTest, IntervalCliPrevaleceSobreVariableDeEntorno)
+{
+    setenv("CHUSPAPULSE_SAMPLER_INTERVALO_SEGUNDOS", "7", 1);
+    auto cfg = chuspapulse::config::cargar("no_existe.toml");
+    unsetenv("CHUSPAPULSE_SAMPLER_INTERVALO_SEGUNDOS");
+
+    chuspapulse::cli::CliOptions sin_cli;
+    EXPECT_TRUE(parsear({}, sin_cli));
+    EXPECT_EQ(chuspapulse::cli::resolver_intervalo_ms(sin_cli, cfg), 7000);
+
+    chuspapulse::cli::CliOptions con_cli;
+    EXPECT_TRUE(parsear({"--interval", "500"}, con_cli));
+    EXPECT_EQ(chuspapulse::cli::resolver_intervalo_ms(con_cli, cfg), 500);
+}
+
+TEST_F(ConfigCompletoTest, IntervalCliFueraDeRangoSeRechaza)
+{
+    auto cfg = chuspapulse::config::porDefecto();
+    chuspapulse::cli::CliOptions opciones;
+
+    testing::internal::CaptureStderr();
+    EXPECT_FALSE(parsear({"--interval", "100"}, opciones));
+    std::string salida = testing::internal::GetCapturedStderr();
+
+    EXPECT_NE(salida.find("mayor a 100ms"), std::string::npos);
+    EXPECT_FALSE(opciones.interval_cli);
+    EXPECT_EQ(chuspapulse::cli::resolver_intervalo_ms(opciones, cfg), 10000);
 }

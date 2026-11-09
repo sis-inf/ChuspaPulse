@@ -9,11 +9,11 @@ namespace chuspapulse::sampler {
 Sampler::Sampler(
     std::vector<std::shared_ptr<chuspapulse::collectors::ICollector>> collectors,
     chuspapulse::storage::Storage& storage,
-    int intervaloSegundos,
+    int intervaloMs,
     SnapshotCallback onSnapshot)
     : collectors_(std::move(collectors)),
       storage_(storage),
-      intervaloSegundos_(intervaloSegundos),
+      intervaloMs_(intervaloMs),
       onSnapshot_(std::move(onSnapshot)) {}
 
 Sampler::~Sampler() {
@@ -77,7 +77,7 @@ void Sampler::iniciar() {
 
             cv_.wait_for(
                 lock,
-                std::chrono::seconds(intervaloSegundos_),
+                std::chrono::milliseconds(intervaloMs_),
                 [this]() {
                     return !corriendo_;
                 });
