@@ -90,7 +90,8 @@ void print_help()
 
     std::cout << "Opciones:\n";
 
-    std::cout << "  --interval <ms>   Intervalo de lectura\n";
+    std::cout << "  --interval <ms>   Intervalo de lectura en milisegundos ("
+              << INTERVALO_MIN_MS << " a " << INTERVALO_MAX_MS << ")\n";
     std::cout << "  --metrics <list>  Metricas a recolectar: cpu,ram,disk\n";
     std::cout << "  --once            Ejecutar una sola lectura y salir\n";
     std::cout << "  --format <fmt>    Formato de salida con --once: json|csv|prometheus|text\n";
@@ -125,15 +126,35 @@ bool parse_arguments(int argc, char* argv[], chuspapulse::cli::CliOptions& optio
                 return false;
             }
 
-            int interval = std::stoi(argv[++i]);
+            const std::string valor = argv[++i];
 
-            if (interval <= 100)
+            // Validar antes de convertir: solo digitos (sin signo, espacios
+            // ni sufijos).
+            const bool soloDigitos =
+                !valor.empty() &&
+                valor.find_first_not_of("0123456789") == std::string::npos;
+
+            if (!soloDigitos)
             {
-                std::cerr << "Error: interval debe ser mayor a 100ms\n";
+                std::cerr << "Error: --interval debe ser un entero positivo en "
+                             "milisegundos (recibido: '" << valor << "')\n";
                 return false;
             }
 
-            options.monitor.interval_ms = interval;
+            // Mas de 10 digitos ya esta fuera de rango; se descarta antes de
+            // convertir para que stoll no desborde.
+            const long long interval =
+                valor.size() <= 10 ? std::stoll(valor) : INTERVALO_MAX_MS + 1;
+
+            if (interval < INTERVALO_MIN_MS || interval > INTERVALO_MAX_MS)
+            {
+                std::cerr << "Error: --interval fuera de rango: " << valor
+                          << " ms (permitido: " << INTERVALO_MIN_MS << " a "
+                          << INTERVALO_MAX_MS << " ms)\n";
+                return false;
+            }
+
+            options.monitor.interval_ms = static_cast<int>(interval);
         }
         else if (arg == "--metrics")
         {

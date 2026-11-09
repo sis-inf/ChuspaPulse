@@ -42,6 +42,27 @@ nivel_log = "info"
 output_format = "json"
 ```
 
+## Intervalo de lectura (`--interval`)
+
+La opción de línea de comandos `--interval` define cada cuánto se leen las métricas.
+
+- **Unidad:** milisegundos.
+- **Rango permitido:** de `101` a `3600000` ms (de algo más de 100 ms a 1 hora), ambos incluidos.
+- **Valor por defecto:** `1000` ms.
+
+Solo se aceptan enteros escritos con dígitos. Si el valor no es un entero positivo (por ejemplo `abc`, `1.5`, `-5` o `100abc`) o queda fuera del rango (por ejemplo `0`, `100` o `3600001`), el programa muestra un mensaje de error y termina con código de salida distinto de cero:
+
+```text
+Error: --interval debe ser un entero positivo en milisegundos (recibido: 'abc')
+Error: --interval fuera de rango: 0 ms (permitido: 101 a 3600000 ms)
+```
+
+Ejemplo:
+
+```bash
+./build/bin/chuspapulse --interval 2000
+```
+
 ## Prioridad de configuración
 
 El orden de prioridad es el siguiente:
