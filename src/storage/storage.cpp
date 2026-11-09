@@ -2,8 +2,10 @@
 #include "schema.hpp"
 #include <ctime>
 #include <map>
+#include <filesystem>
 #include <fstream>
 #include <stdexcept>
+#include <system_error>
 
 namespace chuspapulse::storage {
 
@@ -55,55 +57,82 @@ void Storage::setMaxEntries(std::size_t max) {
 }
 
 void Storage::exportToCSV(const std::string& ruta_archivo) const {
-    std::ofstream archivo(ruta_archivo);
+    // Se escribe en un archivo temporal y solo se mueve al destino si toda la
+    // exportación terminó bien: un fallo nunca deja un CSV parcial como válido.
+    const std::string ruta_temporal = ruta_archivo + ".tmp";
 
-    if (!archivo.is_open()) {
+    try {
+        std::ofstream archivo(ruta_temporal);
+
+        if (!archivo.is_open()) {
+            throw std::runtime_error(
+                "no se pudo crear el archivo temporal " + ruta_temporal
+            );
+        }
+
+        // Cabecera CSV
+        archivo
+            << "timestamp,"
+            << "cpu_usage,"
+            << "cpu_cores,"
+            << "memory_total,"
+            << "memory_used,"
+            << "memory_available,"
+            << "disk_total,"
+            << "disk_used,"
+            << "disk_free,"
+            << "network_rx_bytes,"
+            << "network_tx_bytes"
+            << '\n';
+
+        SQLite::Statement query(
+            db_,
+            "SELECT "
+            "timestamp, "
+            "cpu_usage, cpu_cores, "
+            "memory_total, memory_used, memory_available, "
+            "disk_total, disk_used, disk_free, "
+            "network_rx_bytes, network_tx_bytes "
+            "FROM snapshots "
+            "ORDER BY timestamp ASC;"
+        );
+
+        while (query.executeStep()) {
+            archivo
+                << query.getColumn(0).getInt64() << ","
+                << query.getColumn(1).getDouble() << ","
+                << query.getColumn(2).getInt() << ","
+                << query.getColumn(3).getInt64() << ","
+                << query.getColumn(4).getInt64() << ","
+                << query.getColumn(5).getInt64() << ","
+                << query.getColumn(6).getInt64() << ","
+                << query.getColumn(7).getInt64() << ","
+                << query.getColumn(8).getInt64() << ","
+                << query.getColumn(9).getInt64() << ","
+                << query.getColumn(10).getInt64()
+                << '\n';
+        }
+
+        archivo.close();
+        if (archivo.fail()) {
+            throw std::runtime_error("error de escritura en " + ruta_temporal);
+        }
+    } catch (const std::exception& e) {
+        std::error_code ignorado;
+        std::filesystem::remove(ruta_temporal, ignorado);
         throw std::runtime_error(
-            "No se pudo crear el archivo CSV: " + ruta_archivo
+            "Fallo la exportación CSV a " + ruta_archivo + ": " + e.what()
         );
     }
 
-    // Cabecera CSV
-    archivo
-        << "timestamp,"
-        << "cpu_usage,"
-        << "cpu_cores,"
-        << "memory_total,"
-        << "memory_used,"
-        << "memory_available,"
-        << "disk_total,"
-        << "disk_used,"
-        << "disk_free,"
-        << "network_rx_bytes,"
-        << "network_tx_bytes"
-        << '\n';
-
-    SQLite::Statement query(
-        db_,
-        "SELECT "
-        "timestamp, "
-        "cpu_usage, cpu_cores, "
-        "memory_total, memory_used, memory_available, "
-        "disk_total, disk_used, disk_free, "
-        "network_rx_bytes, network_tx_bytes "
-        "FROM snapshots "
-        "ORDER BY timestamp ASC;"
-    );
-
-    while (query.executeStep()) {
-        archivo
-            << query.getColumn(0).getInt64() << ","
-            << query.getColumn(1).getDouble() << ","
-            << query.getColumn(2).getInt() << ","
-            << query.getColumn(3).getInt64() << ","
-            << query.getColumn(4).getInt64() << ","
-            << query.getColumn(5).getInt64() << ","
-            << query.getColumn(6).getInt64() << ","
-            << query.getColumn(7).getInt64() << ","
-            << query.getColumn(8).getInt64() << ","
-            << query.getColumn(9).getInt64() << ","
-            << query.getColumn(10).getInt64()
-            << '\n';
+    std::error_code error;
+    std::filesystem::rename(ruta_temporal, ruta_archivo, error);
+    if (error) {
+        std::error_code ignorado;
+        std::filesystem::remove(ruta_temporal, ignorado);
+        throw std::runtime_error(
+            "Fallo la exportación CSV a " + ruta_archivo + ": " + error.message()
+        );
     }
 }
 

@@ -1,8 +1,10 @@
 #include <gtest/gtest.h>
 #include <filesystem>
 #include <cstdint>
-#include <string>
 #include <fstream>
+#include <sstream>
+#include <stdexcept>
+#include <string>
 #include <set>
 #include <SQLiteCpp/SQLiteCpp.h>
 
@@ -280,4 +282,60 @@ TEST_F(StorageTest, Test_ExportarCSV_UnaFilaPorSnapshot) {
 
     archivo.close();
     fs::remove(csvPath);
+}
+
+// 15. exportToCSV() a una carpeta inexistente lanza error y no deja archivos
+TEST_F(StorageTest, Test_ExportarCSV_RutaInvalidaLanzaError) {
+    chuspapulse::storage::Storage storage(dbPath_);
+    const std::string ruta = "carpeta_que_no_existe_1533/salida.csv";
+
+    EXPECT_THROW(storage.exportToCSV(ruta), std::runtime_error);
+    EXPECT_FALSE(fs::exists(ruta));
+    EXPECT_FALSE(fs::exists(ruta + ".tmp"));
+}
+
+// 16. Si la consulta falla a mitad de la exportación, se informa el error,
+//     no queda un CSV parcial y el archivo previo de destino no se pisa
+TEST_F(StorageTest, Test_ExportarCSV_FalloDeConsultaNoDejaCSVParcial) {
+    chuspapulse::storage::Storage storage(dbPath_);
+    storage.save(crearSnapshot(100));
+
+    const std::string ruta = "export_1533_test.csv";
+    {
+        std::ofstream previo(ruta);
+        previo << "contenido previo\n";
+    }
+
+    // Forzar el fallo de la consulta desde otra conexión
+    {
+        SQLite::Database otra(dbPath_, SQLite::OPEN_READWRITE);
+        otra.exec("DROP TABLE snapshots;");
+    }
+
+    EXPECT_THROW(storage.exportToCSV(ruta), std::runtime_error);
+    EXPECT_FALSE(fs::exists(ruta + ".tmp"));
+
+    std::ifstream leido(ruta);
+    std::stringstream contenido;
+    contenido << leido.rdbuf();
+    EXPECT_EQ(contenido.str(), "contenido previo\n");
+
+    leido.close();
+    fs::remove(ruta);
+}
+
+// 17. Si no se puede mover el temporal al destino (el destino es una
+//     carpeta), se informa el error y no queda el .tmp
+TEST_F(StorageTest, Test_ExportarCSV_FalloAlMoverAlDestinoLanzaError) {
+    chuspapulse::storage::Storage storage(dbPath_);
+    storage.save(crearSnapshot(100));
+
+    const std::string ruta = "destino_carpeta_1533";
+    fs::create_directory(ruta);
+
+    EXPECT_THROW(storage.exportToCSV(ruta), std::runtime_error);
+    EXPECT_FALSE(fs::exists(ruta + ".tmp"));
+    EXPECT_TRUE(fs::is_directory(ruta));
+
+    fs::remove_all(ruta);
 }

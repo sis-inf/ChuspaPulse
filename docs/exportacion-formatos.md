@@ -128,6 +128,14 @@ Recomendado para:
 - Google Sheets.
 - Herramientas de análisis de datos.
 
+### Errores al exportar a CSV
+
+`Storage::exportToCSV(ruta)` escribe primero en un archivo temporal (`ruta.tmp`) y solo al terminar sin errores lo mueve a `ruta`. Si algo falla (no se puede crear el archivo, falla la consulta a la base de datos, falla la escritura o no se puede mover el temporal):
+
+- lanza `std::runtime_error` con el mensaje `Fallo la exportación CSV a <ruta>: <causa>`;
+- borra el archivo temporal, así que nunca queda un CSV parcial que parezca válido;
+- no modifica el archivo de destino si ya existía.
+
 ---
 
 ## Texto
