@@ -120,6 +120,9 @@ add_executable(test_config_integration
     automatizados/integration/test_config.cpp
     ${PROJECT_SOURCE_DIR}/src/config/config.cpp
     ${PROJECT_SOURCE_DIR}/src/utils/signal_handler.cpp
+    ${PROJECT_SOURCE_DIR}/src/http/handler_alerts_history.cpp
+    ${PROJECT_SOURCE_DIR}/src/alertas/alerta_umbral.cpp
+    ${PROJECT_SOURCE_DIR}/src/alertas/gestor_alertas.cpp
 )
 target_include_directories(test_config_integration PRIVATE
     ${PROJECT_SOURCE_DIR}/src
@@ -127,6 +130,9 @@ target_include_directories(test_config_integration PRIVATE
 target_link_libraries(test_config_integration PRIVATE
     tomlplusplus::tomlplusplus
     httplib
+    nlohmann_json::nlohmann_json
+    SQLiteCpp
+    sqlite3
     GTest::gtest
     GTest::gtest_main
     Threads::Threads
