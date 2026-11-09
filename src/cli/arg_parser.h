@@ -23,7 +23,7 @@ struct CliOptions {
  *
  * Argumentos soportados:
  * - --interval <ms>
- * - --metrics <lista>
+ * - --metrics <lista>  (solo cpu, ram y disk, separados por coma)
  * - --once
  * - --format json|csv|prometheus|text
  * - --config <ruta>
@@ -35,7 +35,8 @@ struct CliOptions {
  * @param options Configuracion extendida a modificar.
  *
  * @return true si la ejecucion puede continuar.
- * @return false si ocurrio un error o se mostro ayuda.
+ * @return false si ocurrio un error o se mostro ayuda. Esto incluye
+ *         una lista de --metrics vacia o con nombres desconocidos.
  */
 bool parse_arguments(int argc, char* argv[], CliOptions& options);
 

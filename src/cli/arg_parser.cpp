@@ -16,12 +16,23 @@ namespace chuspapulse::cli {
  *
  * Ejemplo:
  * --metrics cpu,ram
+ *
+ * @return false si la lista esta vacia o contiene nombres desconocidos.
+ *         En ese caso la configuracion no se modifica.
  */
-static void parse_metrics(const std::string& metrics, chuspapulse::config::MonitorConfig& config)
+static bool parse_metrics(const std::string& metrics, chuspapulse::config::MonitorConfig& config)
 {
-    config.cpu = false;
-    config.ram = false;
-    config.disk = false;
+    if (metrics.empty())
+    {
+        std::cerr << "Error: la lista de --metrics esta vacia\n";
+        std::cerr << "Metricas validas: cpu, ram, disk\n";
+        return false;
+    }
+
+    bool cpu = false;
+    bool ram = false;
+    bool disk = false;
+    std::string desconocidas;
 
     std::stringstream ss(metrics);
     std::string item;
@@ -30,17 +41,46 @@ static void parse_metrics(const std::string& metrics, chuspapulse::config::Monit
     {
         if (item == "cpu")
         {
-            config.cpu = true;
+            cpu = true;
         }
         else if (item == "ram")
         {
-            config.ram = true;
+            ram = true;
         }
         else if (item == "disk")
         {
-            config.disk = true;
+            disk = true;
+        }
+        else
+        {
+            if (!desconocidas.empty())
+            {
+                desconocidas += ", ";
+            }
+            desconocidas += item.empty() ? "\"\"" : item;
         }
     }
+
+    if (metrics.back() == ',')
+    {
+        if (!desconocidas.empty())
+        {
+            desconocidas += ", ";
+        }
+        desconocidas += "\"\"";
+    }
+
+    if (!desconocidas.empty())
+    {
+        std::cerr << "Error: metricas desconocidas: " << desconocidas << "\n";
+        std::cerr << "Metricas validas: cpu, ram, disk\n";
+        return false;
+    }
+
+    config.cpu = cpu;
+    config.ram = ram;
+    config.disk = disk;
+    return true;
 }
 
 void print_help()
@@ -103,7 +143,10 @@ bool parse_arguments(int argc, char* argv[], chuspapulse::cli::CliOptions& optio
                 return false;
             }
 
-            parse_metrics(argv[++i], options.monitor);
+            if (!parse_metrics(argv[++i], options.monitor))
+            {
+                return false;
+            }
         }
         else if (arg == "--once")
         {
