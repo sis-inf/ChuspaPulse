@@ -6,7 +6,7 @@
 
 #include "utils/formato_bytes.hpp"
 
-namespace pulso::formatters {
+namespace chuspapulse::formatters {
 
 std::string FormatterText::formato() const {
     return "text";
@@ -20,14 +20,14 @@ std::string FormatterText::contentType() const {
 static std::string formatearTimestamp(std::int64_t ts) {
     std::time_t tiempo = static_cast<std::time_t>(ts);
     std::tm* tm = std::gmtime(&tiempo);
-    
+
     std::ostringstream oss;
     oss << std::put_time(tm, "%Y-%m-%dT%H:%M:%SZ");
     return oss.str();
 }
 
 std::string FormatterText::formatear(
-    const pulso::core::Snapshot& snapshot
+    const chuspapulse::core::Snapshot& snapshot
 ) const {
     // Extraer métricas del snapshot (valores crudos en bytes / bytes-por-segundo)
     double cpu_pct = 0.0;
@@ -60,18 +60,18 @@ std::string FormatterText::formatear(
     std::ostringstream oss;
     oss << formatearTimestamp(snapshot.timestamp)
         << " | CPU: " << std::fixed << std::setprecision(1) << cpu_pct << "%"
-        << " | RAM: " << pulso::utils::formatearBytesHumanos(ram_usado_bytes)
-        << "/" << pulso::utils::formatearBytesHumanos(ram_total_bytes)
-        << " | Disco: " << pulso::utils::formatearBytesHumanos(disco_usado_bytes)
-        << "/" << pulso::utils::formatearBytesHumanos(disco_total_bytes)
-        << " | Red: " << pulso::utils::formatearBytesHumanos(net_rx_bytes) << "/s"
-        << "/" << pulso::utils::formatearBytesHumanos(net_tx_bytes) << "/s";
+        << " | RAM: " << chuspapulse::utils::formatearBytesHumanos(ram_usado_bytes)
+        << "/" << chuspapulse::utils::formatearBytesHumanos(ram_total_bytes)
+        << " | Disco: " << chuspapulse::utils::formatearBytesHumanos(disco_usado_bytes)
+        << "/" << chuspapulse::utils::formatearBytesHumanos(disco_total_bytes)
+        << " | Red: " << chuspapulse::utils::formatearBytesHumanos(net_rx_bytes) << "/s"
+        << "/" << chuspapulse::utils::formatearBytesHumanos(net_tx_bytes) << "/s";
 
     return oss.str();
 }
 
 std::string FormatterText::formatearHistorial(
-    const std::vector<pulso::core::Snapshot>& snapshots
+    const std::vector<chuspapulse::core::Snapshot>& snapshots
 ) const {
     std::ostringstream oss;
 
@@ -82,4 +82,4 @@ std::string FormatterText::formatearHistorial(
     return oss.str();
 }
 
-} // namespace pulso::formatters
+} // namespace chuspapulse::formatters

@@ -21,27 +21,27 @@ Finalmente en GitHub se solicita la integración de los cambios mediante un Pull
 
 # Flujo de trabajo para contribuir al proyecto
 
-Este documento explica el proceso completo para contribuir al proyecto **Pulso** usando el flujo de trabajo de *fork* y solicitudes de extracción.
+Este documento explica el proceso completo para contribuir al proyecto **ChuspaPulse** usando el flujo de trabajo de *fork* y solicitudes de extracción.
 
 ---
 
 ## Flujo completo 
 
 ### 1. Crear tu copia del repositorio (Fork)
-1. Ve al repositorio original: `https://github.com/sis-inf/pulso`
+1. Ve al repositorio original: `https://github.com/sis-inf/ChuspaPulse`
 2. Haz clic en el botón **Fork** en la esquina superior derecha
 3. Se creará una copia del repositorio en tu cuenta personal
 
 ### 2. Clonar tu repositorio a tu computadora
 Abre la terminal y ejecuta (cambia `TU_USUARIO` por tu nombre de usuario de GitHub):
 ```bash
-git clone https://github.com/TU_USUARIO/pulso.git
-cd pulso
+git clone https://github.com/TU_USUARIO/ChuspaPulse.git
+cd ChuspaPulse
 ```
 ###3. Conectar con el repositorio original 
 Para mantener tu copia actualizada:
 ```bash
-git remote add upstream https://github.com/sis-inf/pulso.git
+git remote add upstream https://github.com/sis-inf/ChuspaPulse.git
 git remote -v
 ```
 4. Crear una rama nueva para tus cambios
@@ -86,6 +86,6 @@ git push origin fix-docs/flujo-completo
     1. Entra a tu repositorio en GitHub
     2. Verás el aviso: Compare & pull request → haz clic
     3. Configura:
-        - Base:  sis-inf/pulso  →  dev 
-        - Comparar:  TU_USUARIO/pulso  → tu rama
+        - Base:  sis-inf/ChuspaPulse  →  dev 
+        - Comparar:  TU_USUARIO/ChuspaPulse  → tu rama
     4. Completa la descripción y envía

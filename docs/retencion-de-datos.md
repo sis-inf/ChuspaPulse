@@ -2,9 +2,9 @@
 
 ## Introducción
 
-Pulso permite configurar una política de retención para controlar cuánto tiempo se conservan los snapshots almacenados. Esta funcionalidad ayuda a administrar el espacio en disco eliminando automáticamente la información más antigua cuando supera el período configurado.
+ChuspaPulse permite configurar una política de retención para controlar cuánto tiempo se conservan los snapshots almacenados. Esta funcionalidad ayuda a administrar el espacio en disco eliminando automáticamente la información más antigua cuando supera el período configurado.
 
-> **Advertencia:** la purga automática elimina los datos de forma permanente. Una vez eliminados los snapshots, no es posible recuperarlos desde Pulso.
+> **Advertencia:** la purga automática elimina los datos de forma permanente. Una vez eliminados los snapshots, no es posible recuperarlos desde ChuspaPulse.
 
 ---
 
@@ -18,7 +18,7 @@ Ejemplo:
 retencion_dias = 30
 ```
 
-En este caso, Pulso conservará los snapshots de los últimos 30 días y eliminará automáticamente aquellos cuya antigüedad sea mayor.
+En este caso, ChuspaPulse conservará los snapshots de los últimos 30 días y eliminará automáticamente aquellos cuya antigüedad sea mayor.
 
 ---
 
@@ -30,7 +30,7 @@ Si se establece:
 retencion_dias = 0
 ```
 
-Pulso conservará todos los snapshots sin eliminarlos automáticamente.
+ChuspaPulse conservará todos los snapshots sin eliminarlos automáticamente.
 
 Este es el comportamiento de **retención infinita** y corresponde al valor por defecto cuando no se desea aplicar una política de purga.
 
@@ -38,7 +38,7 @@ Este es el comportamiento de **retención infinita** y corresponde al valor por 
 
 # Funcionamiento de la purga automática
 
-Durante la ejecución del sistema, Pulso revisa periódicamente la antigüedad de los snapshots almacenados.
+Durante la ejecución del sistema, ChuspaPulse revisa periódicamente la antigüedad de los snapshots almacenados.
 
 Si encuentra registros cuya antigüedad supera el valor configurado en `retencion_dias`, estos se eliminan automáticamente para liberar espacio.
 

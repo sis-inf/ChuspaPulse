@@ -1,14 +1,15 @@
 #include "handler_history.hpp"
 
+#include <cstdint>
 #include <ctime>
 #include <string>
 
-namespace pulso::http {
+namespace chuspapulse::http {
 
 void registrarHistory(
     httplib::Server& servidor,
-    const pulso::storage::Storage& storage,
-    const pulso::formatters::IFormatter& formatter)
+    const chuspapulse::storage::Storage& storage,
+    const chuspapulse::formatters::IFormatter& formatter)
 {
     servidor.Get("/metrics/history",
         [&](const httplib::Request& req, httplib::Response& res)
@@ -17,18 +18,18 @@ void registrarHistory(
 
             std::time_t ahora = std::time(nullptr);
 
-            int desde = static_cast<int>(ahora - 3600);
-            int hasta = 0;
+            std::int64_t desde = static_cast<std::int64_t>(ahora) - 3600;
+            std::int64_t hasta = 0;
             std::size_t limite = 1000; 
 
             if (req.has_param("desde")) {
-                desde = std::stoi(
+                desde = std::stoll(
                     req.get_param_value("desde")
                 );
             }
 
             if (req.has_param("hasta")) {
-                hasta = std::stoi(
+                hasta = std::stoll(
                     req.get_param_value("hasta")
                 );
             }
@@ -39,7 +40,8 @@ void registrarHistory(
                 );
             }
 
-            if (limite < 1 || limite > 10000) {
+            if (desde < 0 || (hasta > 0 && hasta < desde) ||
+                limite < 1 || limite > 10000) {
 
                 res.status = 400;
 
@@ -65,7 +67,7 @@ void registrarHistory(
 
             res.set_content(
                 body,
-                "application/json"
+                formatter.contentType()
             );
         }
         catch (const std::exception&) {
@@ -80,4 +82,4 @@ void registrarHistory(
     });
 }
 
-} // namespace pulso::http
+} // namespace chuspapulse::http

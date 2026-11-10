@@ -2,7 +2,7 @@
 
 ## ¿Qué es un collector?
 
-Un collector es un componente fundamental del sistema de monitoreo de Pulso encargado de recolectar métricas específicas del sistema operativo. Cada collector se especializa en una categoría particular de métricas, como CPU, memoria, disco, red, carga del sistema, procesos o temperatura, y se encarga de interactuar directamente con las fuentes de datos del kernel Linux para obtener la información en tiempo real.
+Un collector es un componente fundamental del sistema de monitoreo de ChuspaPulse encargado de recolectar métricas específicas del sistema operativo. Cada collector se especializa en una categoría particular de métricas, como CPU, memoria, disco, red, carga del sistema, procesos o temperatura, y se encarga de interactuar directamente con las fuentes de datos del kernel Linux para obtener la información en tiempo real.
 
 Los collectors implementan la interfaz `ICollector`, lo que permite que el sistema de muestreo (`sampler`) pueda iterar sobre todos ellos de manera uniforme sin conocer los detalles internos de cada implementación. Esta arquitectura facilita la extensibilidad del sistema, ya que agregar nuevas métricas simplemente implica crear un nuevo collector que siga el contrato establecido por la interfaz y registrarlo en el monitor del sistema.
 
@@ -23,8 +23,8 @@ No tiene campos de datos, ya que es una interfaz abstracta pura.
 - **`virtual std::string nombre() const = 0;`**
   Devuelve el nombre identificador del collector como cadena de texto. Este nombre se utiliza para logging y identificación en caso de errores. Ejemplos: "cpu", "memory", "disk".
 
-- **`virtual std::vector<pulso::core::Metrica> recolectar() = 0;`**
-  Ejecuta una medición y devuelve las métricas obtenidas. Retorna un vector de estructuras `pulso::core::Metrica`, donde cada métrica contiene: nombre (string), valor (double), unidad (string) y timestamp (int64_t). Puede lanzar `pulso::core::ErrorRecoleccion` si la medición falla.
+- **`virtual std::vector<chuspapulse::core::Metrica> recolectar() = 0;`**
+  Ejecuta una medición y devuelve las métricas obtenidas. Retorna un vector de estructuras `chuspapulse::core::Metrica`, donde cada métrica contiene: nombre (string), valor (double), unidad (string) y timestamp (int64_t). Puede lanzar `chuspapulse::core::ErrorRecoleccion` si la medición falla.
 
 ## Collectors disponibles
 
@@ -47,10 +47,10 @@ Para agregar un nuevo collector al sistema, sigue estos pasos:
    - Crea los archivos `micollector.hpp` y `micollector.cpp` con la implementación
 
 2. **Implementar la interfaz ICollector**
-   - En el archivo `.hpp`, crea una clase que herede de `pulso::collectors::ICollector`
+   - En el archivo `.hpp`, crea una clase que herede de `chuspapulse::collectors::ICollector`
    - Implementa el método `nombre()` para retornar el identificador del collector
-   - Implementa el método `recolectar()` para leer la fuente de datos correspondiente y retornar un vector de `pulso::core::Metrica`
-   - Asegúrate de manejar errores apropiadamente, lanzando `pulso::core::ErrorRecoleccion` cuando sea necesario
+   - Implementa el método `recolectar()` para leer la fuente de datos correspondiente y retornar un vector de `chuspapulse::core::Metrica`
+   - Asegúrate de manejar errores apropiadamente, lanzando `chuspapulse::core::ErrorRecoleccion` cuando sea necesario
 
 3. **Registrar en CMakeLists.txt**
    - Agrega una línea `add_subdirectory(src/collectors/micollector)` en el `CMakeLists.txt` principal
@@ -68,7 +68,7 @@ Para agregar un nuevo collector al sistema, sigue estos pasos:
 
 ## Fuentes de datos del kernel
 
-Los collectors de Pulso obtienen información del sistema leyendo archivos virtuales del kernel Linux y llamando a funciones del sistema. Las principales fuentes de datos son:
+Los collectors de ChuspaPulse obtienen información del sistema leyendo archivos virtuales del kernel Linux y llamando a funciones del sistema. Las principales fuentes de datos son:
 
 | Fuente de datos | Descripción | Información proporcionada |
 |-----------------|-------------|---------------------------|

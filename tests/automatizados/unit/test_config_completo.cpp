@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
+#include <cstdlib>
 #include <fstream>
 #include <filesystem>
+#include <string>
 
 #include "config/config.hpp"
 
@@ -27,7 +29,7 @@ protected:
 
 TEST_F(ConfigCompletoTest, ValoresPorDefecto)
 {
-    auto cfg = pulso::config::porDefecto();
+    auto cfg = chuspapulse::config::porDefecto();
 
     EXPECT_EQ(cfg.servidor.puerto, 8080);
     EXPECT_EQ(cfg.sampler.intervalo_segundos, 10);
@@ -46,7 +48,7 @@ TEST_F(ConfigCompletoTest, CargaArchivoValido)
 
     out.close();
 
-    auto cfg = pulso::config::cargar(archivo_);
+    auto cfg = chuspapulse::config::cargar(archivo_);
 
     EXPECT_EQ(cfg.servidor.puerto, 9090);
     EXPECT_EQ(cfg.sampler.intervalo_segundos, 5);
@@ -63,7 +65,7 @@ TEST_F(ConfigCompletoTest, IntervaloInvalidoLanzaExcepcion)
     out.close();
 
     EXPECT_THROW(
-        pulso::config::cargar(archivo_),
+        chuspapulse::config::cargar(archivo_),
         std::invalid_argument
     );
 }
@@ -78,7 +80,7 @@ TEST_F(ConfigCompletoTest, CampoDesconocidoSeIgnora)
     out.close();
 
     EXPECT_NO_THROW(
-        pulso::config::cargar(archivo_)
+        chuspapulse::config::cargar(archivo_)
     );
 }
 
@@ -91,7 +93,67 @@ TEST_F(ConfigCompletoTest, NivelLogNoDefaultSeRespeta)
 
     out.close();
 
-    auto cfg = pulso::config::cargar(archivo_);
+    auto cfg = chuspapulse::config::cargar(archivo_);
 
     EXPECT_EQ(cfg.nivel_log, "debug");
+}
+
+TEST_F(ConfigCompletoTest, OutputFormatTextSeAcepta)
+{
+    std::ofstream out(archivo_);
+
+    out
+        << "output_format = \"text\"\n";
+
+    out.close();
+
+    auto cfg = chuspapulse::config::cargar(archivo_);
+
+    EXPECT_EQ(cfg.output_format, "text");
+}
+
+TEST_F(ConfigCompletoTest, OutputFormatsSoportadosSeAceptan)
+{
+    for (const std::string formato : {"json", "csv", "prometheus"}) {
+        std::ofstream out(archivo_);
+
+        out
+            << "output_format = \"" << formato << "\"\n";
+
+        out.close();
+
+        auto cfg = chuspapulse::config::cargar(archivo_);
+
+        EXPECT_EQ(cfg.output_format, formato);
+    }
+}
+
+TEST_F(ConfigCompletoTest, OutputFormatInvalidoLanzaExcepcion)
+{
+    std::ofstream out(archivo_);
+
+    out
+        << "output_format = \"xml\"\n";
+
+    out.close();
+
+    try {
+        chuspapulse::config::cargar(archivo_);
+        FAIL() << "Se esperaba std::invalid_argument";
+    } catch (const std::invalid_argument& e) {
+        EXPECT_NE(std::string(e.what()).find("output_format: xml"),
+                  std::string::npos);
+    }
+}
+
+TEST_F(ConfigCompletoTest, OutputFormatInvalidoPorEnvSinArchivoLanzaExcepcion)
+{
+    setenv("CHUSPAPULSE_OUTPUT_FORMAT", "xml", 1);
+
+    EXPECT_THROW(
+        chuspapulse::config::cargar("no_existe.toml"),
+        std::invalid_argument
+    );
+
+    unsetenv("CHUSPAPULSE_OUTPUT_FORMAT");
 }

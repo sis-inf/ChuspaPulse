@@ -12,7 +12,7 @@
 #include <stdexcept>
 #include <cstdlib>
 
-namespace pulso::config {
+namespace chuspapulse::config {
 
 namespace {
 
@@ -53,28 +53,44 @@ T leer(const toml::table& tabla,
 /// Aplica variables de entorno con prioridad sobre TOML.
 void aplicarEnv(Config& cfg)
 {
-    if (const char* v = std::getenv("PULSO_SERVIDOR_HOST")) {
+    if (const char* v = std::getenv("CHUSPAPULSE_SERVIDOR_HOST")) {
         cfg.servidor.host = v;
     }
 
-    if (const char* v = std::getenv("PULSO_SERVIDOR_PUERTO")) {
+    if (const char* v = std::getenv("CHUSPAPULSE_SERVIDOR_PUERTO")) {
         cfg.servidor.puerto = static_cast<uint16_t>(std::stoi(v));
     }
 
-    if (const char* v = std::getenv("PULSO_SAMPLER_INTERVALO_SEGUNDOS")) {
+    if (const char* v = std::getenv("CHUSPAPULSE_SAMPLER_INTERVALO_SEGUNDOS")) {
         cfg.sampler.intervalo_segundos = std::stoll(v);
     }
 
-    if (const char* v = std::getenv("PULSO_STORAGE_RUTA_DB")) {
+    if (const char* v = std::getenv("CHUSPAPULSE_STORAGE_RUTA_DB")) {
         cfg.storage.ruta_db = v;
     }
 
-    if (const char* v = std::getenv("PULSO_NIVEL_LOG")) {
+    if (const char* v = std::getenv("CHUSPAPULSE_NIVEL_LOG")) {
         cfg.nivel_log = v;
     }
 
-    if (const char* v = std::getenv("PULSO_OUTPUT_FORMAT")) {
+    if (const char* v = std::getenv("CHUSPAPULSE_OUTPUT_FORMAT")) {
         cfg.output_format = v;
+    }
+}
+
+
+/// Valida que output_format sea uno de los formatos soportados.
+void validarOutputFormat(const Config& cfg)
+{
+    if (cfg.output_format != "json" &&
+        cfg.output_format != "csv" &&
+        cfg.output_format != "prometheus" &&
+        cfg.output_format != "text") {
+
+        throw std::invalid_argument(
+            "Valor inválido para output_format: " +
+            cfg.output_format
+        );
     }
 }
 
@@ -103,6 +119,17 @@ Config mapear(const toml::table& doc)
         leer<std::string>(doc, "storage", "ruta_db",
                           cfg.storage.ruta_db);
 
+    // [umbrales]
+    cfg.umbrales.cpu_max =
+        leer<double>(doc, "umbrales", "cpu_max", cfg.umbrales.cpu_max);
+
+    cfg.umbrales.ram_max =
+        leer<double>(doc, "umbrales", "ram_max", cfg.umbrales.ram_max);
+
+    cfg.umbrales.disco_max =
+        leer<double>(doc, "umbrales", "disco_max", cfg.umbrales.disco_max);
+
+
 
     // nivel_log (clave raíz)
     cfg.nivel_log =
@@ -130,6 +157,7 @@ Config cargar(const std::string& ruta)
     if (!std::filesystem::exists(ruta)) {
         Config cfg = porDefecto();
         aplicarEnv(cfg);
+        validarOutputFormat(cfg);
         return cfg;
     }
 
@@ -153,15 +181,7 @@ Config cargar(const std::string& ruta)
 
 
         // Validar output_format
-        if (cfg.output_format != "json" &&
-            cfg.output_format != "csv" &&
-            cfg.output_format != "prometheus") {
-
-            throw std::invalid_argument(
-                "Valor inválido para output_format: " +
-                cfg.output_format
-            );
-        }
+        validarOutputFormat(cfg);
 
 
         // Validar puerto
@@ -174,6 +194,36 @@ Config cargar(const std::string& ruta)
             );
         }
 
+        // Validar umbrales (porcentajes entre 0.0 y 100.0)
+        if (!(cfg.umbrales.cpu_max >= 0.0 &&
+              cfg.umbrales.cpu_max <= 100.0)) {
+
+            throw std::invalid_argument(
+                "Valor inválido para cpu_max: " +
+                std::to_string(cfg.umbrales.cpu_max) +
+                " (debe estar entre 0.0 y 100.0)"
+            );
+        }
+
+        if (!(cfg.umbrales.ram_max >= 0.0 &&
+              cfg.umbrales.ram_max <= 100.0)) {
+
+            throw std::invalid_argument(
+                "Valor inválido para ram_max: " +
+                std::to_string(cfg.umbrales.ram_max) +
+                " (debe estar entre 0.0 y 100.0)"
+            );
+        }
+
+        if (!(cfg.umbrales.disco_max >= 0.0 &&
+              cfg.umbrales.disco_max <= 100.0)) {
+
+            throw std::invalid_argument(
+                "Valor inválido para disco_max: " +
+                std::to_string(cfg.umbrales.disco_max) +
+                " (debe estar entre 0.0 y 100.0)"
+            );
+        }
 
         // Validar intervalo
         if (cfg.sampler.intervalo_segundos <= 0) {
@@ -214,4 +264,51 @@ Config porDefecto()
     return Config{};
 }
 
-} // namespace pulso::config
+
+bool recargar(const std::string& ruta, Config& destino, std::string& error)
+{
+    if (!std::filesystem::exists(ruta)) {
+        error = "El archivo de configuración no existe: " + ruta;
+        return false;
+    }
+
+    try {
+        Config nueva = cargar(ruta);
+        destino = nueva;
+        return true;
+    }
+    catch (const std::exception& e) {
+        error = e.what();
+        return false;
+    }
+}
+
+
+std::vector<std::string> camposModificados(const Config& antes,
+                                           const Config& despues)
+{
+    std::vector<std::string> campos;
+
+    if (antes.servidor.host != despues.servidor.host)
+        campos.push_back("servidor.host");
+    if (antes.servidor.puerto != despues.servidor.puerto)
+        campos.push_back("servidor.puerto");
+    if (antes.sampler.intervalo_segundos != despues.sampler.intervalo_segundos)
+        campos.push_back("sampler.intervalo_segundos");
+    if (antes.storage.ruta_db != despues.storage.ruta_db)
+        campos.push_back("storage.ruta_db");
+    if (antes.umbrales.cpu_max != despues.umbrales.cpu_max)
+        campos.push_back("umbrales.cpu_max");
+    if (antes.umbrales.ram_max != despues.umbrales.ram_max)
+        campos.push_back("umbrales.ram_max");
+    if (antes.umbrales.disco_max != despues.umbrales.disco_max)
+        campos.push_back("umbrales.disco_max");
+    if (antes.nivel_log != despues.nivel_log)
+        campos.push_back("nivel_log");
+    if (antes.output_format != despues.output_format)
+        campos.push_back("output_format");
+
+    return campos;
+}
+
+} // namespace chuspapulse::config

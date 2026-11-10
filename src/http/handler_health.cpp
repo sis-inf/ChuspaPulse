@@ -1,6 +1,8 @@
 #include "handler_health.hpp"
+#include "core/version.hpp"
 
 #include <chrono>
+#include <cstring>
 #include <sstream>
 #include <string>
 
@@ -10,9 +12,7 @@
 #include <unistd.h>
 #endif
 
-namespace pulso::http {
-
-static const std::string VERSION = "0.1.0";
+namespace chuspapulse::http {
 
 std::string handleHealth(std::chrono::steady_clock::time_point start_time) {
 
@@ -24,7 +24,8 @@ std::string handleHealth(std::chrono::steady_clock::time_point start_time) {
     // Obtener hostname
     char hostname[256];
     if (gethostname(hostname, sizeof(hostname)) != 0) {
-        std::string(hostname, sizeof(hostname)) = "unknown";
+        std::strncpy(hostname, "unknown", sizeof(hostname) - 1);
+        hostname[sizeof(hostname) - 1] = '\0';
     }
 
     // Construir JSON
@@ -32,11 +33,11 @@ std::string handleHealth(std::chrono::steady_clock::time_point start_time) {
     json << "{"
          << "\"status\":\"ok\","
          << "\"uptime_seconds\":" << uptime << ","
-         << "\"version\":\"" << VERSION << "\","
+         << "\"version\":\"" << chuspapulse::APP_VERSION << "\","
          << "\"hostname\":\"" << hostname << "\""
          << "}";
 
     return json.str();
 }
 
-} // namespace pulso::http
+} // namespace chuspapulse::http

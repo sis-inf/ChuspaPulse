@@ -1,6 +1,6 @@
 # Convenciones para el nombrado de métricas
 
-Este documento define la convención utilizada para nombrar las métricas del proyecto Pulso. Mantener un formato consistente facilita el desarrollo de nuevos collectors y evita inconsistencias entre plataformas y componentes.
+Este documento define la convención utilizada para nombrar las métricas del proyecto ChuspaPulse. Mantener un formato consistente facilita el desarrollo de nuevos collectors y evita inconsistencias entre plataformas y componentes.
 
 ## Formato general
 

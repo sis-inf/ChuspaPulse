@@ -2,22 +2,28 @@
 
 #include <atomic>
 #include <condition_variable>
+#include <functional>
 #include <memory>
 #include <mutex>
 #include <thread>
 #include <vector>
 
 #include "../collectors/icollector.hpp"
+#include "../core/types.hpp"
 #include "../storage/storage.hpp"
 
-namespace pulso::sampler {
+namespace chuspapulse::sampler {
 
 class Sampler {
 public:
+    /// Función que se invoca en cada ciclo con el snapshot recién recolectado.
+    using SnapshotCallback = std::function<void(const chuspapulse::core::Snapshot&)>;
+
     Sampler(
-        std::vector<std::shared_ptr<pulso::collectors::ICollector>> collectors,
-        pulso::storage::Storage& storage,
-        int intervaloSegundos);
+        std::vector<std::shared_ptr<chuspapulse::collectors::ICollector>> collectors,
+        chuspapulse::storage::Storage& storage,
+        int intervaloSegundos,
+        SnapshotCallback onSnapshot = nullptr);
 
     ~Sampler();
 
@@ -31,13 +37,14 @@ public:
     bool corriendo() const;
 
 private:
-    std::vector<std::shared_ptr<pulso::collectors::ICollector>> collectors_;
-    pulso::storage::Storage& storage_;
+    std::vector<std::shared_ptr<chuspapulse::collectors::ICollector>> collectors_;
+    chuspapulse::storage::Storage& storage_;
     int intervaloSegundos_;
+    SnapshotCallback onSnapshot_;
     std::thread thread_;
     std::atomic<bool> corriendo_{false};
     std::condition_variable cv_;
     std::mutex mutex_;
 };
 
-} // namespace pulso::sampler
+} // namespace chuspapulse::sampler

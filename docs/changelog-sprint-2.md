@@ -2,7 +2,7 @@
 
 ## Período del sprint
 
-Segundo sprint de desarrollo del proyecto pulso.
+Segundo sprint de desarrollo del proyecto ChuspaPulse.
 
 ## Contribuidores activos
 

@@ -8,9 +8,9 @@ http://localhost:PUERTO
 
 ```md
 ### GET /metrics
-> **Estado:** Planeado / No disponible aún
+> **Estado:** Disponible / Funcional
 **Descripción:**
-Devuelve las métricas actuales del sistema monitoreado. (Endpoint en desarrollo)
+Devuelve el último snapshot. 
 
 **Parámetros opcionales:**
 
@@ -105,7 +105,7 @@ curl http://localhost:8080/health
 
 ### GET /config
 
-> **Estado:** Planeado / No disponible aún
+> **Estado:** Disponible / Funcional
 
 **Descripción:**
 Devuelve la configuración activa del servidor.
@@ -132,7 +132,7 @@ curl http://localhost:8080/config
 * 500 Internal Server Error
 
 ### GET /alerts
-> **Estado:** Planeado / No disponible aún
+> **Estado:** Disponible / Funcional
 
 **Descripción:**
 Lista las alertas activas generadas por el sistema.

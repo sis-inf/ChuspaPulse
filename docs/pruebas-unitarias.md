@@ -2,7 +2,7 @@
 
 ## Introducción
 
-Google Test es el framework de pruebas utilizado en Pulso para verificar el comportamiento correcto de los componentes del sistema. Permite escribir pruebas unitarias legibles, automatizadas y fáciles de mantener.
+Google Test es el framework de pruebas utilizado en ChuspaPulse para verificar el comportamiento correcto de los componentes del sistema. Permite escribir pruebas unitarias legibles, automatizadas y fáciles de mantener.
 
 Las pruebas ayudan a detectar errores antes de que lleguen a producción y facilitan la refactorización segura del código.
 
@@ -211,4 +211,4 @@ GeneraAlertaCuandoSuperaUmbral
 
 ## Conclusión
 
-Google Test proporciona una forma sencilla y robusta de verificar el comportamiento de Pulso. El uso correcto de `ASSERT`, `EXPECT`, fixtures y archivos mock permite construir una suite de pruebas confiable, mantenible y fácil de ejecutar mediante `ctest`.
+Google Test proporciona una forma sencilla y robusta de verificar el comportamiento de ChuspaPulse. El uso correcto de `ASSERT`, `EXPECT`, fixtures y archivos mock permite construir una suite de pruebas confiable, mantenible y fácil de ejecutar mediante `ctest`.

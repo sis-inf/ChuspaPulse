@@ -1,53 +1,98 @@
-# Guía de Collectors
+# Colectores: arquitectura y ciclo de vida
 
-## 1. Introducción
+> Para agregar un colector nuevo, ver [collectors.md](collectors.md).
 
-Un collector (o colector) es el componente encargado de **obtener, leer y organizar** las métricas de uso de recursos del sistema operativo y exponerlas para su procesamiento o visualización. Cada collector se especializa en un tipo de recurso (como procesador, memoria o disco) y funciona de manera independiente sin que otros componentes necesiten saber cómo se lee cada dato.
+## Visión general
 
----
+El subsistema de recolección obtiene métricas del sistema operativo. Cada
+categoría de métrica (CPU, memoria, disco, red, etc.) se lee desde una fuente
+del sistema y se normaliza antes de entregarse al resto de ChuspaPulse. La
+interfaz `ICollector` define el contrato común: `SystemMonitor` mantiene una
+lista de colectores registrados y los invoca sin conocer sus detalles internos.
 
-## 2. Collectors implementados
+## Implementaciones de `ICollector`
 
-Actualmente se encuentran implementados los siguientes collectors:
+- **Clases propias**: batería, CPU, disco, memoria y red implementan
+  `ICollector` directamente. Linux y Windows tienen implementaciones
+  separadas en `src/platform/`.
+- **Adaptadores en `main.cpp`**: procesos, carga promedio, uptime y temperatura
+  están implementados como funciones y se envuelven en clases que heredan de
+  `ICollector` (`CollectorProcesos`, `CollectorLoadAvg`, `CollectorUptime` y
+  `CollectorTemperatura`).
+- **Registro**: cada colector se registra con
+  `SystemMonitor::addCollector()`.
 
-| Collector | Clase / Archivo de referencia | Descripción y métricas que devuelve |
-| :--- | :--- | :--- |
-| **CPU** | `CpuCollector`<br>`src/collectors/cpu.cpp` | Porcentaje de uso total, tiempo de usuario/sistema, número de núcleos y carga del procesador. |
-| **RAM** | `RamCollector`<br>`src/collectors/ram.cpp` | Memoria total, en uso, libre, disponible y almacenada en búferes. |
-| **Disco** | `DiskCollector`<br>`src/collectors/disk.cpp` | Espacio total, usado, libre, porcentaje de ocupación y operaciones de lectura/escritura. |
+## Flujo de datos
 
----
+```mermaid
+flowchart LR
+    A["Linux: /proc, /sys y statvfs"] --> C["Colectores"]
+    B["Windows: APIs de Win32"] --> C
+    C -->|recolectar| M["Metricas"]
+    M --> S["SystemMonitor"]
+```
 
-## 3. Fuentes de datos en Linux
+## La interfaz `ICollector`
 
-Para la obtención de métricas, los colectores leen directamente las siguientes fuentes del sistema:
+Definida en `src/collectors/icollector.hpp`:
 
-| Ruta / Archivo | Información que provee |
-| :--- | :--- |
-| `/proc/stat` | Estadísticas del procesador, tiempos por modo, interrupciones |
-| `/proc/meminfo` | Detalles completos de memoria RAM y áreas reservadas |
-| `/proc/net/dev` | Tráfico de red por interfaz: bytes, paquetes, errores |
-| `/proc/diskstats` | Actividad de discos: lecturas, escrituras, tiempos de servicio |
+```cpp
+class ICollector {
+ public:
+  virtual ~ICollector() = default;
+  virtual std::string nombre() const = 0;
+  virtual std::vector<core::Metrica> recolectar() = 0;
+};
+```
 
----
+- **`nombre()`**: devuelve el identificador del colector (por ejemplo, `"cpu"`).
+- **`recolectar()`**: ejecuta una medición y devuelve las métricas obtenidas.
+  Si la medición falla, lanza una excepción.
+- **Destructor virtual**: permite destruir colectores a través de un puntero a
+  `ICollector`.
 
-## 4. Cómo agregar un nuevo collector
+### Manejo de errores
 
-1. Define la nueva clase heredando de `BaseCollector` dentro del directorio `src/collectors/`.
-2. Agrega la declaración en el archivo de cabecera correspondiente.
-3. Implementa el método `collect()` con la lógica necesaria para leer y calcular los valores/métricas requeridas.
-4. Registra el nuevo colector en la fábrica o punto de inicialización de la aplicación.
-5. Compila el proyecto con CMake para verificar que no haya errores.
-6. Agrega pruebas unitarias o de integración si el proyecto las utiliza.
-7. Ejecuta la aplicación y comprueba que las métricas del nuevo collector se generen correctamente sin afectar a los demás.
-8. Actualiza esta documentación indicando el nombre, ubicación y propósito del nuevo collector.
+La interfaz documenta que `recolectar()` lanza `ErrorRecoleccion`
+(`src/collectors/error_recoleccion.hpp`), que extiende `std::runtime_error` y se
+puede construir con un mensaje o con un código `errno`. Algunas funciones de
+lectura (uptime, carga promedio, disco) lanzan directamente `std::runtime_error`
+cuando la fuente no existe o tiene un formato inválido.
 
----
+## Ciclo de vida de una recolección
 
-## 5. Buenas prácticas
+1. Al iniciar, los colectores se crean y se registran en `SystemMonitor` con
+   `addCollector()`.
+2. En cada ciclo, `SystemMonitor` invoca `recolectar()` en cada colector
+   registrado.
+3. El colector lee su fuente del sistema. Para métricas que dependen del
+   tiempo, como el uso de CPU, toma dos lecturas separadas por un intervalo
+   corto y trabaja con la diferencia.
+4. Normaliza los valores (porcentajes, bytes, etc.) y devuelve un vector de
+   `Metrica` (nombre, valor y unidad).
+5. Si la fuente no está disponible o su formato es inválido, lanza una
+   excepción.
 
-* Mantener una única responsabilidad por collector.
-* Evitar dependencias innecesarias entre collectors.
-* Documentar claramente el propósito de cada collector.
-* Validar errores y excepciones durante la recolección de métricas.
-* Mantener nombres descriptivos y consistentes con el resto del proyecto.
+## Fuentes del sistema por colector
+
+| Colector | Linux | Windows |
+|----------|-------|---------|
+| CPU (`cpu.usage`, `cpu.cores`) | `/proc/stat` | `GetSystemTimes`, `GetSystemInfo` |
+| Memoria | `/proc/meminfo` | Sin implementación específica |
+| Disco | `statvfs` sobre el punto de montaje `/` | Sin implementación específica |
+| Red | `/proc/net/dev` | Sin implementación específica |
+| Carga promedio | `/proc/loadavg` | Sin implementación específica |
+| Procesos (totales) | `/proc/stat` y `/proc/loadavg` | Sin implementación específica |
+| Top de procesos | `/proc` (listado de PID), `/proc/[pid]/stat`, `/proc/[pid]/status` (`VmRSS`) y `/proc/meminfo` | Sin implementación específica |
+| Batería | `/sys/class/power_supply/BAT0` | Sin implementación específica |
+| Temperatura | `/sys/class/thermal/thermal_zone0/temp` | Sin implementación específica |
+| Uptime | `/proc/uptime` | `GetTickCount64` |
+
+### CPU
+
+- **Linux**: lee la primera línea de `/proc/stat` dos veces y calcula
+  `100 * (1 - delta_idle / delta_total)`, donde idle incluye `iowait`. Cuenta los
+  cores contando las líneas `cpuN`.
+- **Windows**: llama dos veces a `GetSystemTimes`. En Windows el tiempo de kernel
+  ya incluye el idle, por lo que el total es `delta_kernel + delta_user`. Los
+  cores se obtienen con `GetSystemInfo`.

@@ -2,7 +2,7 @@
 
 ## Descripción
 
-Pulso soporta Linux y Windows, pero no todas las métricas son equivalentes entre plataformas. Este documento detalla las diferencias para evitar conclusiones erróneas al comparar valores entre hosts de distinto sistema operativo.
+ChuspaPulse soporta Linux y Windows, pero no todas las métricas son equivalentes entre plataformas. Este documento detalla las diferencias para evitar conclusiones erróneas al comparar valores entre hosts de distinto sistema operativo.
 
 ---
 
@@ -12,7 +12,7 @@ Pulso soporta Linux y Windows, pero no todas las métricas son equivalentes entr
 >
 > En Linux, el load average es un valor nativo del kernel que refleja la cantidad de procesos en estado de ejecución o espera de I/O en los últimos 1, 5 y 15 minutos.
 >
-> En Windows, no existe un concepto nativo equivalente. Pulso calcula una **aproximación** basada en el uso de CPU y la cola de procesos, pero el valor **no es directamente comparable** con el load average de Linux.
+> En Windows, no existe un concepto nativo equivalente. ChuspaPulse calcula una **aproximación** basada en el uso de CPU y la cola de procesos, pero el valor **no es directamente comparable** con el load average de Linux.
 >
 > **No compares valores de loadavg entre un host Linux y uno Windows.**
 
@@ -61,7 +61,7 @@ El conteo de procesos activos es comparable, aunque en Windows puede incluir pro
 
 ### Load Average 
 - **Linux:** valor nativo proporcionado por el kernel en `/proc/loadavg`. Refleja la cantidad de procesos en estado runnable o esperando I/O.
-- **Windows:** no existe un equivalente nativo. Pulso calcula una aproximación basada en métricas de rendimiento del sistema.
+- **Windows:** no existe un equivalente nativo. ChuspaPulse calcula una aproximación basada en métricas de rendimiento del sistema.
 - **Conclusión:** no uses loadavg para comparar carga entre hosts Linux y Windows.
 
 ---

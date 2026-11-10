@@ -1,6 +1,6 @@
 # Decisiones de Arquitectura (ADR)
 
-Este documento registra las decisiones de diseño más importantes del proyecto Pulso. Cada entrada sigue el formato estándar de Architecture Decision Record (ADR).
+Este documento registra las decisiones de diseño más importantes del proyecto ChuspaPulse. Cada entrada sigue el formato estándar de Architecture Decision Record (ADR).
 
 ---
 
@@ -10,16 +10,16 @@ Este documento registra las decisiones de diseño más importantes del proyecto 
 
 ### Contexto
 
-Pulso necesita persistir métricas históricas del sistema para permitir consultas, exportaciones y análisis posteriores. Se evaluaron distintas opciones: almacenamiento en memoria, archivos CSV, bases de datos embebidas y bases de datos de servidor.
+ChuspaPulse necesita persistir métricas históricas del sistema para permitir consultas, exportaciones y análisis posteriores. Se evaluaron distintas opciones: almacenamiento en memoria, archivos CSV, bases de datos embebidas y bases de datos de servidor.
 
 ### Decisión
 
-Se usa **SQLite** como motor de almacenamiento local mediante la biblioteca `SQLiteCpp`. El archivo de base de datos se configura en `pulso.toml` bajo la clave `ruta_db`.
+Se usa **SQLite** como motor de almacenamiento local mediante la biblioteca `SQLiteCpp`. El archivo de base de datos se configura en `chuspapulse.toml` bajo la clave `ruta_db`.
 
 ### Consecuencias
 
 - ✅ Sin dependencias de servidor: SQLite es una biblioteca embebida, no requiere procesos externos.
-- ✅ Un solo archivo portable (`pulso.db`) fácil de respaldar y mover.
+- ✅ Un solo archivo portable (`chuspapulse.db`) fácil de respaldar y mover.
 - ✅ Soporte completo de SQL para consultas y exportaciones.
 - ⚠️ No apto para escritura concurrente desde múltiples procesos simultáneos.
 - ⚠️ Las migraciones de esquema deben hacerse manualmente (ver [docs/guia-migracion-esquema-bd.md](guia-migracion-esquema-bd.md)).
@@ -32,7 +32,7 @@ Se usa **SQLite** como motor de almacenamiento local mediante la biblioteca `SQL
 
 ### Contexto
 
-Pulso recolecta métricas de múltiples fuentes (CPU, RAM, disco, red, procesos, batería, temperatura). Se necesitaba un mecanismo que permitiera agregar nuevos collectors sin modificar el núcleo del sistema.
+ChuspaPulse recolecta métricas de múltiples fuentes (CPU, RAM, disco, red, procesos, batería, temperatura). Se necesitaba un mecanismo que permitiera agregar nuevos collectors sin modificar el núcleo del sistema.
 
 ### Decisión
 
@@ -62,7 +62,7 @@ public:
 
 ### Contexto
 
-Pulso expone métricas vía HTTP para integraciones con Prometheus, scripts y herramientas cliente. Se evaluaron opciones como Boost.Beast, Crow, Pistache y cpp-httplib.
+ChuspaPulse expone métricas vía HTTP para integraciones con Prometheus, scripts y herramientas cliente. Se evaluaron opciones como Boost.Beast, Crow, Pistache y cpp-httplib.
 
 ### Decisión
 
@@ -84,11 +84,11 @@ Se usa **cpp-httplib** (header-only) como servidor HTTP embebido. No se usa ning
 
 ### Contexto
 
-Pulso necesita un archivo de configuración para parámetros como el puerto HTTP, el intervalo de muestreo, la ruta de la base de datos y el nivel de log. Se evaluaron JSON, YAML, INI y TOML.
+ChuspaPulse necesita un archivo de configuración para parámetros como el puerto HTTP, el intervalo de muestreo, la ruta de la base de datos y el nivel de log. Se evaluaron JSON, YAML, INI y TOML.
 
 ### Decisión
 
-Se usa **TOML** como formato de configuración, leído desde `pulso.toml` en el directorio de ejecución.
+Se usa **TOML** como formato de configuración, leído desde `chuspapulse.toml` en el directorio de ejecución.
 
 ```toml
 [servidor]
@@ -99,7 +99,7 @@ puerto = 8080
 intervalo_segundos = 10
 
 [storage]
-ruta_db = "pulso.db"
+ruta_db = "chuspapulse.db"
 nivel_log = "info"
 ```
 
@@ -139,5 +139,5 @@ for (auto& collector : collectors) {
 
 - ✅ Un collector que falla no interrumpe a los demás — el sistema sigue funcionando.
 - ✅ Los errores quedan registrados en el log para diagnóstico.
-- ✅ Permite ejecutar Pulso en entornos donde no todos los collectors tienen soporte.
+- ✅ Permite ejecutar ChuspaPulse en entornos donde no todos los collectors tienen soporte.
 - ⚠️ Un collector que falla silenciosamente podría pasar desapercibido si no se revisan los logs.

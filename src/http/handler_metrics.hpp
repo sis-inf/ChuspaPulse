@@ -4,7 +4,7 @@
 #include "../core/SystemMonitor.hpp"
 #include "../formatters/formatter_json.hpp"
 
-namespace pulso::http {
+namespace chuspapulse::http {
 
 /**
  * @brief Registra el handler del endpoint GET /metrics en el servidor HTTP.
@@ -25,4 +25,4 @@ void HandleMetrics(
   httplib::Server& servidor,
   SystemMonitor&   system_monitor);
 
-} // namespace pulso::http
+} // namespace chuspapulse::http

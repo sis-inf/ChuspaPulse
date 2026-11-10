@@ -188,5 +188,5 @@
 
 ##   \* \[x] La respuesta no expone campos sensibles o internos de `Config` que no estén en la lista pública (ej. `storage.ruta_db`, `servidor.host`).
 
-##   \* \[x] Con una configuración por defecto (`pulso::config::porDefecto()`), el JSON resultante coincide con los valores esperados.
+##   \* \[x] Con una configuración por defecto (`ChuspaPulse::config::porDefecto()`), el JSON resultante coincide con los valores esperados.
 

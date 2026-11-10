@@ -3,8 +3,8 @@
 
 #include <string>
 
-namespace pulso {
+namespace chuspapulse {
     const std::string APP_VERSION = "0.1.0";
 }
 
-#endif 
+#endif

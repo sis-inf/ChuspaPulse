@@ -1,8 +1,22 @@
 #include "formatter_prometheus.hpp"
 
+#include <algorithm>
+#include <iomanip>
 #include <sstream>
+#include <unordered_map>
+#include <utility>
 
-namespace pulso::formatters {
+namespace chuspapulse::formatters {
+
+namespace {
+
+/// Muestras de una misma métrica, en el orden en que aparecen.
+struct FamiliaMetrica {
+    std::string nombre;
+    std::vector<std::string> muestras;
+};
+
+} // namespace
 
 std::string FormatterPrometheus::formato() const {
     return "prometheus";
@@ -13,35 +27,60 @@ std::string FormatterPrometheus::contentType() const {
 }
 
 std::string FormatterPrometheus::formatear(
-    const pulso::core::Snapshot& snapshot) const {
+    const chuspapulse::core::Snapshot& snapshot) const {
+
+    if (snapshot.metricas.empty()) {
+        return "";
+    }
+
+    // Agrupar las muestras por métrica para declarar HELP y TYPE una sola vez.
+    std::vector<FamiliaMetrica> familias;
+    std::unordered_map<std::string, std::size_t> indices;
+
+    for (const auto& metrica : snapshot.metricas) {
+        const std::size_t inicioEtiquetas = metrica.nombre.find('{');
+
+        std::string nombre =
+            "chuspapulse_" + metrica.nombre.substr(0, inicioEtiquetas);
+        std::replace(nombre.begin(), nombre.end(), '.', '_');
+
+        const std::string etiquetas =
+            inicioEtiquetas == std::string::npos
+                ? ""
+                : metrica.nombre.substr(inicioEtiquetas);
+
+        std::ostringstream muestra;
+        muestra << std::setprecision(15)
+                << nombre << etiquetas << " " << metrica.valor;
+
+        auto [it, nueva] = indices.try_emplace(nombre, familias.size());
+        if (nueva) {
+            familias.push_back({nombre, {}});
+        }
+
+        familias[it->second].muestras.push_back(muestra.str());
+    }
 
     std::ostringstream output;
 
-    output << "# HELP pulso_cpu_usage Porcentaje de uso de CPU\n";
-    output << "# TYPE pulso_cpu_usage gauge\n";
-    output << "pulso_cpu_usage " << snapshot.cpu << "\n\n";
+    for (std::size_t i = 0; i < familias.size(); ++i) {
+        if (i > 0) {
+            output << "\n";
+        }
 
-    output << "# HELP pulso_memory_usage Uso de memoria RAM\n";
-    output << "# TYPE pulso_memory_usage gauge\n";
-    output << "pulso_memory_usage " << snapshot.ram << "\n\n";
+        output << "# HELP " << familias[i].nombre << " Metrica de chuspapulse\n";
+        output << "# TYPE " << familias[i].nombre << " gauge\n";
 
-    output << "# HELP pulso_disk_usage Uso de disco\n";
-    output << "# TYPE pulso_disk_usage gauge\n";
-    output << "pulso_disk_usage " << snapshot.disk << "\n\n";
-
-    output << "# HELP pulso_rx_bytes Trafico recibido\n";
-    output << "# TYPE pulso_rx_bytes gauge\n";
-    output << "pulso_rx_bytes " << snapshot.rx_bytes << "\n\n";
-
-    output << "# HELP pulso_tx_bytes Trafico enviado\n";
-    output << "# TYPE pulso_tx_bytes gauge\n";
-    output << "pulso_tx_bytes " << snapshot.tx_bytes << "\n";
+        for (const auto& muestra : familias[i].muestras) {
+            output << muestra << "\n";
+        }
+    }
 
     return output.str();
 }
 
 std::string FormatterPrometheus::formatearHistorial(
-    const std::vector<pulso::core::Snapshot>& snapshots) const {
+    const std::vector<chuspapulse::core::Snapshot>& snapshots) const {
 
     if (snapshots.empty()) {
         return "";
@@ -50,4 +89,4 @@ std::string FormatterPrometheus::formatearHistorial(
     return formatear(snapshots.back());
 }
 
-} // namespace pulso::formatters
+} // namespace chuspapulse::formatters

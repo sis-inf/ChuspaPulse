@@ -1,6 +1,6 @@
 # Guía de alertas: reglas y umbrales
 
-## Introducción
+El módulo `GestorAlertas` evalúa las métricas del sistema en cada ciclo de muestreo. Si una métrica supera su umbral, se registra una advertencia (`WARN`) en los logs del agente.
 
 El sistema de alertas de Pulso notifica cuando una métrica del sistema cumple una condición definida mediante un umbral. Esta guía explica cómo se definen las reglas para CPU, memoria y disco, qué niveles de severidad expone la API y cómo se evitan los falsos positivos.
 
@@ -9,7 +9,11 @@ Componentes principales:
 * **AlertaUmbral**: regla que compara una métrica contra un umbral.
 * **GestorAlertas**: registra varias reglas, las evalúa contra un `MetricSnapshot` y ejecuta un callback con el mensaje de cada alerta disparada.
 
----
+1. El `Sampler` recolecta las métricas de todos los collectors.
+2. Guarda el snapshot en la base de datos.
+3. Convierte el snapshot a porcentajes de CPU, RAM y disco.
+4. `GestorAlertas` evalúa cada alerta contra esos valores.
+5. Por cada alerta que cambia de estado, escribe un mensaje de nivel `WARN` en el log.
 
 ## Regla de umbral (`AlertaUmbral`)
 
@@ -40,7 +44,7 @@ Provienen de `MetricSnapshot`:
 | Red (rx)   | Bytes recibidos.             | `"rx_bytes"`            |
 | Red (tx)   | Bytes enviados.              | `"tx_bytes"`            |
 
----
+El ciclo se repite cada `intervalo_segundos` (sección `[sampler]`).
 
 ## Registrar y evaluar reglas (`GestorAlertas`)
 
@@ -68,7 +72,7 @@ Comportamiento de `evaluar()`:
 
 Actualmente los umbrales se registran por código con `GestorAlertas::addAlerta()`. El archivo `pulso.toml` no incluye una sección de alertas, por lo que los umbrales no se pueden cambiar desde ese archivo.
 
----
+Cuando el uso de CPU supera `cpu_max`, aparece una línea de nivel `WARN` con el mensaje de la alerta, por ejemplo:
 
 ## Niveles de severidad
 
@@ -81,7 +85,7 @@ Las alertas que expone la API (`GET /alerts`) incluyen un campo `severity` con u
 | `HIGH`     | Requiere atención pronto.         |
 | `CRITICAL` | Riesgo inmediato para el sistema. |
 
-### Ejemplo de respuesta
+## Comportamiento y limitaciones
 
 ```json
 {

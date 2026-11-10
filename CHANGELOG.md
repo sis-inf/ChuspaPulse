@@ -8,7 +8,10 @@ y este proyecto sigue el versionado [SemVer](https://semver.org/lang/es/).
 ## [v0.1.0] - 2026-08-30
 
 ### Añadido
+- feat(collectors): normalizar metricas de carga promedio de 1 5 y 15 minutos en loadavg_collector (#1435)
 - fix(http): activar endpoint GET /config (#833)
+- fix(collectors): instanciar collectors de procesos, loadavg, uptime y temperatura (#825)
+- fix(http): activar endpoint GET /alerts (#837)
 - Documentación inicial del proyecto
 - Organización inicial de directorios
 - Configuración base del sistema
@@ -20,14 +23,11 @@ y este proyecto sigue el versionado [SemVer](https://semver.org/lang/es/).
 - feat(formatter): implementar formateador compatible con la exposición de métricas de Prometheus.
 - feat(storage): agregar módulo de almacenamiento persistente local para las métricas recolectadas.
 - feat(http): implementar handlers HTTP para la exposición de endpoints del servidor de monitoreo.
+- Persistencia del historial de alertas en SQLite y endpoint GET /alerts/history (#839)
 
 ## [0.1.0] - 2026-04-22
 
 ### Añadido
-
-* Inicio del proyecto Pulso
-* Creación del repositorio
-* 
 
 - Inicio del proyecto Pulso
 - Creación del repositorio

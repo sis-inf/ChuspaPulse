@@ -5,11 +5,11 @@
 #include "../storage/storage.hpp"
 #include "../formatters/iformatter.hpp"
 
-namespace pulso::http {
+namespace chuspapulse::http {
 
 void registrarHistory(
     httplib::Server& servidor,
-    const pulso::storage::Storage& storage,
-    const pulso::formatters::IFormatter& formatter);
+    const chuspapulse::storage::Storage& storage,
+    const chuspapulse::formatters::IFormatter& formatter);
 
-} // namespace pulso::http
+} // namespace chuspapulse::http

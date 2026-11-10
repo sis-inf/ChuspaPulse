@@ -3,7 +3,7 @@
 all: build
 
 build:
-	@cmake -B build -S .
+	@cmake -B build -S . -DBUILD_TESTS=ON
 	@cmake --build build
 
 clean:

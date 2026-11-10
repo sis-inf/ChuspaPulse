@@ -3,7 +3,7 @@
 #include "../config/config.hpp"
 #include <string>
 
-namespace pulso::cli {
+namespace chuspapulse::cli {
 
 /**
  * @brief Opciones extendidas de linea de comandos.
@@ -12,9 +12,10 @@ namespace pulso::cli {
  * para el modo 'once' y formato de salida.
  */
 struct CliOptions {
-    pulso::config::MonitorConfig monitor;
+    chuspapulse::config::MonitorConfig monitor;
     bool once = false;
     std::string format = "json";
+    std::string config_path = "pulso.toml";
 };
 
 /**
@@ -22,9 +23,10 @@ struct CliOptions {
  *
  * Argumentos soportados:
  * - --interval <ms>
- * - --metrics <lista>
+ * - --metrics <lista>  (solo cpu, ram y disk, separados por coma)
  * - --once
  * - --format json|csv|prometheus|text
+ * - --config <ruta>
  * - -h, --help
  * - --version
  *
@@ -33,7 +35,8 @@ struct CliOptions {
  * @param options Configuracion extendida a modificar.
  *
  * @return true si la ejecucion puede continuar.
- * @return false si ocurrio un error o se mostro ayuda.
+ * @return false si ocurrio un error o se mostro ayuda. Esto incluye
+ *         una lista de --metrics vacia o con nombres desconocidos.
  */
 bool parse_arguments(int argc, char* argv[], CliOptions& options);
 
@@ -42,4 +45,4 @@ bool parse_arguments(int argc, char* argv[], CliOptions& options);
  */
 void print_help();
 
-} // namespace pulso::cli
+} // namespace chuspapulse::cli

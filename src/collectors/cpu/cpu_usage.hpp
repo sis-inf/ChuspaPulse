@@ -1,5 +1,5 @@
-#ifndef PULSO_CPU_CPU_USAGE_HPP
-#define PULSO_CPU_CPU_USAGE_HPP
+#ifndef CHUSPAPULSE_CPU_CPU_USAGE_HPP
+#define CHUSPAPULSE_CPU_CPU_USAGE_HPP
 
 #include <cstdint>
 #include <string>
@@ -41,8 +41,8 @@ uint64_t CalcularTicksOciosos(const ContadoresCPU& c);
 /// @return Porcentaje de uso de CPU.
 /// @note Si ocurre un error o los datos no son válidos, retorna 0.0.
 double ObtenerUsoCPU();
-namespace pulso::collectors {
- 
+namespace chuspapulse::collectors {
+
 /**
  * @brief Recolector de métricas de CPU.
  *
@@ -57,7 +57,7 @@ class CollectorCPU : public ICollector {
    * @return La cadena "cpu".
    */
   std::string nombre() const override;
- 
+
   /**
    * @brief Ejecuta una medición de CPU y devuelve las métricas obtenidas.
    *
@@ -66,8 +66,8 @@ class CollectorCPU : public ICollector {
    *
    * @return Vector con la métrica de uso de CPU.
    */
-  std::vector<pulso::core::Metrica> recolectar() override;
+  std::vector<chuspapulse::core::Metrica> recolectar() override;
 };
- 
-}  // namespace pulso::collectors
-#endif // PULSO_CPU_CPU_USAGE_HPP
+
+}  // namespace chuspapulse::collectors
+#endif // CHUSPAPULSE_CPU_CPU_USAGE_HPP

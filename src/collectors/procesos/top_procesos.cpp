@@ -14,7 +14,7 @@
 #include <unistd.h>
 #include <unordered_map>
 
-namespace pulso::collectors::procesos {
+namespace chuspapulse::collectors::procesos {
 
 namespace {
 
@@ -211,7 +211,7 @@ std::vector<ProcesoInfo> getTopProcesos(int n, int intervalo_ms) {
     // seguira siendo valido.
     uint64_t memoria_total_bytes = 1;
     try {
-        memoria_total_bytes = pulso::collectors::memory::getRamUsage().total;
+        memoria_total_bytes = chuspapulse::collectors::memory::getRamUsage().total;
         if (memoria_total_bytes == 0) {
             memoria_total_bytes = 1;
         }
@@ -295,4 +295,4 @@ std::vector<ProcesoInfo> getTopProcesos(int n, int intervalo_ms) {
     return resultado;
 }
 
-} // namespace pulso::collectors::procesos
+} // namespace chuspapulse::collectors::procesos

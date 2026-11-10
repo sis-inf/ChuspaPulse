@@ -4,13 +4,13 @@
 #include <vector>
 #include "core/snapshot.hpp"
 
-namespace pulso::formatters {
+namespace chuspapulse::formatters {
 
 /**
  * @brief Interfaz abstracta para los formateadores de métricas.
  *
  * Define el contrato que deben cumplir todos los formateadores
- * del sistema Pulso. Cada implementación serializa un Snapshot
+ * del sistema ChuspaPulse. Cada implementación serializa un Snapshot
  * en un formato específico (JSON, Prometheus, etc.).
  */
 class IFormatter {
@@ -37,7 +37,7 @@ public:
      * @param snapshot El snapshot a serializar.
      * @return Cadena con el snapshot en el formato correspondiente.
      */
-    virtual std::string formatear(const pulso::core::Snapshot& snapshot) const = 0;
+    virtual std::string formatear(const chuspapulse::core::Snapshot& snapshot) const = 0;
 
     /**
      * @brief Serializa una lista de snapshots (historial).
@@ -45,7 +45,7 @@ public:
      * @return Cadena con el historial en el formato correspondiente.
      */
     virtual std::string formatearHistorial(
-        const std::vector<pulso::core::Snapshot>& snapshots) const = 0;
+        const std::vector<chuspapulse::core::Snapshot>& snapshots) const = 0;
 };
 
-} // namespace pulso::formatters
+} // namespace chuspapulse::formatters

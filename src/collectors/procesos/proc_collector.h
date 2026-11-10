@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace pulso::collectors {
+namespace chuspapulse::collectors {
 
 /**
  * @brief Información de procesos obtenida desde /proc.
@@ -31,4 +31,4 @@ struct ProcInfo {
  */
 ProcInfo getProcInfo();
 
-} // namespace pulso::collectors
+} // namespace chuspapulse::collectors

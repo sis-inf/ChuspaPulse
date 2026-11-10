@@ -2,21 +2,21 @@
 
 ## Descripción
 
-Además de recopilar métricas del sistema monitoreado, **Pulso** realiza un seguimiento de su propio estado de funcionamiento mediante un conjunto de métricas de auto-monitoreo.
+Además de recopilar métricas del sistema monitoreado, **ChuspaPulse** realiza un seguimiento de su propio estado de funcionamiento mediante un conjunto de métricas de auto-monitoreo.
 
 Estas métricas permiten verificar que el agente se ejecuta correctamente, identificar consumos excesivos de recursos y detectar degradaciones de rendimiento antes de que afecten la recolección de información.
 
-Es importante destacar que estas métricas describen el comportamiento del propio agente **Pulso**, no del equipo o sistema que está siendo monitoreado.
+Es importante destacar que estas métricas describen el comportamiento del propio agente **ChuspaPulse**, no del equipo o sistema que está siendo monitoreado.
 
 ---
 
 # Métricas disponibles
 
-## `pulso.self_memory_bytes`
+## `chuspapulse.self_memory_bytes`
 
 ### Descripción
 
-Indica la cantidad de memoria utilizada por el proceso de Pulso.
+Indica la cantidad de memoria utilizada por el proceso de ChuspaPulse.
 
 ### Unidad
 
@@ -33,11 +33,11 @@ Permite detectar incrementos anormales en el consumo de memoria, como posibles f
 
 ---
 
-## `pulso.self_cpu_pct`
+## `chuspapulse.self_cpu_pct`
 
 ### Descripción
 
-Representa el porcentaje de uso de CPU correspondiente únicamente al proceso de Pulso.
+Representa el porcentaje de uso de CPU correspondiente únicamente al proceso de ChuspaPulse.
 
 ### Unidad
 
@@ -54,7 +54,7 @@ Permite verificar que el agente no consuma una cantidad excesiva de recursos del
 
 ---
 
-## `pulso.collector_duration_ms`
+## `chuspapulse.collector_duration_ms`
 
 ### Descripción
 
@@ -75,7 +75,7 @@ Permite identificar collectors cuyo tiempo de ejecución es superior al esperado
 
 ---
 
-## `pulso.ciclo_duration_ms`
+## `chuspapulse.ciclo_duration_ms`
 
 ### Descripción
 
@@ -98,7 +98,7 @@ Permite conocer el rendimiento global del proceso de monitoreo y verificar si el
 
 # Importancia del auto-monitoreo
 
-Las métricas de auto-monitoreo ayudan a evaluar la salud del propio agente Pulso.
+Las métricas de auto-monitoreo ayudan a evaluar la salud del propio agente ChuspaPulse.
 
 Gracias a ellas es posible detectar situaciones como:
 
@@ -115,4 +115,4 @@ Esta información permite identificar problemas del agente antes de que afecten 
 
 Las métricas de auto-monitoreo no describen el estado del sistema monitoreado.
 
-Su objetivo es medir exclusivamente el comportamiento interno del proceso **Pulso**, permitiendo supervisar el rendimiento y la estabilidad del agente encargado de recopilar las métricas.
+Su objetivo es medir exclusivamente el comportamiento interno del proceso **ChuspaPulse**, permitiendo supervisar el rendimiento y la estabilidad del agente encargado de recopilar las métricas.

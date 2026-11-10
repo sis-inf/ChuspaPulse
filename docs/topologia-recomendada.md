@@ -1,8 +1,8 @@
-# Topologías recomendadas para desplegar Pulso
+# Topologías recomendadas para desplegar ChuspaPulse
 
 ## Resumen
 
-Pulso puede utilizarse en diferentes escenarios de monitoreo, desde un único servidor hasta entornos con múltiples equipos. La configuración recomendada depende del tamaño de la infraestructura y de los requisitos de almacenamiento y consulta de métricas.
+ChuspaPulse puede utilizarse en diferentes escenarios de monitoreo, desde un único servidor hasta entornos con múltiples equipos. La configuración recomendada depende del tamaño de la infraestructura y de los requisitos de almacenamiento y consulta de métricas.
 
 Este documento presenta recomendaciones para tres escenarios habituales de despliegue.
 
@@ -12,7 +12,7 @@ Este documento presenta recomendaciones para tres escenarios habituales de despl
 
 ## Cuándo utilizarlo
 
-Este escenario es adecuado cuando Pulso monitoriza un solo equipo, por ejemplo:
+Este escenario es adecuado cuando ChuspaPulse monitoriza un solo equipo, por ejemplo:
 
 - Un servidor personal.
 - Un laboratorio.
@@ -23,7 +23,7 @@ Este escenario es adecuado cuando Pulso monitoriza un solo equipo, por ejemplo:
 
 Se recomienda utilizar una configuración sencilla:
 
-- Un único proceso de Pulso.
+- Un único proceso de ChuspaPulse.
 - Almacenamiento local.
 - Retención de métricas según las necesidades del usuario.
 - Consultas realizadas directamente sobre la instancia.
@@ -55,7 +55,7 @@ Este enfoque permite mantener una administración sencilla mientras el número d
 
 ## Limitaciones
 
-Pulso utiliza SQLite como mecanismo de almacenamiento local.
+ChuspaPulse utiliza SQLite como mecanismo de almacenamiento local.
 
 Aunque SQLite resulta adecuado para este tipo de despliegues, su utilización presenta limitaciones cuando aumenta el volumen de datos o el número de escrituras concurrentes.
 
@@ -71,11 +71,11 @@ Estas limitaciones se describen con mayor detalle en el documento:
 
 Este escenario corresponde a infraestructuras con decenas o cientos de servidores.
 
-En estos casos no se recomienda utilizar Pulso como agregador central de todas las métricas.
+En estos casos no se recomienda utilizar ChuspaPulse como agregador central de todas las métricas.
 
 ## Recomendación
 
-La práctica recomendada consiste en ejecutar una instancia de Pulso en cada servidor y exportar las métricas hacia una plataforma especializada en agregación y almacenamiento.
+La práctica recomendada consiste en ejecutar una instancia de ChuspaPulse en cada servidor y exportar las métricas hacia una plataforma especializada en agregación y almacenamiento.
 
 Algunas opciones habituales son:
 
@@ -83,7 +83,7 @@ Algunas opciones habituales son:
 - VictoriaMetrics
 - InfluxDB
 
-Pulso puede actuar como generador de métricas utilizando formatos compatibles como:
+ChuspaPulse puede actuar como generador de métricas utilizando formatos compatibles como:
 
 - Prometheus
 - OpenMetrics
@@ -102,9 +102,9 @@ Las herramientas especializadas permiten:
 
 | Escenario | Configuración recomendada | Observaciones |
 |-----------|---------------------------|---------------|
-| Servidor único | Una instancia de Pulso con almacenamiento local | Configuración sencilla y de bajo mantenimiento. |
+| Servidor único | Una instancia de ChuspaPulse con almacenamiento local | Configuración sencilla y de bajo mantenimiento. |
 | 2 a 10 servidores | Uso de hostname para identificar equipos y consultas filtradas | Considerar las limitaciones de SQLite descritas en `docs/limites-conocidos.md`. |
-| Flotas grandes | Una instancia por servidor y exportación hacia Prometheus, VictoriaMetrics o InfluxDB | No utilizar Pulso como agregador central. |
+| Flotas grandes | Una instancia por servidor y exportación hacia Prometheus, VictoriaMetrics o InfluxDB | No utilizar ChuspaPulse como agregador central. |
 
 ---
 
@@ -115,12 +115,12 @@ Independientemente del tamaño del despliegue, se recomienda:
 - Configurar una retención de datos acorde con el espacio disponible.
 - Supervisar periódicamente el crecimiento del almacenamiento.
 - Utilizar nombres de host descriptivos.
-- Integrar Pulso con plataformas de monitoreo especializadas cuando el entorno aumente de tamaño.
+- Integrar ChuspaPulse con plataformas de monitoreo especializadas cuando el entorno aumente de tamaño.
 
 ---
 
 # Conclusiones
 
-Pulso puede utilizarse eficazmente en distintos escenarios de monitoreo siempre que la configuración sea acorde al tamaño del entorno.
+ChuspaPulse puede utilizarse eficazmente en distintos escenarios de monitoreo siempre que la configuración sea acorde al tamaño del entorno.
 
-Para instalaciones pequeñas resulta suficiente una configuración local. En entornos medianos es recomendable organizar las consultas mediante hostnames y considerar las limitaciones conocidas del almacenamiento. Para flotas grandes, la práctica recomendada consiste en utilizar Pulso como agente de recolección y delegar la agregación de métricas en soluciones especializadas como Prometheus, VictoriaMetrics o InfluxDB.
+Para instalaciones pequeñas resulta suficiente una configuración local. En entornos medianos es recomendable organizar las consultas mediante hostnames y considerar las limitaciones conocidas del almacenamiento. Para flotas grandes, la práctica recomendada consiste en utilizar ChuspaPulse como agente de recolección y delegar la agregación de métricas en soluciones especializadas como Prometheus, VictoriaMetrics o InfluxDB.

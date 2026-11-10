@@ -1,6 +1,6 @@
 # SLA y Precisión de las Métricas
 
-Este documento describe la precisión esperada de las métricas recolectadas por el sistema Pulso, los límites conocidos y cómo interpretar los valores expuestos.
+Este documento describe la precisión esperada de las métricas recolectadas por el sistema ChuspaPulse, los límites conocidos y cómo interpretar los valores expuestos.
 
 ## Precisión por tipo de métrica
 

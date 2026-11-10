@@ -8,7 +8,7 @@
 #include <SQLiteCpp/SQLiteCpp.h>
 #include "../core/types.hpp"
 
-namespace pulso::storage {
+namespace chuspapulse::storage {
 
 /**
  * @brief Encapsula todas las operaciones de persistencia contra la base de datos SQLite.
@@ -32,7 +32,7 @@ public:
      * @brief Inserta un snapshot en la base de datos.
      * @param snapshot Snapshot a persistir.
      */
-    void save(const pulso::core::Snapshot& snapshot);
+    void save(const chuspapulse::core::Snapshot& snapshot);
 
     /**
      * @brief Configura el número máximo de snapshots retenidos.
@@ -50,7 +50,7 @@ public:
      * @brief Devuelve el snapshot más reciente almacenado.
      * @return El snapshot más reciente, o std::nullopt si no hay datos.
      */
-    std::optional<pulso::core::Snapshot> last() const;
+    std::optional<chuspapulse::core::Snapshot> last() const;
 
     /**
      * @brief Devuelve snapshots en el rango de timestamps indicado.
@@ -60,7 +60,7 @@ public:
      * @param limit Cantidad máxima de snapshots a retornar. Por defecto 1000.
      * @return Vector de snapshots que cumplen el filtro.
      */
-    std::vector<pulso::core::Snapshot> history(
+    std::vector<chuspapulse::core::Snapshot> history(
         std::int64_t from,
         std::int64_t until = 0,
         std::size_t  limit = 1000) const;
@@ -87,11 +87,11 @@ public:
      * @param ventana_segundos Tamaño de la ventana en segundos.
      * @return Snapshot con los valores promediados.
      */
-    pulso::core::Snapshot getPromedio(uint32_t ventana_segundos) const;
+    chuspapulse::core::Snapshot getPromedio(uint32_t ventana_segundos) const;
 
 private:
     SQLite::Database db_;
     std::size_t maxEntries_ = 3600;
 };
 
-} // namespace pulso::storage
+} // namespace chuspapulse::storage

@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: pulso
+  name: chuspapulse
   labels:
-    app: pulso
+    app: chuspapulse
 spec:
   selector:
     matchLabels:
-      app: pulso
+      app: chuspapulse
   template:
     metadata:
       labels:
-        app: pulso
+        app: chuspapulse
     spec:
       containers:
-        - name: pulso
-          image: pulso:latest
+        - name: chuspapulse
+          image: chuspapulse:latest
           imagePullPolicy: IfNotPresent
 
           ports:
@@ -29,12 +29,12 @@ spec:
       volumes:
         - name: storage
           persistentVolumeClaim:
-            claimName: pulso-storage
+            claimName: chuspapulse-storage
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: pulso-storage
+  name: chuspapulse-storage
 spec:
   accessModes:
     - ReadWriteOnce

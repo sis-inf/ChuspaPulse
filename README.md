@@ -56,7 +56,7 @@ Gracias a su implementación en C++, Pulso permite una ejecución más rápida y
 | :--- | :---: | :---: |
 | **Linux (Kernel 5.4+)** | Soporte Pleno | 100% Funcional |
 | **Windows 10/11** | Soporte Pleno | 100% Funcional |
-| **macOS 12+** | No soportado actualmente | Colectores nativos pendientes |
+| **macOS 12+** | No soportado actualmente | Colectores nativos pendientes (ver [límites conocidos](docs/limites-conocidos.md)) |
 
 ### Pasos básicos
 

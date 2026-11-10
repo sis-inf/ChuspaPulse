@@ -1,3 +1,5 @@
+#include "http/handler_alerts.hpp"
+#include "alertas/gestor_alertas.hpp"
 #include <iostream>
 #include <memory>
 #include <thread>
@@ -25,6 +27,10 @@
 #include "collectors/disk/disk_usage.h"
 #include "collectors/network/net_usage.h"
 #include "platform/linux/collector_cpu.hpp"
+#include "collectors/procesos/proc_collector.h"
+#include "collectors/loadavg/loadavg_collector.h"
+#include "collectors/uptime/uptime_collector.h"
+#include "collectors/temperatura/temp_collector.h"
 
 // Sampler
 #include "sampler/sampler.hpp"
@@ -33,11 +39,13 @@
 #include "formatters/formatter_json.hpp"
 #include "formatters/formatter_csv.hpp"
 #include "formatters/formatter_prometheus.hpp"
+#include "formatters/formatter_text.hpp"
 
 // HTTP handlers
 #include "http/handler_config.hpp"
 #include "http/handler_health.hpp"
 #include "http/handler_history.hpp"
+#include "http/handler_alerts_history.hpp"
 #include "http/handler_metrics.hpp"
 #include "http/handler_prometheus.hpp"
 #include "http/handler_version.hpp"
@@ -51,6 +59,79 @@
 // Signal handler
 extern std::atomic<bool> isRunning;
 void setupSignalHandler();
+bool consume_reload_request();
+class CollectorProcesos : public pulso::collectors::ICollector {
+public:
+    std::string nombre() const override {
+        return "procesos";
+    }
+
+    std::vector<pulso::core::Metrica> recolectar() override {
+        pulso::collectors::ProcInfo info = pulso::collectors::getProcInfo();
+        auto ts = std::time(nullptr);
+
+        return {
+            {"procesos.running", static_cast<double>(info.running), "cantidad", ts},
+            {"procesos.blocked", static_cast<double>(info.blocked), "cantidad", ts},
+            {"procesos.total", static_cast<double>(info.total), "cantidad", ts}
+        };
+    }
+};
+
+class CollectorLoadAvg : public pulso::collectors::ICollector {
+public:
+    std::string nombre() const override {
+        return "loadavg";
+    }
+
+    std::vector<pulso::core::Metrica> recolectar() override {
+        LoadAvgInfo info = getLoadAverage();
+        auto ts = std::time(nullptr);
+
+        return {
+            {"loadavg.1", static_cast<double>(info.load1), "carga", ts},
+            {"loadavg.5", static_cast<double>(info.load5), "carga", ts},
+            {"loadavg.15", static_cast<double>(info.load15), "carga", ts}
+        };
+    }
+};
+
+class CollectorUptime : public pulso::collectors::ICollector {
+public:
+    std::string nombre() const override {
+        return "uptime";
+    }
+
+    std::vector<pulso::core::Metrica> recolectar() override {
+        UptimeInfo info = getUptime();
+        auto ts = std::time(nullptr);
+
+        return {
+            {"uptime.seconds", static_cast<double>(info.total_seconds), "segundos", ts}
+        };
+    }
+};
+
+class CollectorTemperatura : public pulso::collectors::ICollector {
+public:
+    std::string nombre() const override {
+        return "temperatura";
+    }
+
+    std::vector<pulso::core::Metrica> recolectar() override {
+        ::collectors::TempInfo info = ::collectors::getTempInfo();
+
+        if (!info.disponible) {
+            return {};
+        }
+
+        auto ts = std::time(nullptr);
+
+        return {
+            {"temperatura.cpu", static_cast<double>(info.cpu_celsius), "celsius", ts}
+        };
+    }
+};
 
 // ============================================
 // NUEVO: Funcion helper para modo once
@@ -104,6 +185,10 @@ else if (format == "prometheus")
 {
     formatter = std::make_unique<pulso::formatters::FormatterPrometheus>();
 }
+else if (format == "text")
+{
+    formatter = std::make_unique<pulso::formatters::FormatterText>();
+}
 
 // Validación explícita del formato recibido por CLI
 if (!formatter)
@@ -128,6 +213,49 @@ std::string output = formatter->formatear(snapshot);
     return 0;
 }
 
+/**
+ * @brief Convierte el Snapshot del sampler (lista de métricas) al
+ *        MetricSnapshot que evalúa GestorAlertas.
+ *
+ * CPU llega en porcentaje. Disco y RAM llegan en bytes, así que se
+ * convierten a porcentaje para poder compararlos con los umbrales.
+ */
+static pulso::MetricSnapshot construirMetricSnapshot(
+    const pulso::core::Snapshot& snap)
+{
+    pulso::MetricSnapshot ms;
+
+    double discoUsado = 0.0;
+    double discoTotal = 0.0;
+
+    for (const auto& m : snap.metricas) {
+        if (m.nombre == "cpu.usage") {
+            ms.cpu = m.valor;
+        } else if (m.nombre == "disk.used") {
+            discoUsado = m.valor;
+        } else if (m.nombre == "disk.total") {
+            discoTotal = m.valor;
+        }
+    }
+
+    if (discoTotal > 0.0) {
+        ms.disk = discoUsado / discoTotal * 100.0;
+    }
+
+    // La métrica "memory.used" no trae el total, así que se consulta aparte.
+    try {
+        const auto ram = pulso::collectors::memory::getRamUsage();
+        if (ram.total > 0) {
+            ms.ram = static_cast<double>(ram.used) /
+                     static_cast<double>(ram.total) * 100.0;
+        }
+    } catch (const std::exception&) {
+        // Si no se puede leer la RAM, queda en 0 y no dispara alerta.
+    }
+
+    return ms;
+}
+
 // ============================================
 // MAIN
 // ============================================
@@ -141,14 +269,8 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    // --config se maneja aqui (manteniendo logica original)
-    std::string config_path = "pulso.toml";
-    for (int i = 1; i < argc; ++i) {
-        std::string arg = argv[i];
-        if (arg == "--config" && i + 1 < argc) {
-            config_path = argv[++i];
-        }
-    }
+    // --config ya fue validado por parse_arguments
+    std::string config_path = cli_opts.config_path;
 
     // -------------------------------------------------------------------------
     // 2. Cargar configuracion
@@ -216,6 +338,22 @@ int main(int argc, char* argv[]) {
     collectors.push_back(
         std::make_shared<pulso::collectors::network::NetworkCollector>()
     );
+    collectors.push_back(
+        std::make_shared<CollectorProcesos>()
+    );
+
+    collectors.push_back(
+        std::make_shared<CollectorLoadAvg>()
+    );
+
+    collectors.push_back(
+        std::make_shared<CollectorUptime>()
+    );
+
+    collectors.push_back(
+        std::make_shared<CollectorTemperatura>()
+    );
+
 
     // =========================================================================
     // MODO ONCE
@@ -236,13 +374,43 @@ int main(int argc, char* argv[]) {
     pulso::storage::Storage storage(cfg.storage.ruta_db);
     pulso::storage::inicializarEsquema(storage);
 
-    // Sampler (bucle infinito de coleccion)
+
+    // Gestor de alertas con umbrales leídos desde pulso.toml
+        // Conexión propia a la misma base de datos para guardar y consultar alertas
+    SQLite::Database alertasDb(
+        cfg.storage.ruta_db,
+        SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE,
+        5000);  // espera hasta 5 s si el sampler está escribiendo
+    pulso::storage::inicializarEsquema(alertasDb);
+    pulso::alertas::GestorAlertas gestorAlertas(alertasDb);
+    gestorAlertas.addAlerta(pulso::alertas::AlertaUmbral(
+        "cpu", static_cast<float>(cfg.umbrales.cpu_max), '>'));
+    gestorAlertas.addAlerta(pulso::alertas::AlertaUmbral(
+        "ram", static_cast<float>(cfg.umbrales.ram_max), '>'));
+    gestorAlertas.addAlerta(pulso::alertas::AlertaUmbral(
+        "disk", static_cast<float>(cfg.umbrales.disco_max), '>'));
+
+    // Cuando una alerta se dispara, queda registrada en el log
+    gestorAlertas.setCallback([](const std::string& mensaje) {
+        pulso::utils::logging::Logger::instancia().warn(mensaje);
+    });
+
+    log.info("GestorAlertas activo -> Umbrales: CPU=" +
+             std::to_string(cfg.umbrales.cpu_max) + "%, RAM=" +
+             std::to_string(cfg.umbrales.ram_max) + "%, Disco=" +
+             std::to_string(cfg.umbrales.disco_max) + "%");
+
+    // Sampler (bucle de colección); en cada ciclo evalúa las alertas
     pulso::sampler::Sampler sampler(
         collectors,
         storage,
-        cfg.sampler.intervalo_segundos
+        cfg.sampler.intervalo_segundos,
+        [&gestorAlertas](const pulso::core::Snapshot& snap) {
+            gestorAlertas.evaluar(construirMetricSnapshot(snap));
+        }
     );
     sampler.iniciar();
+
 
     // Signal handler
     setupSignalHandler();
@@ -264,10 +432,10 @@ int main(int argc, char* argv[]) {
         );
     });
 
-    // GET /version 
+    // GET /version
 server.Get("/version", [](
     const httplib::Request&,
-    httplib::Response& res) 
+    httplib::Response& res)
 {
     res.set_content(
         pulso::http::handleVersion(),
@@ -275,6 +443,24 @@ server.Get("/version", [](
     );
 });
 server.Get("/config", handle_config);
+
+    // GET /alerts
+    server.Get("/alerts", [&storage, &gestorAlertas](
+        const httplib::Request&,
+        httplib::Response& res)
+    {
+        pulso::MetricSnapshot snap;  // en ceros si todavía no hay datos
+        if (auto ultimo = storage.last()) {
+            snap = construirMetricSnapshot(*ultimo);
+        }
+
+        res.status = 200;
+        res.set_content(
+            pulso::http::handleAlerts(gestorAlertas, snap),
+            "application/json"
+        );
+    });
+
 
     // GET /metrics — pendiente hasta que SystemMonitor se adapte al flujo
     // actual (Storage + ICollector). Ver issue #270.
@@ -285,17 +471,56 @@ server.Get("/config", handle_config);
 
     // GET /metrics/prometheus
     pulso::http::registrarPrometheus(server, storage);
+    // GET /alerts/history
+    pulso::http::registrarAlertsHistory(server, gestorAlertas);
 
-    // Arrancar servidor HTTP en thread separado
-    std::thread http_thread([&]() {
+
+    // Arrancar servidor HTTP en thread separado.
+    // Host y puerto se copian porque cfg puede reemplazarse al recibir SIGHUP.
+    const std::string http_host = cfg.servidor.host;
+    const int http_puerto = cfg.servidor.puerto;
+    std::thread http_thread([&, http_host, http_puerto]() {
         log.info("Servidor HTTP escuchando en " +
-                 cfg.servidor.host + ":" +
-                 std::to_string(cfg.servidor.puerto));
-        server.listen(cfg.servidor.host.c_str(), cfg.servidor.puerto);
+                 http_host + ":" +
+                 std::to_string(http_puerto));
+        server.listen(http_host.c_str(), http_puerto);
     });
 
     // Esperar senal de shutdown (bucle infinito)
     while (isRunning.load()) {
+        // SIGHUP: releer y validar la configuracion sin detener el proceso.
+        // Si es valida pasa a ser la configuracion activa; el servidor, la
+        // base de datos, el sampler, el logger y los umbrales siguen con los
+        // valores del arranque hasta reiniciar. Si es invalida se conserva
+        // la activa.
+        if (consume_reload_request()) {
+            log.info("SIGHUP recibido: recargando configuracion desde " + config_path);
+
+            pulso::config::Config recargada = cfg;
+            std::string error;
+
+            if (pulso::config::recargar(config_path, recargada, error)) {
+                const auto campos = pulso::config::camposModificados(cfg, recargada);
+
+                if (campos.empty()) {
+                    log.info("Configuracion recargada y valida: sin cambios.");
+                } else {
+                    std::string lista;
+                    for (const auto& campo : campos) {
+                        if (!lista.empty()) lista += ", ";
+                        lista += campo;
+                    }
+                    log.warn("Configuracion recargada y valida. Campos modificados "
+                             "que requieren reiniciar el agente: " + lista);
+                }
+
+                cfg = recargada;
+            } else {
+                log.error("No se pudo recargar la configuracion: " + error +
+                          ". Se conserva la configuracion activa.");
+            }
+        }
+
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
