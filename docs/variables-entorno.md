@@ -24,15 +24,15 @@ lugares. El valor efectivo se resuelve en este orden:
 
 | Prioridad | Origen | Unidad | Rango válido |
 |-----------|--------|--------|--------------|
-| 1 | Opción `--interval <ms>` | Milisegundos | Entero mayor a 100 |
+| 1 | Opción `--interval <ms>` | Milisegundos | Entero de 101 a 3600000 |
 | 2 | Variable `CHUSPAPULSE_SAMPLER_INTERVALO_SEGUNDOS` | Segundos | Entero mayor a 0 |
 | 3 | `intervalo_segundos` en la sección `[sampler]` del TOML | Segundos | Entero mayor a 0 |
 | 4 | Valor por defecto | Segundos | 10 |
 
 Si se pasa `--interval`, ese valor prevalece sobre la configuración. Si no se
 pasa, se usa el valor de la configuración convertido a milisegundos. Un
-`--interval` menor o igual a 100 se rechaza con un mensaje de error y código de
-salida distinto de cero.
+`--interval` fuera de ese rango se rechaza con un mensaje de error y código de
+salida distinto de cero (ver [`--interval`](#intervalo-de-lectura---interval)).
 
 ```bash
 # Muestrear cada 500 ms aunque el TOML indique otro intervalo
@@ -66,6 +66,27 @@ ruta_db = "ChuspaPulse.db"
 
 nivel_log = "info"
 output_format = "json"
+```
+
+## Intervalo de lectura (`--interval`)
+
+La opción de línea de comandos `--interval` define cada cuánto se leen las métricas.
+
+- **Unidad:** milisegundos.
+- **Rango permitido:** de `101` a `3600000` ms (de algo más de 100 ms a 1 hora), ambos incluidos.
+- **Si no se pasa:** se usa `sampler.intervalo_segundos` de la configuración convertido a milisegundos (ver [Intervalo de muestreo](#intervalo-de-muestreo)).
+
+Solo se aceptan enteros escritos con dígitos. Si el valor no es un entero positivo (por ejemplo `abc`, `1.5`, `-5` o `100abc`) o queda fuera del rango (por ejemplo `0`, `100` o `3600001`), el programa muestra un mensaje de error y termina con código de salida distinto de cero:
+
+```text
+Error: --interval debe ser un entero positivo en milisegundos (recibido: 'abc')
+Error: --interval fuera de rango: 0 ms (permitido: 101 a 3600000 ms)
+```
+
+Ejemplo:
+
+```bash
+./build/bin/chuspapulse --interval 2000
 ```
 
 ## Prioridad de configuración

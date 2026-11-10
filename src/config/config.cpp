@@ -58,7 +58,7 @@ void aplicarEnv(Config& cfg)
     }
 
     if (const char* v = std::getenv("CHUSPAPULSE_SERVIDOR_PUERTO")) {
-        cfg.servidor.puerto = static_cast<uint16_t>(std::stoi(v));
+        cfg.servidor.puerto = parsearPuerto(v);
     }
 
     if (const char* v = std::getenv("CHUSPAPULSE_SAMPLER_INTERVALO_SEGUNDOS")) {
@@ -104,8 +104,25 @@ Config mapear(const toml::table& doc)
     cfg.servidor.host =
         leer<std::string>(doc, "servidor", "host", cfg.servidor.host);
 
-    cfg.servidor.puerto =
-        leer<int64_t>(doc, "servidor", "puerto", cfg.servidor.puerto);
+    // El puerto se valida sobre el valor original del TOML, antes de
+    // convertirlo a int (así 4294975376 no se trunca a 8080).
+    if (auto* sec = doc["servidor"].as_table()) {
+        if (auto nodo = (*sec)["puerto"]) {
+            auto valor = nodo.value_exact<int64_t>();
+            if (!valor) {
+                throw std::invalid_argument(
+                    "Valor inválido para puerto: debe ser un entero entre 1 y 65535"
+                );
+            }
+            if (*valor < 1 || *valor > 65535) {
+                throw std::invalid_argument(
+                    "Valor inválido para puerto: " + std::to_string(*valor) +
+                    " (debe estar entre 1 y 65535)"
+                );
+            }
+            cfg.servidor.puerto = static_cast<int>(*valor);
+        }
+    }
 
 
     // [sampler]
@@ -184,16 +201,6 @@ Config cargar(const std::string& ruta)
         validarOutputFormat(cfg);
 
 
-        // Validar puerto
-        if (cfg.servidor.puerto < 1 ||
-            cfg.servidor.puerto > 65535) {
-
-            throw std::invalid_argument(
-                "Valor inválido para puerto: " +
-                std::to_string(cfg.servidor.puerto)
-            );
-        }
-
         // Validar umbrales (porcentajes entre 0.0 y 100.0)
         if (!(cfg.umbrales.cpu_max >= 0.0 &&
               cfg.umbrales.cpu_max <= 100.0)) {
@@ -262,6 +269,37 @@ Config cargar(const std::string& ruta)
 Config porDefecto()
 {
     return Config{};
+}
+
+
+int parsearPuerto(const std::string& texto)
+{
+    if (texto.empty()) {
+        throw std::invalid_argument("Valor inválido para puerto: vacío");
+    }
+
+    // Validar antes de convertir: solo dígitos y como mucho 5 (65535),
+    // así std::stoi no acepta "8080abc", "-1" ni desborda.
+    const bool soloDigitos =
+        texto.find_first_not_of("0123456789") == std::string::npos;
+
+    if (!soloDigitos || texto.size() > 5) {
+        throw std::invalid_argument(
+            "Valor inválido para puerto: '" + texto +
+            "' (debe ser un entero entre 1 y 65535)"
+        );
+    }
+
+    const int puerto = std::stoi(texto);
+
+    if (puerto < 1 || puerto > 65535) {
+        throw std::invalid_argument(
+            "Valor inválido para puerto: " + texto +
+            " (debe estar entre 1 y 65535)"
+        );
+    }
+
+    return puerto;
 }
 
 

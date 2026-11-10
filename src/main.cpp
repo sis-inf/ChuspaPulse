@@ -466,9 +466,8 @@ server.Get("/config", handle_config);
     });
 
 
-    // GET /metrics — pendiente hasta que SystemMonitor se adapte al flujo
-    // actual (Storage + ICollector). Ver issue #270.
-    // pulso::http::HandleMetrics(server, system_monitor);
+    // GET /metrics — último snapshot de Storage en formato Prometheus
+    pulso::http::HandleMetrics(server, storage);
 
     // GET /history
     pulso::http::registrarHistory(server, storage, formatterJson);
