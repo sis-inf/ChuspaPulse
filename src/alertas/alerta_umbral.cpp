@@ -65,4 +65,9 @@ std::string AlertaUmbral::mensaje() const {
            " " + std::to_string(umbral_);
 }
 
+std::string AlertaUmbral::mensajeRecuperacion() const {
+    return "Alerta resuelta: " + metrica_ + " " + operador_ +
+           " " + std::to_string(umbral_);
+}
+
 } // namespace chuspapulse::alertas

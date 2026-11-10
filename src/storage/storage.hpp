@@ -73,7 +73,15 @@ public:
 
     /**
      * @brief Exporta todos los snapshots a un archivo CSV.
+     *
+     * Escribe primero en `ruta_archivo + ".tmp"` y solo al terminar sin
+     * errores lo mueve a `ruta_archivo`. Si algo falla, borra el temporal y
+     * deja intacto el archivo de destino (si ya existía).
+     *
      * @param ruta_archivo Ruta del archivo CSV de salida.
+     * @throws std::runtime_error si no se puede crear o escribir el archivo,
+     *         si falla la consulta a la base de datos o si no se puede mover
+     *         el temporal al destino.
      */
     void exportToCSV(const std::string& ruta_archivo) const;
 

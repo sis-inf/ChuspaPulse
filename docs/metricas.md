@@ -63,6 +63,38 @@ esperada de muestreo.
 - **Valor anormalmente bajo**: Carga mínima, recursos libres
 - **Campo JSON**: `load_avg_1min`, `load_avg_5min`, `load_avg_15min`
 
+## Selección de métricas con `--metrics`
+
+La opción `--metrics` recibe una lista de nombres separados por coma y
+habilita solo las métricas indicadas.
+
+| Nombre | Métrica |
+|--------|---------|
+| `cpu`  | CPU     |
+| `ram`  | RAM     |
+| `disk` | Disco   |
+
+```bash
+chuspapulse --metrics cpu,ram
+```
+
+Si la lista está vacía o contiene un nombre que no está en la tabla, el
+programa muestra un error en la salida de errores, no modifica la selección de
+métricas y termina con código distinto de cero:
+
+```text
+$ chuspapulse --metrics cpu,gpu
+Error: metricas desconocidas: gpu
+Metricas validas: cpu, ram, disk
+
+$ chuspapulse --metrics ""
+Error: la lista de --metrics esta vacia
+Metricas validas: cpu, ram, disk
+```
+
+Los elementos vacíos dentro de la lista (por ejemplo `cpu,,ram` o `cpu,`)
+también se reportan como desconocidos.
+
 ## Notas adicionales
 
 - Las frecuencias de muestreo pueden ajustarse dependiendo del entorno (desarrollo, producción, dispositivos con recursos limitados, etc.).

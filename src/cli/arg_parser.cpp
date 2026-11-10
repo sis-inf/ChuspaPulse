@@ -16,12 +16,23 @@ namespace chuspapulse::cli {
  *
  * Ejemplo:
  * --metrics cpu,ram
+ *
+ * @return false si la lista esta vacia o contiene nombres desconocidos.
+ *         En ese caso la configuracion no se modifica.
  */
-static void parse_metrics(const std::string& metrics, chuspapulse::config::MonitorConfig& config)
+static bool parse_metrics(const std::string& metrics, chuspapulse::config::MonitorConfig& config)
 {
-    config.cpu = false;
-    config.ram = false;
-    config.disk = false;
+    if (metrics.empty())
+    {
+        std::cerr << "Error: la lista de --metrics esta vacia\n";
+        std::cerr << "Metricas validas: cpu, ram, disk\n";
+        return false;
+    }
+
+    bool cpu = false;
+    bool ram = false;
+    bool disk = false;
+    std::string desconocidas;
 
     std::stringstream ss(metrics);
     std::string item;
@@ -30,17 +41,46 @@ static void parse_metrics(const std::string& metrics, chuspapulse::config::Monit
     {
         if (item == "cpu")
         {
-            config.cpu = true;
+            cpu = true;
         }
         else if (item == "ram")
         {
-            config.ram = true;
+            ram = true;
         }
         else if (item == "disk")
         {
-            config.disk = true;
+            disk = true;
+        }
+        else
+        {
+            if (!desconocidas.empty())
+            {
+                desconocidas += ", ";
+            }
+            desconocidas += item.empty() ? "\"\"" : item;
         }
     }
+
+    if (metrics.back() == ',')
+    {
+        if (!desconocidas.empty())
+        {
+            desconocidas += ", ";
+        }
+        desconocidas += "\"\"";
+    }
+
+    if (!desconocidas.empty())
+    {
+        std::cerr << "Error: metricas desconocidas: " << desconocidas << "\n";
+        std::cerr << "Metricas validas: cpu, ram, disk\n";
+        return false;
+    }
+
+    config.cpu = cpu;
+    config.ram = ram;
+    config.disk = disk;
+    return true;
 }
 
 void print_help()
@@ -50,7 +90,8 @@ void print_help()
 
     std::cout << "Opciones:\n";
 
-    std::cout << "  --interval <ms>   Intervalo de lectura\n";
+    std::cout << "  --interval <ms>   Intervalo de lectura en milisegundos ("
+              << INTERVALO_MIN_MS << " a " << INTERVALO_MAX_MS << ")\n";
     std::cout << "  --metrics <list>  Metricas a recolectar: cpu,ram,disk\n";
     std::cout << "  --once            Ejecutar una sola lectura y salir\n";
     std::cout << "  --format <fmt>    Formato de salida con --once: json|csv|prometheus|text\n";
@@ -85,15 +126,35 @@ bool parse_arguments(int argc, char* argv[], chuspapulse::cli::CliOptions& optio
                 return false;
             }
 
-            int interval = std::stoi(argv[++i]);
+            const std::string valor = argv[++i];
 
-            if (interval <= 100)
+            // Validar antes de convertir: solo digitos (sin signo, espacios
+            // ni sufijos).
+            const bool soloDigitos =
+                !valor.empty() &&
+                valor.find_first_not_of("0123456789") == std::string::npos;
+
+            if (!soloDigitos)
             {
-                std::cerr << "Error: interval debe ser mayor a 100ms\n";
+                std::cerr << "Error: --interval debe ser un entero positivo en "
+                             "milisegundos (recibido: '" << valor << "')\n";
                 return false;
             }
 
-            options.monitor.interval_ms = interval;
+            // Mas de 10 digitos ya esta fuera de rango; se descarta antes de
+            // convertir para que stoll no desborde.
+            const long long interval =
+                valor.size() <= 10 ? std::stoll(valor) : INTERVALO_MAX_MS + 1;
+
+            if (interval < INTERVALO_MIN_MS || interval > INTERVALO_MAX_MS)
+            {
+                std::cerr << "Error: --interval fuera de rango: " << valor
+                          << " ms (permitido: " << INTERVALO_MIN_MS << " a "
+                          << INTERVALO_MAX_MS << " ms)\n";
+                return false;
+            }
+
+            options.monitor.interval_ms = static_cast<int>(interval);
         }
         else if (arg == "--metrics")
         {
@@ -103,7 +164,10 @@ bool parse_arguments(int argc, char* argv[], chuspapulse::cli::CliOptions& optio
                 return false;
             }
 
-            parse_metrics(argv[++i], options.monitor);
+            if (!parse_metrics(argv[++i], options.monitor))
+            {
+                return false;
+            }
         }
         else if (arg == "--once")
         {

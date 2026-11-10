@@ -64,6 +64,8 @@ gtest_discover_tests(test_config_completo)
 
 add_executable(test_storage
     storage/test_storage.cpp
+    ${PROJECT_SOURCE_DIR}/src/storage/storage.cpp
+    ${PROJECT_SOURCE_DIR}/src/storage/schema.cpp
 )
 target_include_directories(test_storage PRIVATE
     ${PROJECT_SOURCE_DIR}/src
@@ -120,6 +122,9 @@ add_executable(test_config_integration
     automatizados/integration/test_config.cpp
     ${PROJECT_SOURCE_DIR}/src/config/config.cpp
     ${PROJECT_SOURCE_DIR}/src/utils/signal_handler.cpp
+    ${PROJECT_SOURCE_DIR}/src/http/handler_alerts_history.cpp
+    ${PROJECT_SOURCE_DIR}/src/alertas/alerta_umbral.cpp
+    ${PROJECT_SOURCE_DIR}/src/alertas/gestor_alertas.cpp
 )
 target_include_directories(test_config_integration PRIVATE
     ${PROJECT_SOURCE_DIR}/src
@@ -127,6 +132,9 @@ target_include_directories(test_config_integration PRIVATE
 target_link_libraries(test_config_integration PRIVATE
     tomlplusplus::tomlplusplus
     httplib
+    nlohmann_json::nlohmann_json
+    SQLiteCpp
+    sqlite3
     GTest::gtest
     GTest::gtest_main
     Threads::Threads
@@ -219,6 +227,28 @@ target_link_libraries(test_formatter_text PRIVATE
     GTest::gtest_main
 )
 gtest_discover_tests(test_formatter_text)
+
+add_executable(test_metrics_integration
+    automatizados/integration/test_metrics.cpp
+    ${PROJECT_SOURCE_DIR}/src/http/handler_metrics.cpp
+    ${PROJECT_SOURCE_DIR}/src/http/handler_prometheus.cpp
+    ${PROJECT_SOURCE_DIR}/src/formatters/formatter_prometheus.cpp
+    ${PROJECT_SOURCE_DIR}/src/storage/storage.cpp
+    ${PROJECT_SOURCE_DIR}/src/storage/schema.cpp
+    ${PROJECT_SOURCE_DIR}/src/utils/logging/logger.cpp
+)
+target_include_directories(test_metrics_integration PRIVATE
+    ${PROJECT_SOURCE_DIR}/src
+)
+target_link_libraries(test_metrics_integration PRIVATE
+    httplib
+    SQLiteCpp
+    sqlite3
+    GTest::gtest
+    GTest::gtest_main
+    Threads::Threads
+)
+gtest_discover_tests(test_metrics_integration)
 
 add_executable(test_health_integration
     automatizados/integration/test_health.cpp
