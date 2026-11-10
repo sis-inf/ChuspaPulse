@@ -227,3 +227,25 @@ target_link_libraries(test_formatter_text PRIVATE
     GTest::gtest_main
 )
 gtest_discover_tests(test_formatter_text)
+
+add_executable(test_metrics_integration
+    automatizados/integration/test_metrics.cpp
+    ${PROJECT_SOURCE_DIR}/src/http/handler_metrics.cpp
+    ${PROJECT_SOURCE_DIR}/src/http/handler_prometheus.cpp
+    ${PROJECT_SOURCE_DIR}/src/formatters/formatter_prometheus.cpp
+    ${PROJECT_SOURCE_DIR}/src/storage/storage.cpp
+    ${PROJECT_SOURCE_DIR}/src/storage/schema.cpp
+    ${PROJECT_SOURCE_DIR}/src/utils/logging/logger.cpp
+)
+target_include_directories(test_metrics_integration PRIVATE
+    ${PROJECT_SOURCE_DIR}/src
+)
+target_link_libraries(test_metrics_integration PRIVATE
+    httplib
+    SQLiteCpp
+    sqlite3
+    GTest::gtest
+    GTest::gtest_main
+    Threads::Threads
+)
+gtest_discover_tests(test_metrics_integration)
