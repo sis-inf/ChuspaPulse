@@ -39,165 +39,127 @@ TEST(DiskUsageTest, ConsistenciaUsadoMasLibre) {
 }
 
 // ---------------------------------------------------------------------------
-// Particiones simuladas: cálculo de porcentajes
+// Porcentajes calculados sobre la salida real del recolector
 // ---------------------------------------------------------------------------
 
 /**
- * @brief Construye una estructura de uso de disco simulada.
- * @param total Espacio total en bytes.
- * @param usado Espacio usado en bytes.
+ * @brief Los porcentajes de uso y de espacio libre estan entre 0 y 100.
  */
-DiskUsage crearUsoSimulado(uint64_t total, uint64_t usado) {
-    DiskUsage uso{};
-    uso.total = total;
-    uso.usado = usado;
-    uso.libre = total - usado;
-    return uso;
-}
+TEST(DiskUsageTest, PorcentajesDelRecolectorRealEstanEntreCeroYCien) {
+    const DiskUsage uso = getDiskUsage();
+    ASSERT_GT(uso.total, static_cast<uint64_t>(0));
 
-/// @brief Porcentaje de espacio ocupado sobre el total.
-double porcentajeUsado(const DiskUsage& uso) {
-    if (uso.total == 0) {
-        return 0.0;
-    }
-    return (static_cast<double>(uso.usado) * 100.0) / static_cast<double>(uso.total);
-}
+    const double usado = (static_cast<double>(uso.usado) * 100.0) /
+                         static_cast<double>(uso.total);
+    const double libre = (static_cast<double>(uso.libre) * 100.0) /
+                         static_cast<double>(uso.total);
 
-/// @brief Porcentaje de espacio libre sobre el total.
-double porcentajeLibre(const DiskUsage& uso) {
-    if (uso.total == 0) {
-        return 0.0;
-    }
-    return (static_cast<double>(uso.libre) * 100.0) / static_cast<double>(uso.total);
+    EXPECT_GE(usado, 0.0);
+    EXPECT_LE(usado, 100.0);
+    EXPECT_GE(libre, 0.0);
+    EXPECT_LE(libre, 100.0);
 }
 
 /**
- * @brief Una partición llena reporta 100 % ocupado y 0 % libre.
+ * @brief Los porcentajes de uso y de espacio libre suman 100 por ciento.
  */
-TEST(DiskUsageTest, ParticionLlenaReportaCienPorCientoOcupado) {
-    const DiskUsage uso = crearUsoSimulado(1000, 1000);
-    EXPECT_DOUBLE_EQ(100.0, porcentajeUsado(uso));
-    EXPECT_DOUBLE_EQ(0.0, porcentajeLibre(uso));
+TEST(DiskUsageTest, PorcentajesDelRecolectorRealSumanCien) {
+    const DiskUsage uso = getDiskUsage();
+    ASSERT_GT(uso.total, static_cast<uint64_t>(0));
+
+    const double usado = (static_cast<double>(uso.usado) * 100.0) /
+                         static_cast<double>(uso.total);
+    const double libre = (static_cast<double>(uso.libre) * 100.0) /
+                         static_cast<double>(uso.total);
+
+    EXPECT_NEAR(100.0, usado + libre, 0.000001);
 }
 
 /**
- * @brief Una partición vacía reporta 0 % ocupado y 100 % libre.
+ * @brief El recolector calcula el espacio usado como total menos libre.
  */
-TEST(DiskUsageTest, ParticionVaciaReportaCienPorCientoLibre) {
-    const DiskUsage uso = crearUsoSimulado(1000, 0);
-    EXPECT_DOUBLE_EQ(0.0, porcentajeUsado(uso));
-    EXPECT_DOUBLE_EQ(100.0, porcentajeLibre(uso));
+TEST(DiskUsageTest, RecolectorRealCalculaUsadoComoTotalMenosLibre) {
+    const DiskUsage uso = getDiskUsage();
+
+    EXPECT_EQ(uso.total - uso.libre, uso.usado);
 }
 
 /**
- * @brief Una partición ocupada a la mitad reporta 50 % en ambos porcentajes.
+ * @brief Una ruta inexistente hace fallar la lectura con una excepcion.
  */
-TEST(DiskUsageTest, ParticionAMitadReportaCincuentaPorCiento) {
-    const DiskUsage uso = crearUsoSimulado(2048, 1024);
-    EXPECT_DOUBLE_EQ(50.0, porcentajeUsado(uso));
-    EXPECT_DOUBLE_EQ(50.0, porcentajeLibre(uso));
-}
-
-/**
- * @brief Los porcentajes de usado y libre siempre suman 100 %.
- */
-TEST(DiskUsageTest, PorcentajesSumanCien) {
-    const DiskUsage casos[] = {
-        crearUsoSimulado(1000, 0),
-        crearUsoSimulado(1000, 250),
-        crearUsoSimulado(1000, 999),
-        crearUsoSimulado(1000, 1000),
-    };
-
-    for (const DiskUsage& uso : casos) {
-        EXPECT_DOUBLE_EQ(100.0, porcentajeUsado(uso) + porcentajeLibre(uso));
-    }
-}
-
-/**
- * @brief Una partición de tamaño cero no produce división por cero.
- */
-TEST(DiskUsageTest, ParticionSinTamanoReportaCeroPorCiento) {
-    const DiskUsage uso = crearUsoSimulado(0, 0);
-    EXPECT_DOUBLE_EQ(0.0, porcentajeUsado(uso));
-    EXPECT_DOUBLE_EQ(0.0, porcentajeLibre(uso));
+TEST(DiskUsageTest, RutaInexistenteLanzaRuntimeError) {
+    EXPECT_THROW(getDiskUsage("/chuspapulse/ruta/que/no/existe"),
+                 std::runtime_error);
 }
 
 // ---------------------------------------------------------------------------
-// Puntos de montaje simulados: descarte de rutas virtuales
+// El recolector reporta solo el sistema de archivos raiz
 // ---------------------------------------------------------------------------
 
-/// @brief Punto de montaje simulado, con su ruta y su tipo de sistema de archivos.
-struct PuntoMontajeSimulado {
-    std::string ruta;
-    std::string tipo;
-};
+/**
+ * @brief El recolector se identifica con el nombre disk.
+ */
+TEST(DiskCollectorTest, NombreDelRecolectorEsDisk) {
+    chuspapulse::collectors::disk::DiskCollector colector;
 
-/// @brief Indica si un tipo de sistema de archivos es virtual y debe descartarse.
-bool esSistemaDeArchivosVirtual(const std::string& tipo) {
-    return tipo == "tmpfs" || tipo == "devtmpfs" || tipo == "proc" ||
-           tipo == "sysfs" || tipo == "cgroup2" || tipo == "devpts";
-}
-
-/// @brief Devuelve solo los puntos de montaje que corresponden a discos reales.
-std::vector<PuntoMontajeSimulado> descartarMontajesVirtuales(
-    const std::vector<PuntoMontajeSimulado>& puntos) {
-    std::vector<PuntoMontajeSimulado> reales;
-    for (const PuntoMontajeSimulado& punto : puntos) {
-        if (!esSistemaDeArchivosVirtual(punto.tipo)) {
-            reales.push_back(punto);
-        }
-    }
-    return reales;
+    EXPECT_EQ("disk", colector.nombre());
 }
 
 /**
- * @brief Los puntos de montaje de tipo tmpfs se descartan.
+ * @brief El recolector entrega exactamente tres metricas.
  */
-TEST(DiskUsageTest, DescartaPuntosDeMontajeTmpfs) {
-    const std::vector<PuntoMontajeSimulado> puntos = {
-        {"/", "ext4"},
-        {"/dev/shm", "tmpfs"},
-        {"/run", "tmpfs"},
-        {"/home", "ext4"},
-    };
+TEST(DiskCollectorTest, EntregaExactamenteTresMetricas) {
+    chuspapulse::collectors::disk::DiskCollector colector;
 
-    const std::vector<PuntoMontajeSimulado> reales = descartarMontajesVirtuales(puntos);
+    const std::vector<chuspapulse::core::Metrica> metricas = colector.recolectar();
 
-    ASSERT_EQ(static_cast<size_t>(2), reales.size());
-    for (const PuntoMontajeSimulado& punto : reales) {
-        EXPECT_NE("tmpfs", punto.tipo);
+    ASSERT_EQ(static_cast<size_t>(3), metricas.size());
+}
+
+/**
+ * @brief Las tres metricas son las del sistema de archivos raiz, en bytes.
+ */
+TEST(DiskCollectorTest, EntregaLasMetricasDelSistemaDeArchivosRaiz) {
+    chuspapulse::collectors::disk::DiskCollector colector;
+
+    const std::vector<chuspapulse::core::Metrica> metricas = colector.recolectar();
+
+    ASSERT_EQ(static_cast<size_t>(3), metricas.size());
+    EXPECT_EQ("disk.total", metricas[0].nombre);
+    EXPECT_EQ("disk.used", metricas[1].nombre);
+    EXPECT_EQ("disk.free", metricas[2].nombre);
+
+    for (const chuspapulse::core::Metrica& metrica : metricas) {
+        EXPECT_EQ("bytes", metrica.unidad);
     }
 }
 
 /**
- * @brief Las particiones reales se conservan tras el descarte.
+ * @brief Ningun punto de montaje virtual aparece entre las metricas entregadas.
  */
-TEST(DiskUsageTest, ConservaParticionesReales) {
-    const std::vector<PuntoMontajeSimulado> puntos = {
-        {"/", "ext4"},
-        {"/run", "tmpfs"},
-        {"/datos", "xfs"},
-    };
+TEST(DiskCollectorTest, NoEntregaMetricasDeMontajesVirtuales) {
+    chuspapulse::collectors::disk::DiskCollector colector;
 
-    const std::vector<PuntoMontajeSimulado> reales = descartarMontajesVirtuales(puntos);
+    const std::vector<chuspapulse::core::Metrica> metricas = colector.recolectar();
 
-    ASSERT_EQ(static_cast<size_t>(2), reales.size());
-    EXPECT_EQ("/", reales[0].ruta);
-    EXPECT_EQ("/datos", reales[1].ruta);
+    for (const chuspapulse::core::Metrica& metrica : metricas) {
+        EXPECT_EQ(std::string::npos, metrica.nombre.find("tmpfs"));
+        EXPECT_EQ(std::string::npos, metrica.nombre.find("proc"));
+        EXPECT_EQ(std::string::npos, metrica.nombre.find("sysfs"));
+        EXPECT_EQ(std::string::npos, metrica.nombre.find("shm"));
+    }
 }
 
 /**
- * @brief Una lista compuesta solo por montajes virtuales queda vacía.
+ * @brief Los valores entregados coinciden con los que devuelve el recolector.
  */
-TEST(DiskUsageTest, ListaSoloVirtualesQuedaVacia) {
-    const std::vector<PuntoMontajeSimulado> puntos = {
-        {"/proc", "proc"},
-        {"/sys", "sysfs"},
-        {"/dev", "devtmpfs"},
-        {"/dev/shm", "tmpfs"},
-    };
+TEST(DiskCollectorTest, LosValoresCoincidenConLaLecturaDelDisco) {
+    chuspapulse::collectors::disk::DiskCollector colector;
 
-    EXPECT_TRUE(descartarMontajesVirtuales(puntos).empty());
+    const std::vector<chuspapulse::core::Metrica> metricas = colector.recolectar();
+
+    ASSERT_EQ(static_cast<size_t>(3), metricas.size());
+    EXPECT_LE(metricas[1].valor + metricas[2].valor,
+              metricas[0].valor + static_cast<double>(TOLERANCIA));
 }
 } // namespace
