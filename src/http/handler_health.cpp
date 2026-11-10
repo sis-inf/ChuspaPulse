@@ -5,6 +5,7 @@
 #include <cstring>
 #include <sstream>
 #include <string>
+#include <vector>
 
 #ifdef _WIN32
 #include <winsock2.h>
@@ -38,6 +39,44 @@ std::string handleHealth(std::chrono::steady_clock::time_point start_time) {
          << "}";
 
     return json.str();
+}
+
+ResultadoReadiness handleReadiness(
+    const std::vector<ComprobacionReadiness>& comprobaciones) {
+
+    bool listo = true;
+
+    std::ostringstream componentes;
+    componentes << "{";
+
+    for (std::size_t i = 0; i < comprobaciones.size(); ++i) {
+        const auto& [nombre, comprobar] = comprobaciones[i];
+
+        bool disponible = false;
+        try {
+            disponible = comprobar && comprobar();
+        } catch (const std::exception&) {
+            disponible = false;
+        }
+
+        listo = listo && disponible;
+
+        if (i > 0) {
+            componentes << ",";
+        }
+        componentes << "\"" << nombre << "\":"
+                    << (disponible ? "true" : "false");
+    }
+
+    componentes << "}";
+
+    std::ostringstream json;
+    json << "{"
+         << "\"status\":\"" << (listo ? "ready" : "not_ready") << "\","
+         << "\"componentes\":" << componentes.str()
+         << "}";
+
+    return {listo ? 200 : 503, json.str()};
 }
 
 } // namespace chuspapulse::http

@@ -432,6 +432,20 @@ int main(int argc, char* argv[]) {
         );
     });
 
+    // GET /ready — 200 si storage y sampler están disponibles, 503 si no
+    server.Get("/ready", [&storage, &sampler](
+        const httplib::Request&,
+        httplib::Response& res)
+    {
+        const auto resultado = pulso::http::handleReadiness({
+            {"storage", [&storage]() { storage.total(); return true; }},
+            {"sampler", [&sampler]() { return sampler.corriendo(); }},
+        });
+
+        res.status = resultado.status;
+        res.set_content(resultado.cuerpo, "application/json");
+    });
+
     // GET /version
 server.Get("/version", [](
     const httplib::Request&,

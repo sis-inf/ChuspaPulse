@@ -132,7 +132,9 @@ GET /metrics/history (con la base de datos no disponible)
 ### GET /health
 
 **Descripción:**
-Verifica el estado general del servicio.
+Chequeo básico de salud (liveness): indica que el proceso del agente está vivo
+y respondiendo. No verifica los componentes internos; para eso usar
+[`GET /ready`](#get-ready).
 
 **Ejemplo de request:**
 
@@ -144,8 +146,10 @@ curl http://localhost:8080/health
 
 ```json
 {
-  "status": "UP",
-  "uptime": 86400
+  "status": "ok",
+  "uptime_seconds": 86400,
+  "version": "0.1.0",
+  "hostname": "servidor-01"
 }
 ```
 
@@ -153,6 +157,60 @@ curl http://localhost:8080/health
 
 * 200 OK
 * 500 Internal Server Error
+
+### GET /ready
+
+**Descripción:**
+Chequeo de readiness: indica si el servicio está preparado para recibir
+solicitudes. Evalúa los componentes requeridos y responde 503 si alguno no está
+disponible.
+
+| Componente | Disponible cuando |
+|---|---|
+| `storage` | La base de datos SQLite responde a una consulta. |
+| `sampler` | El bucle de muestreo de métricas está en ejecución. |
+
+**Ejemplo de request:**
+
+```bash
+curl -i http://localhost:8080/ready
+```
+
+**Respuesta (200 OK):**
+
+```json
+{
+  "status": "ready",
+  "componentes": {
+    "storage": true,
+    "sampler": true
+  }
+}
+```
+
+**Respuesta (503 Service Unavailable):**
+
+```json
+{
+  "status": "not_ready",
+  "componentes": {
+    "storage": false,
+    "sampler": true
+  }
+}
+```
+
+**Códigos de respuesta:**
+
+* 200 OK: todos los componentes requeridos están disponibles.
+* 503 Service Unavailable: al menos un componente no está disponible.
+
+**Diferencia con `/health`:**
+
+| Endpoint | Pregunta que responde | Si falla |
+|---|---|---|
+| `/health` | ¿El proceso está vivo? | El supervisor debería reiniciar el agente. |
+| `/ready` | ¿Puede atender solicitudes ahora? | El supervisor debería dejar de enviarle tráfico hasta que vuelva a 200. |
 
 ### GET /config
 
@@ -270,6 +328,7 @@ GET /alerts/history?offset=-1
 | 200 | OK |
 | 400 | Bad Request: la solicitud tiene parámetros inválidos. El cliente debe corregirla antes de reintentar. |
 | 500 | Internal Server Error: la solicitud era válida pero el servidor falló al procesarla. |
+| 503 | Service Unavailable: `/ready` con algún componente requerido no disponible. |
 
 En los endpoints de historial, las respuestas de error usan siempre el formato
 `{"error":"<mensaje>"}` con `Content-Type: application/json`. Los errores de

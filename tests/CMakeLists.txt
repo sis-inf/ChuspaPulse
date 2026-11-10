@@ -249,3 +249,18 @@ target_link_libraries(test_metrics_integration PRIVATE
     Threads::Threads
 )
 gtest_discover_tests(test_metrics_integration)
+
+add_executable(test_health_integration
+    automatizados/integration/test_health.cpp
+    ${PROJECT_SOURCE_DIR}/src/http/handler_health.cpp
+)
+target_include_directories(test_health_integration PRIVATE
+    ${PROJECT_SOURCE_DIR}/src
+)
+target_link_libraries(test_health_integration PRIVATE
+    httplib
+    GTest::gtest
+    GTest::gtest_main
+    Threads::Threads
+)
+gtest_discover_tests(test_health_integration)
