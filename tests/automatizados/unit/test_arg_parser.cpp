@@ -189,3 +189,73 @@ TEST_F(ArgParserTest, MetricsConElementoVacioFalla)
 
     EXPECT_NE(salida.find("metricas desconocidas: \"\""), std::string::npos);
 }
+
+// --- Validación de --interval (issue #1520) ---
+
+TEST_F(ArgParserTest, IntervalValidoSeAplica)
+{
+    chuspapulse::cli::CliOptions opciones;
+
+    EXPECT_TRUE(parsear({"--interval", "2500"}, opciones));
+    EXPECT_EQ(opciones.monitor.interval_ms, 2500);
+}
+
+TEST_F(ArgParserTest, IntervalEnLosLimitesSeAcepta)
+{
+    chuspapulse::cli::CliOptions minimo;
+    EXPECT_TRUE(parsear({"--interval", "101"}, minimo));
+    EXPECT_EQ(minimo.monitor.interval_ms, 101);
+
+    chuspapulse::cli::CliOptions maximo;
+    EXPECT_TRUE(parsear({"--interval", "3600000"}, maximo));
+    EXPECT_EQ(maximo.monitor.interval_ms, 3600000);
+}
+
+TEST_F(ArgParserTest, IntervalNoNumericoFallaSinExcepcion)
+{
+    for (const std::string valor :
+         {"abc", "100abc", "1.5", " 500", "+500", "-5", ""}) {
+        chuspapulse::cli::CliOptions opciones;
+
+        testing::internal::CaptureStderr();
+        bool resultado = true;
+        EXPECT_NO_THROW(resultado = parsear({"--interval", valor}, opciones))
+            << "valor: '" << valor << "'";
+        std::string salida = testing::internal::GetCapturedStderr();
+
+        EXPECT_FALSE(resultado) << "valor: '" << valor << "'";
+        EXPECT_NE(salida.find("debe ser un entero positivo en milisegundos"),
+                  std::string::npos)
+            << "valor: '" << valor << "'";
+        EXPECT_EQ(opciones.monitor.interval_ms, 1000)
+            << "valor: '" << valor << "'";
+    }
+}
+
+TEST_F(ArgParserTest, IntervalFueraDeRangoFalla)
+{
+    for (const std::string valor :
+         {"0", "100", "3600001", "99999999999"}) {
+        chuspapulse::cli::CliOptions opciones;
+
+        testing::internal::CaptureStderr();
+        const bool resultado = parsear({"--interval", valor}, opciones);
+        std::string salida = testing::internal::GetCapturedStderr();
+
+        EXPECT_FALSE(resultado) << "valor: " << valor;
+        EXPECT_NE(salida.find("permitido: 101 a 3600000 ms"), std::string::npos)
+            << "valor: " << valor;
+        EXPECT_EQ(opciones.monitor.interval_ms, 1000) << "valor: " << valor;
+    }
+}
+
+TEST_F(ArgParserTest, IntervalSinValorFalla)
+{
+    chuspapulse::cli::CliOptions opciones;
+
+    testing::internal::CaptureStderr();
+    EXPECT_FALSE(parsear({"--interval"}, opciones));
+    std::string salida = testing::internal::GetCapturedStderr();
+
+    EXPECT_NE(salida.find("falta valor para --interval"), std::string::npos);
+}
