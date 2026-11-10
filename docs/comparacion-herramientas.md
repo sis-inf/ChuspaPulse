@@ -1,17 +1,17 @@
-# Comparación de Pulso frente a otras herramientas de monitoreo
+# Comparación de ChuspaPulse frente a otras herramientas de monitoreo
 
 ## Descripción
 
-Este documento compara Pulso con herramientas de monitoreo ampliamente usadas:
+Este documento compara ChuspaPulse con herramientas de monitoreo ampliamente usadas:
 **node_exporter**, **Netdata** y **Telegraf**. El objetivo es ayudar a evaluar
-si Pulso es la herramienta correcta para cada caso de uso, incluyendo sus
+si ChuspaPulse es la herramienta correcta para cada caso de uso, incluyendo sus
 desventajas reales frente a alternativas más maduras.
 
 ---
 
 ## Tabla comparativa
 
-| Característica | Pulso | node_exporter | Netdata | Telegraf |
+| Característica | ChuspaPulse | node_exporter | Netdata | Telegraf |
 |----------------|-------|---------------|---------|----------|
 | **Lenguaje** | C++ | Go | C | Go |
 | **Dependencias en ejecución** | Ninguna | Ninguna | Ninguna | Ninguna |
@@ -27,9 +27,9 @@ desventajas reales frente a alternativas más maduras.
 
 ---
 
-## Cuándo usar Pulso
+## Cuándo usar ChuspaPulse
 
-✅ **Pulso es una mejor elección cuando:**
+✅ **ChuspaPulse es una mejor elección cuando:**
 
 - Necesitas una herramienta ligera sin dependencias en entornos con recursos limitados.
 - Quieres exportar métricas en múltiples formatos desde una sola herramienta.
@@ -39,9 +39,9 @@ desventajas reales frente a alternativas más maduras.
 
 ---
 
-## Cuándo NO usar Pulso
+## Cuándo NO usar ChuspaPulse
 
-❌ **Pulso es una peor elección cuando:**
+❌ **ChuspaPulse es una peor elección cuando:**
 
 - Necesitas un dashboard web integrado → usa **Netdata**.
 - Tu infraestructura ya está basada en el ecosistema Prometheus → usa **node_exporter**.
@@ -61,20 +61,20 @@ desventajas reales frente a alternativas más maduras.
 
 ### Netdata
 - Herramienta de monitoreo en tiempo real con dashboard web integrado.
-- Consume más recursos que Pulso o node_exporter.
+- Consume más recursos que ChuspaPulse o node_exporter.
 - Tiene un sistema de alertas muy completo.
 - Ideal si necesitas visibilidad inmediata sin configurar Grafana.
 
 ### Telegraf
 - Agente de recolección de métricas del ecosistema InfluxData.
 - Soporta cientos de plugins de entrada y salida.
-- Más complejo de configurar que Pulso.
+- Más complejo de configurar que ChuspaPulse.
 - Ideal para infraestructuras grandes con múltiples fuentes de datos.
 
 ---
 
 ## Notas
 
-- Esta comparación refleja el estado actual de Pulso en desarrollo.
-- Las características de Pulso pueden ampliarse en versiones futuras.
+- Esta comparación refleja el estado actual de ChuspaPulse en desarrollo.
+- Las características de ChuspaPulse pueden ampliarse en versiones futuras.
 - Los datos de herramientas externas corresponden a sus versiones estables actuales.

@@ -4,7 +4,7 @@
 > Si buscas una guía de decisión sobre cuándo usar cada formato,
 > consulta [docs/comparacion-formatos-salida.md](comparacion-formatos-salida.md).
 
-Pulso soporta múltiples formatos de salida para adaptarse a diferentes flujos de trabajo, desde la lectura rápida por parte de usuarios hasta la integración automática con sistemas de monitoreo o análisis de datos.
+ChuspaPulse soporta múltiples formatos de salida para adaptarse a diferentes flujos de trabajo, desde la lectura rápida por parte de usuarios hasta la integración automática con sistemas de monitoreo o análisis de datos.
 
 
 ## Tabla Comparativa
@@ -32,9 +32,9 @@ Salida estructurada en formato clave-valor, útil para scripts e integraciones.
 }
 ### 3. Prometheus
 Salida en formato de métricas para herramientas de monitoreo como Prometheus y Grafana.
-pulso_cpu_percent 25
-pulso_ram_percent 60
-pulso_disk_percent 45
+ChuspaPulse_cpu_percent 25
+ChuspaPulse_ram_percent 60
+ChuspaPulse_disk_percent 45
 ### 4. CSV
 Salida tabular separada por comas, compatible con Excel y hojas de cálculo.
 cpu,ram,disk

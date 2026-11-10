@@ -1,6 +1,6 @@
-# Configuración de ejemplo para integrar Prometheus con pulso
+# Configuración de ejemplo para integrar Prometheus con ChuspaPulse
 # Para usar:
-#   1. Levantar pulso en el puerto 8080
+#   1. Levantar ChuspaPulse en el puerto 8080
 #   2. Levantar Prometheus apuntando a este archivo:
 #      docker run -p 9090:9090 -v $(pwd)/examples/prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus
 
@@ -9,7 +9,7 @@ global:
   evaluation_interval: 15s
 
 scrape_configs:
-  - job_name: pulso
+  - job_name: chuspapulse
     metrics_path: /metrics/prometheus
     static_configs:
       - targets:

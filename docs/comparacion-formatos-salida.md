@@ -46,37 +46,37 @@ Usa **text**.
 ### text
 Salida legible para personas, ideal para inspección rápida en la terminal.
 - **Cuándo usarlo:** quieres ver los datos de un vistazo sin procesarlos.
-- **Comando:** `pulso --format text --once`
+- **Comando:** `chuspapulse --format text --once`
 
 ### json
 Salida estructurada en formato clave-valor.
 - **Cuándo usarlo:** vas a procesar la salida con un script, API o herramienta como `jq`.
-- **Comando:** `pulso --format json --once`
+- **Comando:** `chuspapulse --format json --once`
 
 ### csv
 Salida tabular separada por comas.
 - **Cuándo usarlo:** vas a abrir los datos en Excel, Google Sheets o Python (Pandas).
-- **Comando:** `pulso --format csv --once`
+- **Comando:** `chuspapulse --format csv --once`
 
 ### prometheus
 Salida en formato de métricas para scraping.
 - **Cuándo usarlo:** tienes un servidor Prometheus o Grafana recolectando métricas.
-- **Comando:** `pulso --format prometheus --daemon`
+- **Comando:** `chuspapulse --format prometheus --daemon`
 
 ### openmetrics
 Variante del formato Prometheus compatible con OpenMetrics.
 - **Cuándo usarlo:** tu scraper requiere el estándar OpenMetrics en lugar de Prometheus clásico.
-- **Comando:** `pulso --format openmetrics --daemon`
+- **Comando:** `chuspapulse --format openmetrics --daemon`
 
 ### influx
 Salida en formato de línea de InfluxDB.
 - **Cuándo usarlo:** alimentas directamente Telegraf o InfluxDB.
-- **Comando:** `pulso --format influx --daemon`
+- **Comando:** `chuspapulse --format influx --daemon`
 
 ### markdown
 Salida en formato tabla Markdown.
 - **Cuándo usarlo:** vas a pegar los datos en un PR, issue, Slack o canal de chat.
-- **Comando:** `pulso --format markdown --once`
+- **Comando:** `chuspapulse --format markdown --once`
 
 ---
 

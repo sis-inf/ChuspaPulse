@@ -1,22 +1,29 @@
-# Métricas disponibles en Pulso
+# Métricas disponibles en ChuspaPulse
 
-Esta página lista todas las métricas que recopila y expone el sistema, con su representación JSON, tipo, unidad, rango, fuente y disponibilidad.
+Esta página lista las métricas que genera el agente, con su identificador, descripción, unidad y tipo.
 
-| Nombre de la métrica           | Campo JSON               | Tipo      | Unidad        | Rango típico      | Fuente en Linux       | Disponibilidad       |
-|--------------------------------|--------------------------|-----------|---------------|-------------------|-----------------------|----------------------|
-| Uso total de CPU               | `cpu.usage_pct`          | float     | %             | 0.0 – 100.0       | `/proc/stat`          | Siempre              |
-| Tiempo de usuario CPU          | `cpu.user_s`             | float     | segundos      | ≥ 0               | `/proc/stat`          | Siempre              |
-| Tiempo de sistema CPU          | `cpu.system_s`          | float     | segundos      | ≥ 0               | `/proc/stat`          | Siempre              |
-| Núcleos físicos detectados     | `cpu.cores`              | uint64    | —             | ≥ 1               | `/proc/cpuinfo`       | Siempre              |
-| Memoria RAM total              | `ram.total_bytes`        | uint64    | bytes         | ≥ 1 MiB           | `/proc/meminfo`       | Siempre              |
-| Memoria RAM libre              | `ram.free_bytes`         | uint64    | bytes         | ≥ 0               | `/proc/meminfo`       | Siempre              |
-| Memoria RAM en uso             | `ram.used_pct`           | float     | %             | 0.0 – 100.0       | `/proc/meminfo`       | Siempre              |
-| Memoria RAM en búferes         | `ram.buffers_bytes`      | uint64    | bytes         | ≥ 0               | `/proc/meminfo`       | Siempre              |
-| Espacio total en disco raíz    | `disk.total_bytes`       | uint64    | bytes         | ≥ 1 MiB           | `/proc/statfs`        | Según montaje        |
-| Espacio libre en disco raíz    | `disk.free_bytes`        | uint64    | bytes         | ≥ 0               | `/proc/statfs`        | Según montaje        |
-| Uso de disco raíz              | `disk.used_pct`          | float     | %             | 0.0 – 100.0       | `/proc/statfs`        | Según montaje        |
-| Bytes recibidos por red        | `net.rx_bytes`           | uint64    | bytes         | ≥ 0               | `/proc/net/dev`       | Según interfaz       |
-| Bytes enviados por red         | `net.tx_bytes`           | uint64    | bytes         | ≥ 0               | `/proc/net/dev`       | Según interfaz       |
-| Carga del sistema (1 min)      | `load.avg_1min`          | float     | —             | ≥ 0               | `/proc/loadavg`       | Siempre              |
-| Carga del sistema (5 min)      | `load.avg_5min`          | float     | —             | ≥ 0               | `/proc/loadavg`       | Siempre              |
-| Tiempo de actividad del sistema| `system.uptime_s`        | float     | segundos      | ≥ 0               | `/proc/uptime`        | Siempre              |
+Los tipos siguen el estándar de telemetría:
+
+- **gauge:** valor que puede subir o bajar entre una muestra y otra.
+- **counter:** valor acumulado que solo crece mientras el sistema está encendido.
+
+| Identificador de métrica | Descripción | Unidad | Tipo |
+|---|---|---|---|
+| `cpu.usage` | Porcentaje de uso de la CPU | porcentaje | gauge |
+| `cpu.cores` | Núcleos de CPU detectados | cantidad | gauge |
+| `memory.used` | Memoria RAM en uso | bytes | gauge |
+| `disk.total` | Espacio total del disco | bytes | gauge |
+| `disk.used` | Espacio usado del disco | bytes | gauge |
+| `disk.free` | Espacio libre del disco | bytes | gauge |
+| `net.rx` | Bytes recibidos por red, acumulados desde el arranque | bytes | counter |
+| `net.tx` | Bytes enviados por red, acumulados desde el arranque | bytes | counter |
+| `procesos.running` | Procesos en ejecución | cantidad | gauge |
+| `procesos.blocked` | Procesos bloqueados | cantidad | gauge |
+| `procesos.total` | Total de procesos | cantidad | gauge |
+| `loadavg.1` | Carga promedio del último minuto | carga | gauge |
+| `loadavg.5` | Carga promedio de los últimos 5 minutos | carga | gauge |
+| `loadavg.15` | Carga promedio de los últimos 15 minutos | carga | gauge |
+| `uptime.seconds` | Tiempo de actividad del sistema | segundos | gauge |
+| `temperatura.cpu` | Temperatura de la CPU (solo se reporta si el sensor está disponible) | celsius | gauge |
+| `bateria.porcentaje` | Nivel de carga de la batería (solo en equipos con batería) | porcentaje | gauge |
+| `bateria.cargando` | Estado de carga de la batería: 1 si está cargando y 0 en cualquier otro caso | booleano | gauge |

@@ -9,12 +9,12 @@
 /// @brief Lee y parsea los contadores de CPU desde /proc/stat.
 /// @param ruta Ruta al archivo de estadísticas.
 /// @return ContadoresCPU con los valores leídos.
-/// @throws pulso::collectors::ErrorRecoleccion si el archivo no es accesible.
+/// @throws chuspapulse::collectors::ErrorRecoleccion si el archivo no es accesible.
 ContadoresCPU LeerEstadisticasCPU(const std::string& ruta) {
   ContadoresCPU contadores{};
   std::ifstream archivo(ruta);
   if (!archivo.is_open()) {
-    throw pulso::collectors::ErrorRecoleccion(
+    throw chuspapulse::collectors::ErrorRecoleccion(
         "No se puede acceder a " + ruta
     );
   }
@@ -26,7 +26,7 @@ ContadoresCPU LeerEstadisticasCPU(const std::string& ruta) {
     std::string etiqueta;
     flujo >> etiqueta;
     if (etiqueta != "cpu") {
-      throw pulso::collectors::ErrorRecoleccion(
+      throw chuspapulse::collectors::ErrorRecoleccion(
           "Formato inesperado en " + ruta
       );
     }
@@ -38,10 +38,10 @@ ContadoresCPU LeerEstadisticasCPU(const std::string& ruta) {
           >> contadores.irq
           >> contadores.softirq
           >> contadores.robado;
-  } catch (const pulso::collectors::ErrorRecoleccion&) {
+  } catch (const chuspapulse::collectors::ErrorRecoleccion&) {
     throw;
   } catch (...) {
-    throw pulso::collectors::ErrorRecoleccion(
+    throw chuspapulse::collectors::ErrorRecoleccion(
         "Error al leer " + ruta
     );
   }
@@ -119,22 +119,22 @@ static int ObtenerNucleosCPU() {
 }
 
 // Implementación de CollectorCPU
-namespace pulso::collectors {
+namespace chuspapulse::collectors {
 
 std::string CollectorCPU::nombre() const {
   return "cpu";
 }
 
-std::vector<pulso::core::Metrica> CollectorCPU::recolectar() {
+std::vector<chuspapulse::core::Metrica> CollectorCPU::recolectar() {
   std::int64_t ahora = static_cast<std::int64_t>(std::time(nullptr));
 
-  pulso::core::Metrica uso;
+  chuspapulse::core::Metrica uso;
   uso.name      = "cpu.usage";
   uso.value     = ObtenerUsoCPU();
   uso.unit      = "porcentaje";
   uso.timestamp = ahora;
 
-  pulso::core::Metrica nucleos;
+  chuspapulse::core::Metrica nucleos;
   nucleos.name      = "cpu.cores";
   nucleos.value     = static_cast<double>(ObtenerNucleosCPU());
   nucleos.unit      = "nucleos";
@@ -143,4 +143,4 @@ std::vector<pulso::core::Metrica> CollectorCPU::recolectar() {
   return { uso, nucleos };
 }
 
-}  // namespace pulso::collectors
+}  // namespace chuspapulse::collectors

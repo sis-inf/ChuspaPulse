@@ -4,20 +4,35 @@
 #include <sstream>
 #include <string>
 #include <cstdlib>
+#include <filesystem>
+#include <fstream>
 
-#define PULSO_VERSION "0.1.0"
+#define CHUSPAPULSE_VERSION "0.1.0"
+
+namespace chuspapulse::cli {
 
 /**
  * @brief Procesa la lista de metricas y actualiza la configuracion.
  *
  * Ejemplo:
  * --metrics cpu,ram
+ *
+ * @return false si la lista esta vacia o contiene nombres desconocidos.
+ *         En ese caso la configuracion no se modifica.
  */
-static void parse_metrics(const std::string& metrics, pulso::config::MonitorConfig& config)
+static bool parse_metrics(const std::string& metrics, chuspapulse::config::MonitorConfig& config)
 {
-    config.cpu = false;
-    config.ram = false;
-    config.disk = false;
+    if (metrics.empty())
+    {
+        std::cerr << "Error: la lista de --metrics esta vacia\n";
+        std::cerr << "Metricas validas: cpu, ram, disk\n";
+        return false;
+    }
+
+    bool cpu = false;
+    bool ram = false;
+    bool disk = false;
+    std::string desconocidas;
 
     std::stringstream ss(metrics);
     std::string item;
@@ -26,27 +41,57 @@ static void parse_metrics(const std::string& metrics, pulso::config::MonitorConf
     {
         if (item == "cpu")
         {
-            config.cpu = true;
+            cpu = true;
         }
         else if (item == "ram")
         {
-            config.ram = true;
+            ram = true;
         }
         else if (item == "disk")
         {
-            config.disk = true;
+            disk = true;
+        }
+        else
+        {
+            if (!desconocidas.empty())
+            {
+                desconocidas += ", ";
+            }
+            desconocidas += item.empty() ? "\"\"" : item;
         }
     }
+
+    if (metrics.back() == ',')
+    {
+        if (!desconocidas.empty())
+        {
+            desconocidas += ", ";
+        }
+        desconocidas += "\"\"";
+    }
+
+    if (!desconocidas.empty())
+    {
+        std::cerr << "Error: metricas desconocidas: " << desconocidas << "\n";
+        std::cerr << "Metricas validas: cpu, ram, disk\n";
+        return false;
+    }
+
+    config.cpu = cpu;
+    config.ram = ram;
+    config.disk = disk;
+    return true;
 }
 
 void print_help()
 {
     std::cout << "Uso:\n";
-    std::cout << "  pulso [opciones]\n\n";
+    std::cout << "  chuspapulse [opciones]\n\n";
 
     std::cout << "Opciones:\n";
 
-    std::cout << "  --interval <ms>   Intervalo de lectura\n";
+    std::cout << "  --interval <ms>   Intervalo de lectura en milisegundos ("
+              << INTERVALO_MIN_MS << " a " << INTERVALO_MAX_MS << ")\n";
     std::cout << "  --metrics <list>  Metricas a recolectar: cpu,ram,disk\n";
     std::cout << "  --once            Ejecutar una sola lectura y salir\n";
     std::cout << "  --format <fmt>    Formato de salida con --once: json|csv|prometheus|text\n";
@@ -54,7 +99,7 @@ void print_help()
     std::cout << "  --version         Mostrar version\n";
 }
 
-bool parse_arguments(int argc, char* argv[], pulso::cli::CliOptions& options)
+bool parse_arguments(int argc, char* argv[], chuspapulse::cli::CliOptions& options)
 {
     for (int i = 1; i < argc; ++i)
     {
@@ -67,8 +112,8 @@ bool parse_arguments(int argc, char* argv[], pulso::cli::CliOptions& options)
         }
         else if (arg == "--version")
         {
-            std::cout << "pulso v"
-                      << PULSO_VERSION
+            std::cout << "chuspapulse v"
+                      << CHUSPAPULSE_VERSION
                       << " (C++17) - 2026\n";
 
             std::exit(0);
@@ -81,15 +126,35 @@ bool parse_arguments(int argc, char* argv[], pulso::cli::CliOptions& options)
                 return false;
             }
 
-            int interval = std::stoi(argv[++i]);
+            const std::string valor = argv[++i];
 
-            if (interval <= 100)
+            // Validar antes de convertir: solo digitos (sin signo, espacios
+            // ni sufijos).
+            const bool soloDigitos =
+                !valor.empty() &&
+                valor.find_first_not_of("0123456789") == std::string::npos;
+
+            if (!soloDigitos)
             {
-                std::cerr << "Error: interval debe ser mayor a 100ms\n";
+                std::cerr << "Error: --interval debe ser un entero positivo en "
+                             "milisegundos (recibido: '" << valor << "')\n";
                 return false;
             }
 
-            options.monitor.interval_ms = interval;
+            // Mas de 10 digitos ya esta fuera de rango; se descarta antes de
+            // convertir para que stoll no desborde.
+            const long long interval =
+                valor.size() <= 10 ? std::stoll(valor) : INTERVALO_MAX_MS + 1;
+
+            if (interval < INTERVALO_MIN_MS || interval > INTERVALO_MAX_MS)
+            {
+                std::cerr << "Error: --interval fuera de rango: " << valor
+                          << " ms (permitido: " << INTERVALO_MIN_MS << " a "
+                          << INTERVALO_MAX_MS << " ms)\n";
+                return false;
+            }
+
+            options.monitor.interval_ms = static_cast<int>(interval);
         }
         else if (arg == "--metrics")
         {
@@ -99,7 +164,10 @@ bool parse_arguments(int argc, char* argv[], pulso::cli::CliOptions& options)
                 return false;
             }
 
-            parse_metrics(argv[++i], options.monitor);
+            if (!parse_metrics(argv[++i], options.monitor))
+            {
+                return false;
+            }
         }
         else if (arg == "--once")
         {
@@ -113,17 +181,41 @@ bool parse_arguments(int argc, char* argv[], pulso::cli::CliOptions& options)
                 return false;
             }
             std::string fmt = argv[++i];
-            if (fmt != "json" && fmt != "csv" && fmt != "prometheus")
+            if (fmt != "json" && fmt != "csv" && fmt != "prometheus" && fmt != "text")
             {
                 std::cerr << "Error: formato no soportado: " << fmt << "\n";
-                std::cerr << "Formatos validos: json, csv, prometheus\n";
+                std::cerr << "Formatos validos: json, csv, prometheus, text\n";
                 return false;
             }
             options.format = fmt;
         }
         else if (arg == "--config")
         {
-            if (i + 1 < argc) ++i;
+            if (i + 1 >= argc || std::string(argv[i + 1]).rfind("-", 0) == 0)
+            {
+                std::cerr << "Error: falta ruta para --config\n";
+                std::cerr << "Uso: --config <ruta>\n";
+                return false;
+            }
+
+            std::string ruta = argv[++i];
+
+            if (!std::filesystem::is_regular_file(ruta))
+            {
+                std::cerr << "Error: el archivo de configuracion no existe: "
+                          << ruta << "\n";
+                return false;
+            }
+
+            std::ifstream archivo(ruta);
+            if (!archivo.is_open())
+            {
+                std::cerr << "Error: no se puede leer el archivo de configuracion: "
+                          << ruta << "\n";
+                return false;
+            }
+
+            options.config_path = ruta;
         }
         else
         {
@@ -136,3 +228,5 @@ bool parse_arguments(int argc, char* argv[], pulso::cli::CliOptions& options)
 
     return true;
 }
+
+} // namespace chuspapulse::cli

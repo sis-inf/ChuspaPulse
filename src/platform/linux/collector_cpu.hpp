@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 
-namespace pulso::collectors {
+namespace chuspapulse::collectors {
 
 class CollectorCPU : public ICollector {
 public:
@@ -12,4 +12,4 @@ public:
     std::vector<Metrica> recolectar() override;
 };
 
-} // namespace pulso::collectors
+} // namespace chuspapulse::collectors

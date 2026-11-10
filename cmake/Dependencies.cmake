@@ -35,7 +35,7 @@ FetchContent_MakeAvailable(
     SQLiteCpp
 )
 
-if(PULSO_BUILD_TESTS)
+if(CHUSPAPULSE_BUILD_TESTS)
     FetchContent_Declare(
         googletest
         GIT_REPOSITORY https://github.com/google/googletest.git

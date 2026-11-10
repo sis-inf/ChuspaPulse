@@ -2,7 +2,7 @@
 
 ## Resumen
 
-El proyecto **Pulso** utiliza un conjunto mínimo de dependencias externas. La principal dependencia es Google Test, utilizada para la ejecución de pruebas automatizadas. No existen dependencias de ejecución (runtime) adicionales fuera de la biblioteca estándar de C++ y las llamadas al sistema proporcionadas por Linux.
+El proyecto **ChuspaPulse** utiliza un conjunto mínimo de dependencias externas. La principal dependencia es Google Test, utilizada para la ejecución de pruebas automatizadas. No existen dependencias de ejecución (runtime) adicionales fuera de la biblioteca estándar de C++ y las llamadas al sistema proporcionadas por Linux.
 
 ## Tabla de dependencias
 
@@ -94,7 +94,7 @@ clang-tidy --version
 
 ## Dependencias de ejecución (Runtime)
 
-Pulso **no tiene dependencias de runtime externas**.
+ChuspaPulse **no tiene dependencias de runtime externas**.
 
 La aplicación utiliza únicamente:
 

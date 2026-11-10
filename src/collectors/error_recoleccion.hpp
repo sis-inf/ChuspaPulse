@@ -4,7 +4,7 @@
 #include <cerrno>
 #include <cstring>
 
-namespace pulso::collectors {
+namespace chuspapulse::collectors {
 
 /**
  * @brief Excepción lanzada cuando un collector falla al recolectar métricas.
@@ -20,4 +20,4 @@ public:
         : std::runtime_error(std::strerror(codigo_errno)) {}
 };
 
-} // namespace pulso::collectors
+} // namespace chuspapulse::collectors

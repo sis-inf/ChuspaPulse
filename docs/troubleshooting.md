@@ -1,11 +1,11 @@
 
-# Troubleshooting de Pulso
+# Troubleshooting de ChuspaPulse
 
 ## 1. Permission denied al leer /proc/stat
 
 ### Síntoma
 
-Pulso muestra errores al intentar leer métricas de CPU.
+ChuspaPulse muestra errores al intentar leer métricas de CPU.
 
 ### Causa
 
@@ -15,7 +15,7 @@ El usuario no tiene permisos suficientes para acceder a archivos del sistema.
 
 ```bash
 ls -l /proc/stat
-sudo ./pulso
+sudo ./ChuspaPulse
 ```
 ---
 
@@ -50,9 +50,9 @@ No existe suficiente intervalo entre mediciones.
 ### Solución
 
 ```bash
-./pulso --once
+./ChuspaPulse --once
 sleep 2
-./pulso --once
+./ChuspaPulse --once
 ```
 
 ---
@@ -88,8 +88,8 @@ Configuración incorrecta del servicio.
 ### Solución
 
 ```bash
-sudo systemctl status pulso
-sudo journalctl -u pulso
+sudo systemctl status ChuspaPulse
+sudo journalctl -u ChuspaPulse
 ```
 ---
 
@@ -106,7 +106,7 @@ Objetos o recursos no liberados.
 ### Solución
 
 ```bash
-valgrind ./pulso
+valgrind ./ChuspaPulse
 ```
 
 Nota: un incremento pequeño por cachés internas puede ser normal.
@@ -186,4 +186,3 @@ cd build
 ctest --output-on-failure
 ```
 ---
-

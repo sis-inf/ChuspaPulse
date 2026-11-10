@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
-  title: Pulso API
-  description: API HTTP del agente de monitoreo Pulso
+  title: ChuspaPulse API
+  description: API HTTP del agente de monitoreo ChuspaPulse
   version: 1.0.0
 servers:
   - url: http://localhost:8080
@@ -10,7 +10,7 @@ paths:
   /health:
     get:
       summary: Estado del servicio
-      description: Verifica el estado general del servicio Pulso
+      description: Verifica el estado general del servicio ChuspaPulse
       responses:
         200:
           description: Servicio activo
@@ -101,7 +101,7 @@ paths:
   /config:
     get:
       summary: Configuracion activa
-      description: Devuelve la configuracion activa del servidor Pulso
+      description: Devuelve la configuracion activa del servidor ChuspaPulse
       responses:
         200:
           description: Configuracion del servidor
@@ -150,7 +150,7 @@ paths:
   /version:
     get:
       summary: Version del agente
-      description: Devuelve la version actual del agente Pulso
+      description: Devuelve la version actual del agente ChuspaPulse
       responses:
         200:
           description: Version del agente

@@ -2,7 +2,7 @@
 
 ## Introducción
 
-Pulso incluye un dashboard web básico, servido desde el endpoint `GET /`, que ofrece una interfaz HTML sencilla para consultar el estado del sistema y acceder rápidamente a los principales endpoints de monitoreo, sin necesidad de herramientas externas.
+ChuspaPulse incluye un dashboard web básico, servido desde el endpoint `GET /`, que ofrece una interfaz HTML sencilla para consultar el estado del sistema y acceder rápidamente a los principales endpoints de monitoreo, sin necesidad de herramientas externas.
 
 Este dashboard funciona como punto de partida: los desarrolladores pueden personalizarlo o reemplazarlo por una interfaz más completa según la necesidad del proyecto.
 ---
@@ -119,4 +119,4 @@ Se recomienda:
 
 # Conclusión
 
-El dashboard web embebido ofrece una forma sencilla de visualizar el estado del sistema desde un navegador. Su diseño, además, permite que cualquier desarrollador lo extienda o lo reemplace por una solución más completa sin necesidad de modificar la lógica principal de Pulso. 
+El dashboard web embebido ofrece una forma sencilla de visualizar el estado del sistema desde un navegador. Su diseño, además, permite que cualquier desarrollador lo extienda o lo reemplace por una solución más completa sin necesidad de modificar la lógica principal de ChuspaPulse. 

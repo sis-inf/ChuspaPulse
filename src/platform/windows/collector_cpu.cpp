@@ -15,7 +15,7 @@
 #include <ctime>
 #include <thread>
 
-namespace pulso::platform::windows_platform {
+namespace chuspapulse::platform::windows_platform {
 
 namespace {
 
@@ -46,13 +46,13 @@ struct TiemposSistema {
 /**
  * @brief Llama a GetSystemTimes y retorna los valores como uint64_t.
  *
- * @throws pulso::collectors::ErrorRecoleccion si la llamada falla.
+ * @throws chuspapulse::collectors::ErrorRecoleccion si la llamada falla.
  */
 TiemposSistema leerTiemposSistema() {
     FILETIME idle_ft, kernel_ft, user_ft;
 
     if (!GetSystemTimes(&idle_ft, &kernel_ft, &user_ft)) {
-        throw pulso::collectors::ErrorRecoleccion(
+        throw chuspapulse::collectors::ErrorRecoleccion(
             "GetSystemTimes fallo (codigo: " +
             std::to_string(static_cast<unsigned long>(GetLastError())) + ")"
         );
@@ -117,7 +117,7 @@ std::string CollectorCPUWindows::nombre() const {
     return "cpu";
 }
 
-std::vector<pulso::core::Metrica> CollectorCPUWindows::recolectar() {
+std::vector<chuspapulse::core::Metrica> CollectorCPUWindows::recolectar() {
     // Primera lectura
     TiemposSistema a = leerTiemposSistema();
 
@@ -133,11 +133,11 @@ std::vector<pulso::core::Metrica> CollectorCPUWindows::recolectar() {
     const auto   ts    = static_cast<std::int64_t>(std::time(nullptr));
 
     return {
-        pulso::core::Metrica{"cpu.usage", uso,                        "porcentaje", ts},
-        pulso::core::Metrica{"cpu.cores", static_cast<double>(cores), "cantidad",   ts}
+        chuspapulse::core::Metrica{"cpu.usage", uso,                        "porcentaje", ts},
+        chuspapulse::core::Metrica{"cpu.cores", static_cast<double>(cores), "cantidad",   ts}
     };
 }
 
-} // namespace pulso::platform::windows_platform
+} // namespace chuspapulse::platform::windows_platform
 
 #endif // _WIN32

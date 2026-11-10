@@ -1,4 +1,4 @@
-# Roadmap de Pulso
+# Roadmap de ChuspaPulse
 
 ## Módulo: Collectors
 

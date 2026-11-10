@@ -39,6 +39,7 @@
 #include "formatters/formatter_json.hpp"
 #include "formatters/formatter_csv.hpp"
 #include "formatters/formatter_prometheus.hpp"
+#include "formatters/formatter_text.hpp"
 
 // HTTP handlers
 #include "http/handler_config.hpp"
@@ -58,6 +59,7 @@
 // Signal handler
 extern std::atomic<bool> isRunning;
 void setupSignalHandler();
+bool consume_reload_request();
 class CollectorProcesos : public pulso::collectors::ICollector {
 public:
     std::string nombre() const override {
@@ -183,6 +185,10 @@ else if (format == "prometheus")
 {
     formatter = std::make_unique<pulso::formatters::FormatterPrometheus>();
 }
+else if (format == "text")
+{
+    formatter = std::make_unique<pulso::formatters::FormatterText>();
+}
 
 // Validación explícita del formato recibido por CLI
 if (!formatter)
@@ -263,14 +269,8 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    // --config se maneja aqui (manteniendo logica original)
-    std::string config_path = "pulso.toml";
-    for (int i = 1; i < argc; ++i) {
-        std::string arg = argv[i];
-        if (arg == "--config" && i + 1 < argc) {
-            config_path = argv[++i];
-        }
-    }
+    // --config ya fue validado por parse_arguments
+    std::string config_path = cli_opts.config_path;
 
     // -------------------------------------------------------------------------
     // 2. Cargar configuracion
@@ -432,6 +432,20 @@ int main(int argc, char* argv[]) {
         );
     });
 
+    // GET /ready — 200 si storage y sampler están disponibles, 503 si no
+    server.Get("/ready", [&storage, &sampler](
+        const httplib::Request&,
+        httplib::Response& res)
+    {
+        const auto resultado = pulso::http::handleReadiness({
+            {"storage", [&storage]() { storage.total(); return true; }},
+            {"sampler", [&sampler]() { return sampler.corriendo(); }},
+        });
+
+        res.status = resultado.status;
+        res.set_content(resultado.cuerpo, "application/json");
+    });
+
     // GET /version
 server.Get("/version", [](
     const httplib::Request&,
@@ -462,9 +476,8 @@ server.Get("/config", handle_config);
     });
 
 
-    // GET /metrics — pendiente hasta que SystemMonitor se adapte al flujo
-    // actual (Storage + ICollector). Ver issue #270.
-    // pulso::http::HandleMetrics(server, system_monitor);
+    // GET /metrics — último snapshot de Storage en formato Prometheus
+    pulso::http::HandleMetrics(server, storage);
 
     // GET /history
     pulso::http::registrarHistory(server, storage, formatterJson);
@@ -475,16 +488,52 @@ server.Get("/config", handle_config);
     pulso::http::registrarAlertsHistory(server, gestorAlertas);
 
 
-    // Arrancar servidor HTTP en thread separado
-    std::thread http_thread([&]() {
+    // Arrancar servidor HTTP en thread separado.
+    // Host y puerto se copian porque cfg puede reemplazarse al recibir SIGHUP.
+    const std::string http_host = cfg.servidor.host;
+    const int http_puerto = cfg.servidor.puerto;
+    std::thread http_thread([&, http_host, http_puerto]() {
         log.info("Servidor HTTP escuchando en " +
-                 cfg.servidor.host + ":" +
-                 std::to_string(cfg.servidor.puerto));
-        server.listen(cfg.servidor.host.c_str(), cfg.servidor.puerto);
+                 http_host + ":" +
+                 std::to_string(http_puerto));
+        server.listen(http_host.c_str(), http_puerto);
     });
 
     // Esperar senal de shutdown (bucle infinito)
     while (isRunning.load()) {
+        // SIGHUP: releer y validar la configuracion sin detener el proceso.
+        // Si es valida pasa a ser la configuracion activa; el servidor, la
+        // base de datos, el sampler, el logger y los umbrales siguen con los
+        // valores del arranque hasta reiniciar. Si es invalida se conserva
+        // la activa.
+        if (consume_reload_request()) {
+            log.info("SIGHUP recibido: recargando configuracion desde " + config_path);
+
+            pulso::config::Config recargada = cfg;
+            std::string error;
+
+            if (pulso::config::recargar(config_path, recargada, error)) {
+                const auto campos = pulso::config::camposModificados(cfg, recargada);
+
+                if (campos.empty()) {
+                    log.info("Configuracion recargada y valida: sin cambios.");
+                } else {
+                    std::string lista;
+                    for (const auto& campo : campos) {
+                        if (!lista.empty()) lista += ", ";
+                        lista += campo;
+                    }
+                    log.warn("Configuracion recargada y valida. Campos modificados "
+                             "que requieren reiniciar el agente: " + lista);
+                }
+
+                cfg = recargada;
+            } else {
+                log.error("No se pudo recargar la configuracion: " + error +
+                          ". Se conserva la configuracion activa.");
+            }
+        }
+
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 

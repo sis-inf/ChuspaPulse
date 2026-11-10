@@ -6,11 +6,11 @@ Este documento establece la política para definir qué cambios deben registrars
 
 ## Objetivo
 
-El archivo `CHANGELOG.md` contiene un resumen de los cambios importantes realizados en cada versión de Pulso.
+El archivo `CHANGELOG.md` contiene un resumen de los cambios importantes realizados en cada versión de ChuspaPulse.
 
 La finalidad del changelog es permitir que los usuarios conozcan nuevas funcionalidades, correcciones y cambios importantes sin revisar todos los commits del repositorio.
 
-Pulso utiliza la convención **Conventional Commits** para identificar qué cambios generan entradas en el changelog.
+ChuspaPulse utiliza la convención **Conventional Commits** para identificar qué cambios generan entradas en el changelog.
 
 El formato utilizado para los commits es:
 
@@ -199,7 +199,7 @@ Ejemplo:
 
 ### Corregido
 
-- Corregido error al iniciar Pulso con configuraciones inválidas.
+- Corregido error al iniciar ChuspaPulse con configuraciones inválidas.
 ```
 
 Cada entrada debe:

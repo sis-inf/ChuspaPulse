@@ -1,11 +1,11 @@
 # Ejemplos de integración con Prometheus
 
 Este directorio contiene archivos de configuración de ejemplo
-para integrar **pulso** con Prometheus.
+para integrar **ChuspaPulse** con Prometheus.
 
 ## Cómo usar
 
-1. Levanta pulso en el puerto 8080.
+1. Levanta ChuspaPulse en el puerto 8080.
 2. Ejecuta Prometheus apuntando a este archivo:
 
 ```bash
@@ -21,5 +21,5 @@ docker run -p 9090:9090 \
 Para visualizar el uso de CPU:
 
 ```promql
-pulso_cpu_usage
+ChuspaPulse_cpu_usage
 ```

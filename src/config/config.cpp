@@ -12,7 +12,7 @@
 #include <stdexcept>
 #include <cstdlib>
 
-namespace pulso::config {
+namespace chuspapulse::config {
 
 namespace {
 
@@ -53,28 +53,44 @@ T leer(const toml::table& tabla,
 /// Aplica variables de entorno con prioridad sobre TOML.
 void aplicarEnv(Config& cfg)
 {
-    if (const char* v = std::getenv("PULSO_SERVIDOR_HOST")) {
+    if (const char* v = std::getenv("CHUSPAPULSE_SERVIDOR_HOST")) {
         cfg.servidor.host = v;
     }
 
-    if (const char* v = std::getenv("PULSO_SERVIDOR_PUERTO")) {
-        cfg.servidor.puerto = static_cast<uint16_t>(std::stoi(v));
+    if (const char* v = std::getenv("CHUSPAPULSE_SERVIDOR_PUERTO")) {
+        cfg.servidor.puerto = parsearPuerto(v);
     }
 
-    if (const char* v = std::getenv("PULSO_SAMPLER_INTERVALO_SEGUNDOS")) {
+    if (const char* v = std::getenv("CHUSPAPULSE_SAMPLER_INTERVALO_SEGUNDOS")) {
         cfg.sampler.intervalo_segundos = std::stoll(v);
     }
 
-    if (const char* v = std::getenv("PULSO_STORAGE_RUTA_DB")) {
+    if (const char* v = std::getenv("CHUSPAPULSE_STORAGE_RUTA_DB")) {
         cfg.storage.ruta_db = v;
     }
 
-    if (const char* v = std::getenv("PULSO_NIVEL_LOG")) {
+    if (const char* v = std::getenv("CHUSPAPULSE_NIVEL_LOG")) {
         cfg.nivel_log = v;
     }
 
-    if (const char* v = std::getenv("PULSO_OUTPUT_FORMAT")) {
+    if (const char* v = std::getenv("CHUSPAPULSE_OUTPUT_FORMAT")) {
         cfg.output_format = v;
+    }
+}
+
+
+/// Valida que output_format sea uno de los formatos soportados.
+void validarOutputFormat(const Config& cfg)
+{
+    if (cfg.output_format != "json" &&
+        cfg.output_format != "csv" &&
+        cfg.output_format != "prometheus" &&
+        cfg.output_format != "text") {
+
+        throw std::invalid_argument(
+            "Valor inválido para output_format: " +
+            cfg.output_format
+        );
     }
 }
 
@@ -88,8 +104,25 @@ Config mapear(const toml::table& doc)
     cfg.servidor.host =
         leer<std::string>(doc, "servidor", "host", cfg.servidor.host);
 
-    cfg.servidor.puerto =
-        leer<int64_t>(doc, "servidor", "puerto", cfg.servidor.puerto);
+    // El puerto se valida sobre el valor original del TOML, antes de
+    // convertirlo a int (así 4294975376 no se trunca a 8080).
+    if (auto* sec = doc["servidor"].as_table()) {
+        if (auto nodo = (*sec)["puerto"]) {
+            auto valor = nodo.value_exact<int64_t>();
+            if (!valor) {
+                throw std::invalid_argument(
+                    "Valor inválido para puerto: debe ser un entero entre 1 y 65535"
+                );
+            }
+            if (*valor < 1 || *valor > 65535) {
+                throw std::invalid_argument(
+                    "Valor inválido para puerto: " + std::to_string(*valor) +
+                    " (debe estar entre 1 y 65535)"
+                );
+            }
+            cfg.servidor.puerto = static_cast<int>(*valor);
+        }
+    }
 
 
     // [sampler]
@@ -141,6 +174,7 @@ Config cargar(const std::string& ruta)
     if (!std::filesystem::exists(ruta)) {
         Config cfg = porDefecto();
         aplicarEnv(cfg);
+        validarOutputFormat(cfg);
         return cfg;
     }
 
@@ -164,27 +198,39 @@ Config cargar(const std::string& ruta)
 
 
         // Validar output_format
-        if (cfg.output_format != "json" &&
-            cfg.output_format != "csv" &&
-            cfg.output_format != "prometheus") {
+        validarOutputFormat(cfg);
+
+
+        // Validar umbrales (porcentajes entre 0.0 y 100.0)
+        if (!(cfg.umbrales.cpu_max >= 0.0 &&
+              cfg.umbrales.cpu_max <= 100.0)) {
 
             throw std::invalid_argument(
-                "Valor inválido para output_format: " +
-                cfg.output_format
+                "Valor inválido para cpu_max: " +
+                std::to_string(cfg.umbrales.cpu_max) +
+                " (debe estar entre 0.0 y 100.0)"
             );
         }
 
-
-        // Validar puerto
-        if (cfg.servidor.puerto < 1 ||
-            cfg.servidor.puerto > 65535) {
+        if (!(cfg.umbrales.ram_max >= 0.0 &&
+              cfg.umbrales.ram_max <= 100.0)) {
 
             throw std::invalid_argument(
-                "Valor inválido para puerto: " +
-                std::to_string(cfg.servidor.puerto)
+                "Valor inválido para ram_max: " +
+                std::to_string(cfg.umbrales.ram_max) +
+                " (debe estar entre 0.0 y 100.0)"
             );
         }
 
+        if (!(cfg.umbrales.disco_max >= 0.0 &&
+              cfg.umbrales.disco_max <= 100.0)) {
+
+            throw std::invalid_argument(
+                "Valor inválido para disco_max: " +
+                std::to_string(cfg.umbrales.disco_max) +
+                " (debe estar entre 0.0 y 100.0)"
+            );
+        }
 
         // Validar intervalo
         if (cfg.sampler.intervalo_segundos <= 0) {
@@ -225,4 +271,82 @@ Config porDefecto()
     return Config{};
 }
 
-} // namespace pulso::config
+
+int parsearPuerto(const std::string& texto)
+{
+    if (texto.empty()) {
+        throw std::invalid_argument("Valor inválido para puerto: vacío");
+    }
+
+    // Validar antes de convertir: solo dígitos y como mucho 5 (65535),
+    // así std::stoi no acepta "8080abc", "-1" ni desborda.
+    const bool soloDigitos =
+        texto.find_first_not_of("0123456789") == std::string::npos;
+
+    if (!soloDigitos || texto.size() > 5) {
+        throw std::invalid_argument(
+            "Valor inválido para puerto: '" + texto +
+            "' (debe ser un entero entre 1 y 65535)"
+        );
+    }
+
+    const int puerto = std::stoi(texto);
+
+    if (puerto < 1 || puerto > 65535) {
+        throw std::invalid_argument(
+            "Valor inválido para puerto: " + texto +
+            " (debe estar entre 1 y 65535)"
+        );
+    }
+
+    return puerto;
+}
+
+
+bool recargar(const std::string& ruta, Config& destino, std::string& error)
+{
+    if (!std::filesystem::exists(ruta)) {
+        error = "El archivo de configuración no existe: " + ruta;
+        return false;
+    }
+
+    try {
+        Config nueva = cargar(ruta);
+        destino = nueva;
+        return true;
+    }
+    catch (const std::exception& e) {
+        error = e.what();
+        return false;
+    }
+}
+
+
+std::vector<std::string> camposModificados(const Config& antes,
+                                           const Config& despues)
+{
+    std::vector<std::string> campos;
+
+    if (antes.servidor.host != despues.servidor.host)
+        campos.push_back("servidor.host");
+    if (antes.servidor.puerto != despues.servidor.puerto)
+        campos.push_back("servidor.puerto");
+    if (antes.sampler.intervalo_segundos != despues.sampler.intervalo_segundos)
+        campos.push_back("sampler.intervalo_segundos");
+    if (antes.storage.ruta_db != despues.storage.ruta_db)
+        campos.push_back("storage.ruta_db");
+    if (antes.umbrales.cpu_max != despues.umbrales.cpu_max)
+        campos.push_back("umbrales.cpu_max");
+    if (antes.umbrales.ram_max != despues.umbrales.ram_max)
+        campos.push_back("umbrales.ram_max");
+    if (antes.umbrales.disco_max != despues.umbrales.disco_max)
+        campos.push_back("umbrales.disco_max");
+    if (antes.nivel_log != despues.nivel_log)
+        campos.push_back("nivel_log");
+    if (antes.output_format != despues.output_format)
+        campos.push_back("output_format");
+
+    return campos;
+}
+
+} // namespace chuspapulse::config

@@ -1,6 +1,6 @@
 # Guía: Cómo agregar un nuevo collector
 
-Esta guía explica paso a paso cómo agregar un nuevo collector a Pulso, usando como ejemplo ficticio un **collector de temperatura de GPU**.
+Esta guía explica paso a paso cómo agregar un nuevo collector a ChuspaPulse, usando como ejemplo ficticio un **collector de temperatura de GPU**.
 
 ---
 
@@ -38,7 +38,7 @@ src/collectors/gpu/
 #include "../icollector.hpp"
 #include "core/types.hpp"
 
-namespace pulso::collectors::gpu {
+namespace ChuspaPulse::collectors::gpu {
 
 /**
  * @brief Información de temperatura de la GPU.
@@ -64,13 +64,13 @@ GpuInfo getGpuInfo(
  * En sistemas sin GPU o sin sensor accesible, recolectar()
  * retorna un vector vacío sin lanzar excepción.
  */
-class CollectorGpu : public pulso::collectors::ICollector {
+class CollectorGpu : public ChuspaPulse::collectors::ICollector {
 public:
     std::string nombre() const override;
-    std::vector<pulso::core::Metrica> recolectar() override;
+    std::vector<ChuspaPulse::core::Metrica> recolectar() override;
 };
 
-}  // namespace pulso::collectors::gpu
+}  // namespace ChuspaPulse::collectors::gpu
 ```
 
 ### gpu_collector.cpp
@@ -81,7 +81,7 @@ public:
 #include <fstream>
 #include <string>
 
-namespace pulso::collectors::gpu {
+namespace ChuspaPulse::collectors::gpu {
 
 GpuInfo getGpuInfo(const std::string& ruta_sensor) {
     std::ifstream archivo(ruta_sensor);
@@ -103,7 +103,7 @@ std::string CollectorGpu::nombre() const {
     return "gpu";
 }
 
-std::vector<pulso::core::Metrica> CollectorGpu::recolectar() {
+std::vector<ChuspaPulse::core::Metrica> CollectorGpu::recolectar() {
     GpuInfo info = getGpuInfo();
 
     if (!info.disponible) {
@@ -124,7 +124,7 @@ std::vector<pulso::core::Metrica> CollectorGpu::recolectar() {
     }};
 }
 
-}  // namespace pulso::collectors::gpu
+}  // namespace ChuspaPulse::collectors::gpu
 ```
 
 ---
@@ -134,7 +134,7 @@ std::vector<pulso::core::Metrica> CollectorGpu::recolectar() {
 Abre `src/CMakeLists.txt` y agrega tu archivo `.cpp` a la lista de `target_sources`:
 
 ```cmake
-target_sources(pulso PRIVATE
+target_sources(ChuspaPulse PRIVATE
     # ... otros collectors ...
     collectors/gpu/gpu_collector.cpp   # <-- agregar esta línea
 )
@@ -151,7 +151,7 @@ Abre `src/main.cpp` y agrega el include y la instancia de tu collector:
 #include "collectors/gpu/gpu_collector.hpp"
 
 // Agrega la instancia al vector de collectors
-collectors.push_back(std::make_unique<pulso::collectors::gpu::CollectorGpu>());
+collectors.push_back(std::make_unique<ChuspaPulse::collectors::gpu::CollectorGpu>());
 ```
 
 El sampler iterará automáticamente sobre tu collector junto con los demás.
@@ -166,7 +166,7 @@ Crea el archivo `tests/automatizados/unit/test_collector_gpu.cpp`:
 #include <gtest/gtest.h>
 #include "collectors/gpu/gpu_collector.hpp"
 
-using namespace pulso::collectors::gpu;
+using namespace ChuspaPulse::collectors::gpu;
 
 TEST(CollectorGpu, RetornaDisponibleFalseConRutaInexistente) {
     GpuInfo info = getGpuInfo("/ruta/que/no/existe");
@@ -200,7 +200,7 @@ Registra el test en `tests/CMakeLists.txt` siguiendo el patrón existente:
 
 ```cmake
 add_executable(test_collector_gpu test_collector_gpu.cpp)
-target_link_libraries(test_collector_gpu PRIVATE GTest::gtest_main pulso_lib)
+target_link_libraries(test_collector_gpu PRIVATE GTest::gtest_main ChuspaPulse_lib)
 add_test(NAME test_collector_gpu COMMAND test_collector_gpu)
 ```
 
