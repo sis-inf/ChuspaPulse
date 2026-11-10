@@ -80,6 +80,12 @@ Config cargar(const std::string& ruta);
 /// Devuelve una Config construida con todos los valores por defecto.
 Config porDefecto();
 
+/// Valida el texto de un puerto y recién después lo convierte.
+/// Acepta solo enteros entre 1 y 65535, escritos únicamente con dígitos
+/// (sin signo, espacios, decimales ni sufijos).
+/// Lanza std::invalid_argument con un mensaje explícito si no es válido.
+int parsearPuerto(const std::string& texto);
+
 /// Vuelve a leer y validar el archivo TOML ubicado en `ruta`.
 /// Si es válido, lo copia en `destino` y devuelve true.
 /// Si falla, deja `destino` sin cambios, describe el motivo en `error`
