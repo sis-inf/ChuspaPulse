@@ -221,3 +221,16 @@ target_link_libraries(test_formatter_text PRIVATE
     GTest::gtest_main
 )
 gtest_discover_tests(test_formatter_text)
+
+add_executable(test_loadavg_collector
+    automatizados/unit/test_loadavg_collector.cpp
+    ${PROJECT_SOURCE_DIR}/src/colectores/loadavg_collector.cpp
+)
+target_include_directories(test_loadavg_collector PRIVATE
+    ${PROJECT_SOURCE_DIR}/src
+)
+target_link_libraries(test_loadavg_collector PRIVATE
+    GTest::gtest
+    GTest::gtest_main
+)
+gtest_discover_tests(test_loadavg_collector)
