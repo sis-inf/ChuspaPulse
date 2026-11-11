@@ -1,6 +1,6 @@
-# Pulso
+# ChuspaPulse
 
-[![CI](https://github.com/sis-inf/pulso/actions/workflows/ci.yml/badge.svg)](https://github.com/sis-inf/pulso/actions/workflows/ci.yml)
+[![CI](https://github.com/sis-inf/ChuspaPulse/actions/workflows/ci.yml/badge.svg)](https://github.com/sis-inf/ChuspaPulse/actions/workflows/ci.yml)
 [![Licencia MIT](https://img.shields.io/badge/licencia-MIT-blue.svg)](LICENSE)
 [![C++17](https://img.shields.io/badge/C%2B%2B-17-blue.svg)](https://en.cppreference.com/w/cpp/17)
 Plataforma en C++ para gestionar y monitorear información clave de forma eficiente.
@@ -9,9 +9,9 @@ Plataforma en C++ para gestionar y monitorear información clave de forma eficie
 
 ```bash
 sudo apt install git cmake g++
-git clone https://github.com/sis-inf/pulso.git && cd pulso
+git clone https://github.com/sis-inf/ChuspaPulse.git && cd ChuspaPulse
 cmake -S . -B build && cmake --build build
-./build/pulso --once
+./build/bin/chuspapulse --once
 ```
 
 Salida esperada:
@@ -22,11 +22,11 @@ Estado del sistema: OK
 
 ## ¿Qué es?
 
-Pulso es una aplicación desarrollada en C++ que permite gestionar y visualizar información relevante de manera centralizada. Está pensada para ofrecer alto rendimiento y control directo sobre los recursos del sistema.
+ChuspaPulse es una aplicación desarrollada en C++ que permite gestionar y visualizar información relevante de manera centralizada. Está pensada para ofrecer alto rendimiento y control directo sobre los recursos del sistema.
 
 ## ¿Para quién es?
 
-Pulso está dirigido a:
+ChuspaPulse está dirigido a:
 
 - Desarrolladores que trabajan con sistemas de alto rendimiento
 - Equipos que requieren herramientas eficientes y ligeras
@@ -34,13 +34,13 @@ Pulso está dirigido a:
 
 ## ¿Qué problema resuelve?
 
-Pulso ayuda a resolver:
+ChuspaPulse ayuda a resolver:
 
 - La dispersión de información en múltiples fuentes
 - La falta de herramientas rápidas y eficientes
 - El alto consumo de recursos en soluciones tradicionales
 
-Gracias a su implementación en C++, Pulso permite una ejecución más rápida y optimizada.
+Gracias a su implementación en C++, ChuspaPulse permite una ejecución más rápida y optimizada.
 
 ## Instalación
 
@@ -56,16 +56,16 @@ Gracias a su implementación en C++, Pulso permite una ejecución más rápida y
 | :--- | :---: | :---: |
 | **Linux (Kernel 5.4+)** | Soporte Pleno | 100% Funcional |
 | **Windows 10/11** | Soporte Pleno | 100% Funcional |
-| **macOS 12+** | No soportado actualmente | Colectores nativos pendientes |
+| **macOS 12+** | No soportado actualmente | Colectores nativos pendientes (ver [límites conocidos](docs/limites-conocidos.md)) |
 
 ### Pasos básicos
 
 ```bash
 # Clonar el repositorio
-git clone https://github.com/tu-usuario/pulso.git
+git clone https://github.com/tu-usuario/ChuspaPulse.git
 
 # Entrar al proyecto
-cd pulso
+cd ChuspaPulse
 ```
 
 ---
@@ -88,20 +88,20 @@ Uso rápido:
 
 ```bash
 # Ejecutar el programa (puede variar según el sistema)
-./pulso
+./bin/chuspapulse
 ```
 
 En Windows:
 
 ```bash
-pulso.exe
+bin\chuspapulse.exe
 ```
 ## Compilación rápida
 
 ```bash
 cmake -S . -B build
 make -C build
-./build/pulso
+./build/bin/chuspapulse
 ```
 También puedes usar las reglas directas del Makefile:
 
@@ -152,7 +152,7 @@ O ejecutar un test específico:
 Ejecutar:
 
 ```bash
-./build/pulso --once --format json
+./build/bin/chuspapulse --once --format json
 ```
 
 Salida:
@@ -182,10 +182,10 @@ Salida:
 
 ```bash
 # Entrada
-./pulso
+./build/bin/chuspapulse
 
 # Salida
-¡Bienvenido a Pulso!
+¡Bienvenido a ChuspaPulse!
 Seleccione una opción:
 1. Ver estado
 2. Actualizar datos
