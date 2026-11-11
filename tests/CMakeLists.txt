@@ -221,3 +221,16 @@ target_link_libraries(test_formatter_text PRIVATE
     GTest::gtest_main
 )
 gtest_discover_tests(test_formatter_text)
+
+add_executable(test_temp_collector
+    automatizados/unit/test_temp_collector.cpp
+    ${PROJECT_SOURCE_DIR}/src/collectors/temperature/temp_collector.cpp
+)
+target_include_directories(test_temp_collector PRIVATE
+    ${PROJECT_SOURCE_DIR}/src
+)
+target_link_libraries(test_temp_collector PRIVATE
+    GTest::gtest
+    GTest::gtest_main
+)
+gtest_discover_tests(test_temp_collector)
