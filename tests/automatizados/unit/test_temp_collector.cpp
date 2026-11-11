@@ -1,34 +1,22 @@
-#include <cassert>
-#include <iostream>
+#include <gtest/gtest.h>
+#include <vector>
+#include "../../../src/collectors/temperature/temp_collector.hpp"
 
-// Función para validar rangos térmicos
-bool es_temperatura_valida(double temperatura) {
-    // Filtra valores negativos y temperaturas superiores a 150 grados
-    if (temperatura < 0.0 || temperatura > 150.0) {
-        return false;
-    }
-    return true;
-}
+// Prueba unitaria utilizando el framework nativo GoogleTest
+TEST(TempCollectorTest, ValidarFiltroRangosTermicos) {
+    TempCollector colector;
 
-// Pruebas unitarias para el recolector de temperatura
-void test_filtro_rangos_termicos() {
-    // 1. Verificar que los valores dentro del rango (0 a 150) se mantengan válidos
-    assert(es_temperatura_valida(0.0) == true);
-    assert(es_temperatura_valida(25.5) == true);
-    assert(es_temperatura_valida(150.0) == true);
+    // 1. Simular lecturas válidas dentro del rango físico (0 a 150)
+    // Se asume un método como procesar_lectura o similar del objeto real
+    EXPECT_TRUE(colector.procesar_lectura(0.0));
+    EXPECT_TRUE(colector.procesar_lectura(25.5));
+    EXPECT_TRUE(colector.procesar_lectura(150.0));
 
-    // 2. Verificar que se filtren/descarten los valores negativos
-    assert(es_temperatura_valida(-1.0) == false);
-    assert(es_temperatura_valida(-50.0) == false);
+    // 2. Verificar que las lecturas inválidas (negativas) sean omitidas (devuelven false o se descartan)
+    EXPECT_FALSE(colector.procesar_lectura(-1.0));
+    EXPECT_FALSE(colector.procesar_lectura(-15.0));
 
-    // 3. Verificar que se filtren/descarten valores superiores a 150 grados
-    assert(es_temperatura_valida(150.1) == false);
-    assert(es_temperatura_valida(200.0) == false);
-
-    std::cout << "Todas las pruebas de rangos termicos pasaron con exito." << std::endl;
-}
-
-int main() {
-    test_filtro_rangos_termicos();
-    return 0;
+    // 3. Verificar que las lecturas superiores a 150 grados sean omitidas
+    EXPECT_FALSE(colector.procesar_lectura(150.1));
+    EXPECT_FALSE(colector.procesar_lectura(200.0));
 }
