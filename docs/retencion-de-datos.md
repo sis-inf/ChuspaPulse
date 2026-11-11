@@ -36,6 +36,22 @@ Este es el comportamiento de **retención infinita** y corresponde al valor por 
 
 ---
 
+# Límite de entradas del almacenamiento
+
+Además de la retención por días, el almacenamiento limita la cantidad de snapshots que conserva mediante `setMaxEntries(max)`. Cuando se supera el límite, se eliminan primero los snapshots más antiguos (política FIFO). El límite por defecto es de 3600 entradas.
+
+## Comportamiento de `setMaxEntries(0)`
+
+Un límite de **0** significa **sin límite**, igual que `retencion_dias = 0`:
+
+- No se elimina ningún snapshot, ni los existentes ni los nuevos.
+- `save()` sigue guardando con normalidad y sin errores.
+- Si más adelante se configura un límite mayor que 0, se eliminan de inmediato los snapshots más antiguos que excedan ese límite.
+
+> **Advertencia:** al pasar de 0 a un límite menor que la cantidad de snapshots almacenados, el exceso se elimina de forma permanente.
+
+---
+
 # Funcionamiento de la purga automática
 
 Durante la ejecución del sistema, Pulso revisa periódicamente la antigüedad de los snapshots almacenados.

@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <filesystem>
 #include <cstdint>
+#include <limits>
 #include <string>
 
 #include "storage/storage.hpp"
@@ -155,4 +156,106 @@ TEST_F(StorageTest, Test_PersistenciaTrasReabrir) {
     auto resultado = storage2.last();
     ASSERT_TRUE(resultado.has_value());
     EXPECT_EQ(resultado->timestamp, 9999);
+}
+
+// 9. setMaxEntries(0) con la base vacía no falla
+TEST_F(StorageTest, Test_MaximoCero_BaseVacia_NoLanza) {
+    pulso::storage::Storage storage(dbPath_);
+
+    EXPECT_NO_THROW(storage.setMaxEntries(0));
+    EXPECT_EQ(storage.total(), 0u);
+}
+
+// 10. setMaxEntries(0) conserva las entradas existentes
+TEST_F(StorageTest, Test_MaximoCero_ConservaEntradasExistentes) {
+    pulso::storage::Storage storage(dbPath_);
+    for (int i = 1; i <= 5; ++i) {
+        storage.save(crearSnapshot(static_cast<std::int64_t>(i)));
+    }
+
+    storage.setMaxEntries(0);
+
+    EXPECT_EQ(storage.total(), 5u);
+}
+
+// 11. Con límite 0, save() sigue guardando sin eliminar nada
+TEST_F(StorageTest, Test_MaximoCero_SaveNoElimina) {
+    pulso::storage::Storage storage(dbPath_);
+    storage.setMaxEntries(0);
+
+    for (int i = 1; i <= 5; ++i) {
+        EXPECT_NO_THROW(storage.save(crearSnapshot(static_cast<std::int64_t>(i))));
+    }
+
+    EXPECT_EQ(storage.total(), 5u);
+    auto resultado = storage.last();
+    ASSERT_TRUE(resultado.has_value());
+    EXPECT_EQ(resultado->timestamp, 5);
+}
+
+// 12. Pasar de sin límite a un límite concreto purga con política FIFO
+TEST_F(StorageTest, Test_MaximoCero_LuegoLimitar_PurgaLosAntiguos) {
+    pulso::storage::Storage storage(dbPath_);
+    storage.setMaxEntries(0);
+    for (int i = 1; i <= 5; ++i) {
+        storage.save(crearSnapshot(static_cast<std::int64_t>(i)));
+    }
+
+    storage.setMaxEntries(3);
+
+    auto resultado = storage.history(0);
+    ASSERT_EQ(resultado.size(), 3u);
+    EXPECT_EQ(resultado[0].timestamp, 3);
+    EXPECT_EQ(resultado[2].timestamp, 5);
+}
+
+// 13. Límite 1: solo se conserva el snapshot más reciente
+TEST_F(StorageTest, Test_MaximoUno_ConservaSoloElMasReciente) {
+    pulso::storage::Storage storage(dbPath_);
+    storage.setMaxEntries(1);
+
+    storage.save(crearSnapshot(10));
+    storage.save(crearSnapshot(20));
+    storage.save(crearSnapshot(30));
+
+    EXPECT_EQ(storage.total(), 1u);
+    auto resultado = storage.last();
+    ASSERT_TRUE(resultado.has_value());
+    EXPECT_EQ(resultado->timestamp, 30);
+}
+
+// 14. Límite 2: se descartan los más antiguos (FIFO)
+TEST_F(StorageTest, Test_MaximoDos_DescartaLosMasAntiguos) {
+    pulso::storage::Storage storage(dbPath_);
+    storage.setMaxEntries(2);
+
+    for (int i = 1; i <= 4; ++i) {
+        storage.save(crearSnapshot(static_cast<std::int64_t>(i)));
+    }
+
+    auto resultado = storage.history(0);
+    ASSERT_EQ(resultado.size(), 2u);
+    EXPECT_EQ(resultado[0].timestamp, 3);
+    EXPECT_EQ(resultado[1].timestamp, 4);
+}
+
+// 15. Un límite mayor que la cantidad de entradas no elimina nada
+TEST_F(StorageTest, Test_MaximoMayorQueTotal_NoEliminaNada) {
+    pulso::storage::Storage storage(dbPath_);
+    for (int i = 1; i <= 3; ++i) {
+        storage.save(crearSnapshot(static_cast<std::int64_t>(i)));
+    }
+
+    storage.setMaxEntries(10);
+
+    EXPECT_EQ(storage.total(), 3u);
+}
+
+// 16. El valor máximo representable no provoca errores ni borrados
+TEST_F(StorageTest, Test_MaximoEnteroMaximo_NoEliminaNada) {
+    pulso::storage::Storage storage(dbPath_);
+    storage.save(crearSnapshot(1));
+
+    EXPECT_NO_THROW(storage.setMaxEntries(std::numeric_limits<std::size_t>::max()));
+    EXPECT_EQ(storage.total(), 1u);
 }

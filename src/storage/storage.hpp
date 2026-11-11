@@ -40,9 +40,15 @@ public:
      * Cuando se agrega un nuevo snapshot y se supera este límite,
      * se descarta el snapshot más antiguo siguiendo una política FIFO.
      *
+     * Un valor de 0 desactiva el límite: no se elimina ningún snapshot,
+     * igual que retencion_dias = 0. Las entradas existentes se conservan
+     * y las nuevas se siguen guardando sin errores. Si después se configura
+     * un límite mayor que 0, se descartan los snapshots más antiguos que
+     * excedan ese límite.
+     *
      * El límite por defecto es 3600 entradas.
      *
-     * @param max Cantidad máxima de snapshots a conservar.
+     * @param max Cantidad máxima de snapshots a conservar (0 = sin límite).
      */
     void setMaxEntries(std::size_t max);
 

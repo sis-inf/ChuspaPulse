@@ -10,6 +10,11 @@ namespace pulso::storage {
 namespace {
 
 void pruneSnapshots(SQLite::Database& db, std::size_t maxEntries) {
+    // Límite 0 = sin límite: no se elimina ninguna entrada.
+    if (maxEntries == 0) {
+        return;
+    }
+
     SQLite::Statement countQuery(db, "SELECT COUNT(*) FROM snapshots;");
     countQuery.executeStep();
 
