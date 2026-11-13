@@ -15,6 +15,7 @@ struct CliOptions {
     pulso::config::MonitorConfig monitor;
     bool once = false;
     std::string format = "json";
+    bool help_requested = false;
 };
 
 /**
@@ -32,8 +33,10 @@ struct CliOptions {
  * @param argv Vector de argumentos.
  * @param options Configuracion extendida a modificar.
  *
- * @return true si la ejecucion puede continuar.
- * @return false si ocurrio un error o se mostro ayuda.
+ * @return true si la ejecucion puede continuar o si se mostro la ayuda
+ *         (en ese caso options.help_requested es true y el llamador debe
+ *         terminar con codigo 0 sin iniciar el muestreo ni el servidor).
+ * @return false si ocurrio un error de argumentos.
  */
 bool parse_arguments(int argc, char* argv[], CliOptions& options);
 

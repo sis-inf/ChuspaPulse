@@ -142,3 +142,16 @@ target_include_directories(test_alertas_persistencia PRIVATE ${PROJECT_SOURCE_DI
 target_link_libraries(test_alertas_persistencia PRIVATE
     SQLiteCpp sqlite3 GTest::gtest GTest::gtest_main)
 gtest_discover_tests(test_alertas_persistencia)
+
+add_executable(test_arg_parser
+    automatizados/unit/test_arg_parser.cpp
+    ${PROJECT_SOURCE_DIR}/src/cli/arg_parser.cpp
+)
+target_include_directories(test_arg_parser PRIVATE
+    ${PROJECT_SOURCE_DIR}/src
+)
+target_link_libraries(test_arg_parser PRIVATE
+    GTest::gtest
+    GTest::gtest_main
+)
+gtest_discover_tests(test_arg_parser)

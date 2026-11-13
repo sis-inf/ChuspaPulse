@@ -263,6 +263,10 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    if (cli_opts.help_requested) {
+        return 0;
+    }
+
     // --config se maneja aqui (manteniendo logica original)
     std::string config_path = "pulso.toml";
     for (int i = 1; i < argc; ++i) {

@@ -63,7 +63,8 @@ bool parse_arguments(int argc, char* argv[], pulso::cli::CliOptions& options)
         if (arg == "-h" || arg == "--help")
         {
             print_help();
-            return false;
+            options.help_requested = true;
+            return true;
         }
         else if (arg == "--version")
         {
