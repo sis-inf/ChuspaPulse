@@ -22,7 +22,7 @@ public:
     Sampler(
         std::vector<std::shared_ptr<chuspapulse::collectors::ICollector>> collectors,
         chuspapulse::storage::Storage& storage,
-        int intervaloSegundos,
+        int intervaloMs,
         SnapshotCallback onSnapshot = nullptr);
 
     ~Sampler();
@@ -39,7 +39,8 @@ public:
 private:
     std::vector<std::shared_ptr<chuspapulse::collectors::ICollector>> collectors_;
     chuspapulse::storage::Storage& storage_;
-    int intervaloSegundos_;
+    /// Intervalo entre muestras, en milisegundos.
+    int intervaloMs_;
     SnapshotCallback onSnapshot_;
     std::thread thread_;
     std::atomic<bool> corriendo_{false};
