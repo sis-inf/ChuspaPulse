@@ -90,7 +90,7 @@ void print_help()
 
     std::cout << "Opciones:\n";
 
-    std::cout << "  --interval <ms>   Intervalo de lectura en milisegundos ("
+    std::cout << "  --interval <ms>   Intervalo de muestreo en milisegundos ("
               << INTERVALO_MIN_MS << " a " << INTERVALO_MAX_MS << ")\n";
     std::cout << "  --metrics <list>  Metricas a recolectar: cpu,ram,disk\n";
     std::cout << "  --once            Ejecutar una sola lectura y salir\n";
@@ -155,6 +155,7 @@ bool parse_arguments(int argc, char* argv[], chuspapulse::cli::CliOptions& optio
             }
 
             options.monitor.interval_ms = static_cast<int>(interval);
+            options.interval_cli = true;
         }
         else if (arg == "--metrics")
         {
@@ -227,6 +228,17 @@ bool parse_arguments(int argc, char* argv[], chuspapulse::cli::CliOptions& optio
     }
 
     return true;
+}
+
+int resolver_intervalo_ms(const CliOptions& options,
+                          const chuspapulse::config::Config& config)
+{
+    if (options.interval_cli)
+    {
+        return options.monitor.interval_ms;
+    }
+
+    return config.sampler.intervalo_segundos * 1000;
 }
 
 } // namespace chuspapulse::cli

@@ -51,6 +51,7 @@ gtest_discover_tests(test_config)
 add_executable(test_config_completo
     automatizados/unit/test_config_completo.cpp
     ${PROJECT_SOURCE_DIR}/src/config/config.cpp
+    ${PROJECT_SOURCE_DIR}/src/cli/arg_parser.cpp
 )
 target_include_directories(test_config_completo PRIVATE
     ${PROJECT_SOURCE_DIR}/src

@@ -21,13 +21,15 @@ struct CliOptions {
     bool once = false;
     std::string format = "json";
     std::string config_path = "pulso.toml";
+    /// true si --interval se paso por linea de comandos.
+    bool interval_cli = false;
 };
 
 /**
  * @brief Procesa argumentos de linea de comandos.
  *
  * Argumentos soportados:
- * - --interval <ms>    (entero entre INTERVALO_MIN_MS e INTERVALO_MAX_MS)
+ * - --interval <ms>    (milisegundos, entero entre INTERVALO_MIN_MS e INTERVALO_MAX_MS)
  * - --metrics <lista>  (solo cpu, ram y disk, separados por coma)
  * - --once
  * - --format json|csv|prometheus|text
@@ -45,6 +47,21 @@ struct CliOptions {
  *         --interval que no sea un entero dentro del rango permitido.
  */
 bool parse_arguments(int argc, char* argv[], CliOptions& options);
+
+/**
+ * @brief Calcula el intervalo de muestreo efectivo en milisegundos.
+ *
+ * Si --interval se paso por linea de comandos, prevalece ese valor.
+ * En caso contrario se usa sampler.intervalo_segundos de la configuracion
+ * (archivo TOML o variable de entorno) convertido a milisegundos.
+ *
+ * @param options Opciones obtenidas de parse_arguments.
+ * @param config Configuracion cargada.
+ *
+ * @return Intervalo de muestreo en milisegundos.
+ */
+int resolver_intervalo_ms(const CliOptions& options,
+                          const chuspapulse::config::Config& config);
 
 /**
  * @brief Muestra la ayuda del programa.

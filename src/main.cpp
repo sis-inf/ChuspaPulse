@@ -400,11 +400,15 @@ int main(int argc, char* argv[]) {
              std::to_string(cfg.umbrales.ram_max) + "%, Disco=" +
              std::to_string(cfg.umbrales.disco_max) + "%");
 
-    // Sampler (bucle de colección); en cada ciclo evalúa las alertas
+    // Sampler (bucle de colección); en cada ciclo evalúa las alertas.
+    // --interval prevalece sobre sampler.intervalo_segundos.
+    const int intervalo_ms = pulso::cli::resolver_intervalo_ms(cli_opts, cfg);
+    log.info("Intervalo de muestreo: " + std::to_string(intervalo_ms) + " ms");
+
     pulso::sampler::Sampler sampler(
         collectors,
         storage,
-        cfg.sampler.intervalo_segundos,
+        intervalo_ms,
         [&gestorAlertas](const pulso::core::Snapshot& snap) {
             gestorAlertas.evaluar(construirMetricSnapshot(snap));
         }
