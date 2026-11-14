@@ -116,16 +116,16 @@ sudo apt install clang
 ```
 ## Con CMake
 ```bash
-# Configurar usando Clang
-CC=clang CXX=clang++ cmake -B build
+# Configurar usando Clang y banderas de advertencia
+CC=clang CXX=clang++ cmake -B build-clang -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic"
 
-# Compilar con banderas de advertencia
-cmake --build build -- -Wall -Wextra -Wpedantic
+# Compilar
+cmake --build build-clang
 ```
-## Directamente con Clang++
-```bash
-clang++ -std=c++17 -Wall -Wextra -Wpedantic src/main.cpp -o chuspapulse
-```
+El binario resultante queda en `build-clang/bin/chuspapulse`. Se usa una carpeta distinta de `build` porque CMake solo lee `CC` y `CXX` la primera vez que configura una carpeta: en una `build` ya configurada con GCC seguiría usando GCC.
+
+No se recomienda compilar `src/main.cpp` directamente con `clang++`: el programa usa otros archivos fuente y bibliotecas (cpp-httplib, nlohmann/json, toml++, SQLiteCpp) que `src/CMakeLists.txt` agrega al target y que CMake descarga al configurar.
+
 ---
 
 ## Build estático (binario standalone)
