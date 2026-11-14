@@ -28,7 +28,7 @@ Reglas importantes:
 Ejemplo:
 
 ```bash
-./ChuspaPulse --config /etc/chuspapulse/produccion.toml
+./chuspapulse --config /etc/chuspapulse/produccion.toml
 ```
 
 El agente no lee una variable de entorno para elegir la ruta del archivo: la única forma de cambiarla es `--config`.
@@ -139,7 +139,7 @@ En Linux o macOS:
 export CHUSPAPULSE_SERVIDOR_PUERTO=9090
 export CHUSPAPULSE_NIVEL_LOG=debug
 export CHUSPAPULSE_STORAGE_RUTA_DB=/var/lib/chuspapulse/datos.db
-./ChuspaPulse --config pulso.toml
+./chuspapulse --config pulso.toml
 ```
 
 En Windows con PowerShell:
@@ -147,7 +147,7 @@ En Windows con PowerShell:
 ```powershell
 $env:CHUSPAPULSE_SERVIDOR_PUERTO = "9090"
 $env:CHUSPAPULSE_NIVEL_LOG = "debug"
-.\ChuspaPulse.exe --config pulso.toml
+.\chuspapulse.exe --config pulso.toml
 ```
 
 Con el archivo anterior, estas variables hacen que el servidor escuche en el puerto 9090 y que el nivel de log sea `debug`, aunque el archivo diga `puerto = 8080` y `nivel_log = "info"`. El resto de las claves conserva el valor del archivo.
