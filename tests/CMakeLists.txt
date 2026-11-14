@@ -1,6 +1,5 @@
 enable_testing()
 message(STATUS "Tests are enabled (PULSO_BUILD_TESTS=ON)")
-find_package(GTest REQUIRED)
 include(GoogleTest)
 
 # Apply AddressSanitizer flags if BUILD_WITH_ASAN is enabled

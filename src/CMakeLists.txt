@@ -28,9 +28,9 @@ target_sources(pulso PRIVATE
     utils/formato_bytes.cpp
     utils/logging/logger.cpp
     utils/signal_handler.cpp
-    src/core/version.hpp
-    src/http/handler_version.hpp
-    src/http/handler_version.cpp
+    core/version.hpp
+    http/handler_version.hpp
+    http/handler_version.cpp
     alertas/alerta_umbral.cpp
     alertas/gestor_alertas.cpp
 )
