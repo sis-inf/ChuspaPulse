@@ -9,7 +9,7 @@ En el proyecto coexisten dos estructuras de configuración con responsabilidades
 ## Estructura `Config`
 
 - **Propósito**: Configuración completa del servidor, sampler y almacenamiento. Define el comportamiento general del sistema en modo normal.
-- **Origen de los datos**: Archivo `pulso.toml` (ruta por defecto; se puede cambiar con `--config <ruta>`) y variables de entorno `PULSO_*`, que tienen prioridad sobre el archivo. Si el archivo no existe, se usan los valores por defecto.
+- **Origen de los datos**: Archivo `chuspapulse.toml` (ruta por defecto; se puede cambiar con `--config <ruta>`) y variables de entorno `CHUSPAPULSE_*`, que tienen prioridad sobre el archivo. Si el archivo no existe, se usan los valores por defecto.
 - **Ámbito de uso**: Utilizada por el servidor principal, el sampler y los módulos de almacenamiento durante toda la ejecución.
 - **Campos principales**:
   - `servidor.host` y `servidor.puerto` – dirección y puerto del servidor HTTP.
@@ -32,7 +32,7 @@ En el proyecto coexisten dos estructuras de configuración con responsabilidades
   - `cpu` (`true`) – habilita el collector de CPU.
   - `ram` (`true`) – habilita el collector de RAM.
   - `disk` (`true`) – habilita el collector de disco.
-- **Responsabilidad**: Permitir elegir las métricas principales de una ejecución sin editar `pulso.toml`. Con `--metrics cpu,ram` se activan solo CPU y RAM y se desactiva disco. Sin `--metrics`, los tres quedan activos. El resto de collectors (batería, red, procesos, loadavg, uptime, temperatura) se registran siempre.
+- **Responsabilidad**: Permitir elegir las métricas principales de una ejecución sin editar `chuspapulse.toml`. Con `--metrics cpu,ram` se activan solo CPU y RAM y se desactiva disco. Sin `--metrics`, los tres quedan activos. El resto de collectors (batería, red, procesos, loadavg, uptime, temperatura) se registran siempre.
 
 ---
 
@@ -41,7 +41,7 @@ En el proyecto coexisten dos estructuras de configuración con responsabilidades
 
 | Aspecto               | `Config`                                    | `MonitorConfig`                               |
 |-----------------------|---------------------------------------------|-----------------------------------------------|
-| **Origen**            | Archivo `pulso.toml` y variables `PULSO_*`  | Argumentos de CLI (`--metrics`, `--interval`) |
+| **Origen**            | Archivo `chuspapulse.toml` y variables `CHUSPAPULSE_*`  | Argumentos de CLI (`--metrics`, `--interval`) |
 | **Formato de tiempo** | `sampler.intervalo_segundos` en segundos    | `interval_ms` en milisegundos                 |
 | **Métricas**          | Límites de alerta en `[umbrales]`           | Activación booleana por recurso (cpu/ram/disk) |
 | **Uso**               | Servidor, sampler, storage, alertas         | Selección de collectors (`--once` y servidor) |
@@ -51,9 +51,9 @@ En el proyecto coexisten dos estructuras de configuración con responsabilidades
 
 ## ¿Cuál usar?
 
-- **Puerto, host, base de datos, intervalo de muestreo, umbrales de alerta o nivel de log** → `Config` (`pulso.toml` o variables `PULSO_*`).
+- **Puerto, host, base de datos, intervalo de muestreo, umbrales de alerta o nivel de log** → `Config` (`chuspapulse.toml` o variables `CHUSPAPULSE_*`).
 - **Activar solo algunas métricas (`cpu`, `ram`, `disk`) en una ejecución concreta** → `MonitorConfig` (`--metrics`).
-- **Un ajuste permanente nuevo** → agrégalo a `Config` y a su sección en `pulso.toml`.
+- **Un ajuste permanente nuevo** → agrégalo a `Config` y a su sección en `chuspapulse.toml`.
 - **Un flag de CLI para una ejecución puntual** → agrégalo a `CliOptions`.
 
 ---
@@ -65,7 +65,7 @@ Ambas estructuras controlan aspectos del monitoreo, lo que genera redundancia:
 - **Intervalos**: `Config` usa `sampler.intervalo_segundos` (segundos) y `MonitorConfig` usa `interval_ms` (milisegundos). Hoy `--interval` se valida y se guarda, pero `main.cpp` no lee `interval_ms`: el sampler usa siempre `sampler.intervalo_segundos`.
 - **Selección de métricas**: `MonitorConfig` decide qué collectors corren; `Config` define los límites de alerta en `[umbrales]`. Las tres alertas (cpu, ram, disk) se registran siempre, sin consultar `MonitorConfig`.
 - **Responsabilidad**: En la práctica, ambos definen parámetros de monitoreo, pero en contextos distintos. Esto puede llevar a confusión sobre cuál usar y por qué.
-- **Formato de salida**: `Config.output_format` (`json`, `csv`, `prometheus`) viene de `pulso.toml`; `--format` (`json`, `csv`, `prometheus`, `text`) solo se usa con `--once`. No están conectados.
+- **Formato de salida**: `Config.output_format` (`json`, `csv`, `prometheus`) viene de `chuspapulse.toml`; `--format` (`json`, `csv`, `prometheus`, `text`) solo se usa con `--once`. No están conectados.
 
 ---
 
