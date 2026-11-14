@@ -155,4 +155,86 @@ TEST(TopProcesosTest, UnSoloProcesoQuedaPrimero) {
     EXPECT_DOUBLE_EQ(7.75, resultado.front().cpu_porcentaje);
 }
 
+/**
+ * @brief Un limite de cero devuelve una lista vacia.
+ */
+TEST(TopProcesosTest, LimiteCeroDevuelveListaVacia) {
+    const std::vector<ProcesoInfo> procesos = {
+        crearProceso(701, "a", 10.0),
+        crearProceso(702, "b", 20.0),
+    };
+
+    EXPECT_TRUE(ordenarYAcotar(procesos, 0).empty());
+}
+
+/**
+ * @brief Un limite igual al tamano de la lista devuelve todos los procesos.
+ */
+TEST(TopProcesosTest, LimiteIgualAlTamanoDevuelveTodos) {
+    const std::vector<ProcesoInfo> procesos = {
+        crearProceso(801, "a", 5.0),
+        crearProceso(802, "b", 70.0),
+        crearProceso(803, "c", 30.0),
+    };
+
+    const std::vector<ProcesoInfo> resultado = ordenarYAcotar(procesos, 3);
+
+    ASSERT_EQ(static_cast<std::size_t>(3), resultado.size());
+    EXPECT_EQ(802, resultado[0].pid);
+    EXPECT_EQ(803, resultado[1].pid);
+    EXPECT_EQ(801, resultado[2].pid);
+}
+
+/**
+ * @brief Con CPU empatada se conserva el orden original.
+ */
+TEST(TopProcesosTest, EmpatesConservanElOrdenOriginal) {
+    const std::vector<ProcesoInfo> procesos = {
+        crearProceso(901, "a", 25.0),
+        crearProceso(902, "b", 25.0),
+        crearProceso(903, "c", 25.0),
+    };
+
+    const std::vector<ProcesoInfo> resultado = ordenarYAcotar(procesos, 3);
+
+    ASSERT_EQ(static_cast<std::size_t>(3), resultado.size());
+    EXPECT_EQ(901, resultado[0].pid);
+    EXPECT_EQ(902, resultado[1].pid);
+    EXPECT_EQ(903, resultado[2].pid);
+}
+
+/**
+ * @brief Una CPU negativa (metrica invalida) queda al final de la lista.
+ */
+TEST(TopProcesosTest, CpuNegativaQuedaAlFinal) {
+    const std::vector<ProcesoInfo> procesos = {
+        crearProceso(1001, "negativo", -5.0),
+        crearProceso(1002, "normal", 10.0),
+        crearProceso(1003, "cero", 0.0),
+    };
+
+    const std::vector<ProcesoInfo> resultado = ordenarYAcotar(procesos, 3);
+
+    ASSERT_EQ(static_cast<std::size_t>(3), resultado.size());
+    EXPECT_EQ(1002, resultado[0].pid);
+    EXPECT_EQ(1003, resultado[1].pid);
+    EXPECT_EQ(1001, resultado[2].pid);
+}
+
+/**
+ * @brief Una CPU superior a 100 (proceso multinucleo) queda como primero.
+ */
+TEST(TopProcesosTest, CpuSuperiorACienQuedaPrimero) {
+    const std::vector<ProcesoInfo> procesos = {
+        crearProceso(1101, "normal", 99.0),
+        crearProceso(1102, "multinucleo", 250.0),
+        crearProceso(1103, "bajo", 1.0),
+    };
+
+    const std::vector<ProcesoInfo> resultado = ordenarYAcotar(procesos, 1);
+
+    ASSERT_EQ(static_cast<std::size_t>(1), resultado.size());
+    EXPECT_EQ(1102, resultado.front().pid);
+}
+
 } // namespace
