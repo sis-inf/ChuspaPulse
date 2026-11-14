@@ -1,10 +1,19 @@
 ﻿# Archivo de configuración del agente chuspapulse
 # Todas las opciones tienen valores por defecto; este archivo muestra los valores
 # explícitos para fines de documentación.
+#
+# Secciones (son los nombres que lee src/config/config.cpp):
+#   general  -> claves en la raíz del archivo, antes de cualquier sección
+#   [servidor] -> servidor HTTP de métricas (http)
+#   [sampler]  -> frecuencia de muestreo
+#   [storage]  -> almacenamiento en SQLite
+#   [umbrales] -> umbrales de las alertas (alertas)
 
+# --- General ---------------------------------------------------------------
 # Nivel de log: debug, info, warn, error
 nivel_log = "info"
 
+# --- HTTP ------------------------------------------------------------------
 [servidor]
 # Dirección IP en la que escucha el servidor HTTP.
 # 0.0.0.0 acepta conexiones desde cualquier interfaz.
@@ -13,17 +22,21 @@ host = "0.0.0.0"
 # Puerto del servidor HTTP.
 puerto = 8080
 
+# --- Muestreo --------------------------------------------------------------
 [sampler]
 # Intervalo entre muestreos consecutivos, en segundos.
 # Valores recomendados: entre 5 y 60.
 intervalo_segundos = 10
 
+# --- Almacenamiento --------------------------------------------------------
 [storage]
 # Ruta del archivo de base de datos SQLite.
 # Puede ser relativa al directorio de ejecución o absoluta.
 ruta_db = "chuspapulse.db"
 
+# --- Alertas ---------------------------------------------------------------
 [umbrales]
+# Porcentaje de uso a partir del cual se dispara una alerta (0 a 100).
 cpu_max = 80.0
 ram_max = 85.0
 disco_max = 90.0
