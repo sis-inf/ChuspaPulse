@@ -54,7 +54,7 @@ TEST_F(ArgParserTest, SinConfigConservaRutaPredeterminada)
     chuspapulse::cli::CliOptions opciones;
 
     EXPECT_TRUE(parsear({"--once"}, opciones));
-    EXPECT_EQ(opciones.config_path, "pulso.toml");
+    EXPECT_EQ(opciones.config_path, "chuspapulse.toml");
 }
 
 TEST_F(ArgParserTest, ConfigSinValorFalla)
@@ -89,7 +89,7 @@ TEST_F(ArgParserTest, ConfigConRutaInexistenteFalla)
     std::string salida = testing::internal::GetCapturedStderr();
 
     EXPECT_NE(salida.find("no existe: no_existe.toml"), std::string::npos);
-    EXPECT_EQ(opciones.config_path, "pulso.toml");
+    EXPECT_EQ(opciones.config_path, "chuspapulse.toml");
 }
 
 TEST_F(ArgParserTest, ConfigConArchivoNoLegibleFalla)
