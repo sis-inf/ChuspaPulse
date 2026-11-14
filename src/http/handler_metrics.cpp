@@ -15,6 +15,7 @@ void HandleMetrics(
     const httplib::Request& req,
     httplib::Response&      res)
   {
+    // /metrics no recibe parametros: la query string se ignora a proposito.
     auto& logger = chuspapulse::utils::logging::Logger::instancia();
 
     try {
@@ -30,7 +31,15 @@ void HandleMetrics(
         );
         res.status = 503;
       }
-    } catch (const std::exception&) {
+    } catch (const std::exception& e) {
+      logger.error(std::string("Error al servir /metrics: ") + e.what());
+      res.set_content(
+        R"({"error":"error interno"})",
+        "application/json"
+      );
+      res.status = 500;
+    } catch (...) {
+      logger.error("Error desconocido al servir /metrics");
       res.set_content(
         R"({"error":"error interno"})",
         "application/json"
