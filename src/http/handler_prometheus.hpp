@@ -24,7 +24,19 @@ inline const std::string kContentTypePrometheus = "text/plain; version=0.0.4";
 std::optional<std::string> renderizarUltimoSnapshotPrometheus(
     const chuspapulse::storage::Storage& storage);
 
-/// Registra el handler de /metrics/prometheus en el servidor httplib.
+/**
+ * @brief Registra el handler de /metrics/prometheus en el servidor httplib.
+ *
+ * Contrato de la respuesta:
+ *  - 200: texto en formato Prometheus (`kContentTypePrometheus`); body vacío
+ *    si todavía no hay un snapshot con métricas.
+ *  - 400: JSON `{"error":"..."}` si la petición trae query strings, porque
+ *    este endpoint no acepta parámetros.
+ *  - 500: JSON `{"error":"..."}` ante cualquier fallo interno.
+ *
+ * @param servidor Servidor httplib donde se registra la ruta.
+ * @param storage  Almacenamiento del que se lee el último snapshot.
+ */
 void registrarPrometheus(
     httplib::Server& servidor,
     const chuspapulse::storage::Storage& storage);
