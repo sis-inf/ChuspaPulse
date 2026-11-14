@@ -1,9 +1,15 @@
+
 #include <gtest/gtest.h>
+#include <nlohmann/json.hpp>
 
 #include <string>
+#include <vector>
+#include <limits>
 
 #include "core/types.hpp"
 #include "formatters/formatter_json.hpp"
+
+using json = nlohmann::json;
 
 namespace {
 
@@ -23,77 +29,189 @@ chuspapulse::core::Snapshot crearSnapshotConocido()
     return snapshot;
 }
 
-bool llavesBalanceadas(const std::string& texto)
-{
-    int balance = 0;
-
-    for (char c : texto) {
-        if (c == '{') {
-            ++balance;
-        } else if (c == '}') {
-            --balance;
-
-            if (balance < 0) {
-                return false;
-            }
-        }
-    }
-
-    return balance == 0;
 }
-
-} // namespace
 
 TEST(FormatterJSONTest, ResultadoNoEsVacio)
 {
-    chuspapulse::core::Snapshot snapshot = crearSnapshotConocido();
+    auto snapshot = crearSnapshotConocido();
     chuspapulse::formatters::FormatterJSON formatter;
 
-    const std::string resultado = formatter.formatear(snapshot);
-
-    EXPECT_FALSE(resultado.empty());
-}
-
-TEST(FormatterJSONTest, ContieneCpu)
-{
-    chuspapulse::core::Snapshot snapshot = crearSnapshotConocido();
-    chuspapulse::formatters::FormatterJSON formatter;
-
-    const std::string resultado = formatter.formatear(snapshot);
-
-    EXPECT_NE(resultado.find("cpu"), std::string::npos);
-}
-
-TEST(FormatterJSONTest, ContieneTimestamp)
-{
-    chuspapulse::core::Snapshot snapshot = crearSnapshotConocido();
-    chuspapulse::formatters::FormatterJSON formatter;
-
-    const std::string resultado = formatter.formatear(snapshot);
-
-    EXPECT_NE(resultado.find("timestamp"), std::string::npos);
+    EXPECT_FALSE(formatter.formatear(snapshot).empty());
 }
 
 TEST(FormatterJSONTest, ContieneCamposRequeridos)
 {
-    chuspapulse::core::Snapshot snapshot = crearSnapshotConocido();
+    auto snapshot = crearSnapshotConocido();
     chuspapulse::formatters::FormatterJSON formatter;
 
-    const std::string resultado = formatter.formatear(snapshot);
+    json resultado = json::parse(formatter.formatear(snapshot));
 
-    EXPECT_NE(resultado.find("cpu"), std::string::npos);
-    EXPECT_NE(resultado.find("memory"), std::string::npos);
-    EXPECT_NE(resultado.find("disk"), std::string::npos);
-    EXPECT_NE(resultado.find("network"), std::string::npos);
-    EXPECT_NE(resultado.find("timestamp"), std::string::npos);
+    EXPECT_TRUE(resultado.contains("timestamp"));
+    EXPECT_TRUE(resultado.contains("metricas"));
+    EXPECT_EQ(resultado["metricas"].size(), 4);
 }
 
-TEST(FormatterJSONTest, LlavesEstanBalanceadas)
+TEST(FormatterJSONTest, SnapshotSinMetricas)
 {
-    chuspapulse::core::Snapshot snapshot = crearSnapshotConocido();
+    chuspapulse::core::Snapshot snapshot{};
+    snapshot.timestamp = 1000;
+
     chuspapulse::formatters::FormatterJSON formatter;
 
-    const std::string resultado = formatter.formatear(snapshot);
+    json resultado = json::parse(formatter.formatear(snapshot));
 
-    EXPECT_TRUE(llavesBalanceadas(resultado));
+    EXPECT_EQ(resultado["timestamp"], 1000);
+    EXPECT_TRUE(resultado["metricas"].is_array());
+    EXPECT_TRUE(resultado["metricas"].empty());
+}
+
+TEST(FormatterJSONTest, ValorCero)
+{
+    auto snapshot = crearSnapshotConocido();
+    snapshot.metricas = {
+        {"cpu", 0.0, "porcentaje", 1000}
+    };
+
+    chuspapulse::formatters::FormatterJSON formatter;
+    json resultado = json::parse(formatter.formatear(snapshot));
+
+    EXPECT_DOUBLE_EQ(resultado["metricas"][0]["valor"], 0.0);
+}
+
+TEST(FormatterJSONTest, ValorNegativo)
+{
+    auto snapshot = crearSnapshotConocido();
+    snapshot.metricas = {
+        {"temperatura", -15.5, "celsius", 1000}
+    };
+
+    chuspapulse::formatters::FormatterJSON formatter;
+    json resultado = json::parse(formatter.formatear(snapshot));
+
+    EXPECT_DOUBLE_EQ(resultado["metricas"][0]["valor"], -15.5);
+}
+
+TEST(FormatterJSONTest, ValorSuperiorAlCienPorCiento)
+{
+    auto snapshot = crearSnapshotConocido();
+    snapshot.metricas = {
+        {"cpu", 150.0, "porcentaje", 1000}
+    };
+
+    chuspapulse::formatters::FormatterJSON formatter;
+    json resultado = json::parse(formatter.formatear(snapshot));
+
+    EXPECT_DOUBLE_EQ(resultado["metricas"][0]["valor"], 150.0);
+}
+
+TEST(FormatterJSONTest, ValorNumericoMuyGrande)
+{
+    auto snapshot = crearSnapshotConocido();
+    double valor = std::numeric_limits<double>::max();
+
+    snapshot.metricas = {
+        {"memory", valor, "bytes", 1000}
+    };
+
+    chuspapulse::formatters::FormatterJSON formatter;
+    json resultado = json::parse(formatter.formatear(snapshot));
+
+    EXPECT_DOUBLE_EQ(resultado["metricas"][0]["valor"], valor);
+}
+
+TEST(FormatterJSONTest, MetricasConCamposVacios)
+{
+    auto snapshot = crearSnapshotConocido();
+    snapshot.metricas = {
+        {"", 10.0, "", 1000}
+    };
+
+    chuspapulse::formatters::FormatterJSON formatter;
+    json resultado = json::parse(formatter.formatear(snapshot));
+
+    EXPECT_EQ(resultado["metricas"][0]["nombre"], "");
+    EXPECT_EQ(resultado["metricas"][0]["unidad"], "");
+}
+
+TEST(FormatterJSONTest, ValoresNoFinitosSeRepresentanComoNull)
+{
+    auto snapshot = crearSnapshotConocido();
+
+    snapshot.metricas = {
+        {"infinito", std::numeric_limits<double>::infinity(), "bytes", 1000},
+        {"nan", std::numeric_limits<double>::quiet_NaN(), "bytes", 1000}
+    };
+
+    chuspapulse::formatters::FormatterJSON formatter;
+    json resultado = json::parse(formatter.formatear(snapshot));
+
+    EXPECT_TRUE(resultado["metricas"][0]["valor"].is_null());
+    EXPECT_TRUE(resultado["metricas"][1]["valor"].is_null());
+}
+
+TEST(FormatterJSONTest, TimestampsLimite)
+{
+    auto snapshot = crearSnapshotConocido();
+
+    snapshot.timestamp = std::numeric_limits<std::int64_t>::max();
+    snapshot.metricas = {
+        {"cpu", 50.0, "porcentaje",
+         std::numeric_limits<std::int64_t>::min()}
+    };
+
+    chuspapulse::formatters::FormatterJSON formatter;
+    json resultado = json::parse(formatter.formatear(snapshot));
+
+    EXPECT_EQ(
+        resultado["timestamp"].get<std::int64_t>(),
+        std::numeric_limits<std::int64_t>::max()
+    );
+
+    EXPECT_EQ(
+        resultado["metricas"][0]["timestamp"].get<std::int64_t>(),
+        std::numeric_limits<std::int64_t>::min()
+    );
+}
+
+TEST(FormatterJSONTest, HistorialVacio)
+{
+    chuspapulse::formatters::FormatterJSON formatter;
+
+    std::vector<chuspapulse::core::Snapshot> historial;
+
+    json resultado = json::parse(formatter.formatearHistorial(historial));
+
+    EXPECT_EQ(resultado["total"], 0);
+    EXPECT_TRUE(resultado["snapshots"].is_array());
+    EXPECT_TRUE(resultado["snapshots"].empty());
+}
+
+TEST(FormatterJSONTest, HistorialConVariosSnapshots)
+{
+    chuspapulse::formatters::FormatterJSON formatter;
+
+    std::vector<chuspapulse::core::Snapshot> historial;
+
+    historial.push_back(crearSnapshotConocido());
+    historial.push_back(crearSnapshotConocido());
+    historial.push_back(crearSnapshotConocido());
+
+    json resultado = json::parse(formatter.formatearHistorial(historial));
+
+    EXPECT_EQ(resultado["total"], 3);
+    EXPECT_EQ(resultado["snapshots"].size(), 3);
+}
+
+TEST(FormatterJSONTest, ResultadoEsJSONValido)
+{
+    auto snapshot = crearSnapshotConocido();
+    chuspapulse::formatters::FormatterJSON formatter;
+
+    json resultado;
+
+    EXPECT_NO_THROW({
+        resultado = json::parse(formatter.formatear(snapshot));
+    });
+
+    EXPECT_TRUE(resultado.is_object());
 }
