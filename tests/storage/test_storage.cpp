@@ -7,6 +7,7 @@
 #include <string>
 #include <set>
 #include <SQLiteCpp/SQLiteCpp.h>
+#include <limits>
 
 #include "storage/storage.hpp"
 #include "storage/schema.hpp"
@@ -338,4 +339,162 @@ TEST_F(StorageTest, Test_ExportarCSV_FalloAlMoverAlDestinoLanzaError) {
     EXPECT_TRUE(fs::is_directory(ruta));
 
     fs::remove_all(ruta);
+}
+// ---------------------------------------------------------------------------
+// Casos borde (issue #1705)
+// ---------------------------------------------------------------------------
+
+// 18. total() en una base vacía devuelve 0
+TEST_F(StorageTest, Test_BaseVacia_TotalEsCero) {
+    chuspapulse::storage::Storage storage(dbPath_);
+    EXPECT_EQ(storage.total(), 0u);
+}
+
+// 19. Abrir la base en una carpeta inexistente lanza una excepción
+TEST_F(StorageTest, Test_Constructor_RutaInvalidaLanzaExcepcion) {
+    const std::string ruta = "carpeta_inexistente_1705/storage.db";
+    EXPECT_THROW(chuspapulse::storage::Storage storage(ruta), std::exception);
+    EXPECT_FALSE(fs::exists(ruta));
+}
+
+// 20. Timestamp 0 se guarda y se recupera sin alterarse
+TEST_F(StorageTest, Test_Timestamp_CeroSeConserva) {
+    chuspapulse::storage::Storage storage(dbPath_);
+    storage.save(crearSnapshot(0));
+
+    auto resultado = storage.last();
+    ASSERT_TRUE(resultado.has_value());
+    EXPECT_EQ(resultado->timestamp, 0);
+}
+
+// 21. Timestamp máximo de int64_t se guarda y se recupera sin desbordarse
+TEST_F(StorageTest, Test_Timestamp_MaximoInt64SeConserva) {
+    const std::int64_t maximo = std::numeric_limits<std::int64_t>::max();
+    chuspapulse::storage::Storage storage(dbPath_);
+    storage.save(crearSnapshot(maximo));
+
+    auto resultado = storage.last();
+    ASSERT_TRUE(resultado.has_value());
+    EXPECT_EQ(resultado->timestamp, maximo);
+}
+
+// 22. Un rango sin snapshots devuelve un vector vacío
+TEST_F(StorageTest, Test_Historial_RangoSinCoincidenciasDevuelveVacio) {
+    chuspapulse::storage::Storage storage(dbPath_);
+    storage.save(crearSnapshot(100));
+    storage.save(crearSnapshot(200));
+
+    auto resultado = storage.history(1000, 2000);
+    EXPECT_TRUE(resultado.empty());
+}
+
+// 23. Un rango invertido (desde > hasta) devuelve un vector vacío
+TEST_F(StorageTest, Test_Historial_RangoInvertidoDevuelveVacio) {
+    chuspapulse::storage::Storage storage(dbPath_);
+    storage.save(crearSnapshot(100));
+    storage.save(crearSnapshot(200));
+    storage.save(crearSnapshot(300));
+
+    auto resultado = storage.history(300, 100);
+    EXPECT_TRUE(resultado.empty());
+}
+
+// 24. Los extremos del rango son inclusivos: desde == hasta devuelve ese snapshot
+TEST_F(StorageTest, Test_Historial_RangoDeUnSoloPuntoEsInclusivo) {
+    chuspapulse::storage::Storage storage(dbPath_);
+    storage.save(crearSnapshot(100));
+    storage.save(crearSnapshot(200));
+    storage.save(crearSnapshot(300));
+
+    auto resultado = storage.history(200, 200);
+    ASSERT_EQ(resultado.size(), 1u);
+    EXPECT_EQ(resultado[0].timestamp, 200);
+}
+
+// 25. Un límite mayor que la cantidad guardada devuelve solo lo que hay
+TEST_F(StorageTest, Test_Historial_LimiteMayorQueTotalDevuelveTodo) {
+    chuspapulse::storage::Storage storage(dbPath_);
+    storage.save(crearSnapshot(100));
+    storage.save(crearSnapshot(200));
+    storage.save(crearSnapshot(300));
+
+    auto resultado = storage.history(0, 0, 50);
+    EXPECT_EQ(resultado.size(), 3u);
+}
+
+// 26. setMaxEntries(1) conserva únicamente el snapshot más reciente
+TEST_F(StorageTest, Test_SetMaxEntries_UnoConservaSoloElUltimo) {
+    chuspapulse::storage::Storage storage(dbPath_);
+    storage.setMaxEntries(1);
+
+    storage.save(crearSnapshot(100));
+    storage.save(crearSnapshot(200));
+    storage.save(crearSnapshot(300));
+
+    EXPECT_EQ(storage.total(), 1u);
+    auto resultado = storage.last();
+    ASSERT_TRUE(resultado.has_value());
+    EXPECT_EQ(resultado->timestamp, 300);
+}
+
+// 27. Un snapshot sin métricas se guarda sin lanzar errores
+TEST_F(StorageTest, Test_Guardar_SnapshotSinMetricasNoLanza) {
+    chuspapulse::storage::Storage storage(dbPath_);
+    chuspapulse::core::Snapshot vacio;
+    vacio.timestamp = 500;
+
+    EXPECT_NO_THROW(storage.save(vacio));
+    EXPECT_EQ(storage.total(), 1u);
+}
+
+// 28. Valores límite de una métrica (0, negativo y muy grande) se conservan
+TEST_F(StorageTest, Test_Guardar_ValoresLimiteDeMetricaSeConservan) {
+    const double valores[] = {0.0, -1.0, 1e15};
+    std::int64_t ts = 1;
+
+    for (double v : valores) {
+        chuspapulse::storage::Storage storage(dbPath_);
+        auto snap = crearSnapshot(ts);
+        for (auto& m : snap.metricas) {
+            if (m.nombre == "cpu.usage") m.valor = v;
+        }
+        storage.save(snap);
+
+        auto resultado = storage.last();
+        ASSERT_TRUE(resultado.has_value());
+        bool encontrado = false;
+        for (const auto& m : resultado->metricas) {
+            if (m.nombre == "cpu.usage") {
+                EXPECT_DOUBLE_EQ(m.valor, v);
+                encontrado = true;
+            }
+        }
+        EXPECT_TRUE(encontrado);
+        ++ts;
+    }
+}
+
+// 29. exportToCSV en una base vacía escribe solo la cabecera
+TEST_F(StorageTest, Test_ExportarCSV_BaseVaciaSoloCabecera) {
+    const std::string csvPath = dbPath_ + ".csv";
+    {
+        chuspapulse::storage::Storage storage(dbPath_);
+        storage.exportToCSV(csvPath);
+    }
+
+    std::ifstream archivo(csvPath);
+    ASSERT_TRUE(archivo.is_open());
+
+    std::string linea;
+    std::getline(archivo, linea);
+    EXPECT_EQ(linea.rfind("timestamp,cpu_usage,", 0), 0u);
+
+    int filas = 0;
+    while (std::getline(archivo, linea)) {
+        if (!linea.empty()) ++filas;
+    }
+    EXPECT_EQ(filas, 0);
+
+    archivo.close();
+    fs::remove(csvPath);
 }
