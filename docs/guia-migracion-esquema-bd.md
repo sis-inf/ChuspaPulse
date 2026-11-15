@@ -48,10 +48,12 @@ ON snapshots(timestamp);
 
 > **Antes de actualizar ChuspaPulse a una nueva versión, siempre haz un backup de tu base de datos.**
 
-Puedes exportar tus datos con el subcomando `storage export`:
+> **Nota:** el subcomando `storage export` todavía no existe en la CLI de ChuspaPulse (`src/cli/arg_parser.cpp` no lo reconoce). Mientras no se implemente, usa el cliente `sqlite3`.
+
+Puedes exportar tus datos a CSV con el cliente `sqlite3`:
 
 ```bash
-chuspapulse storage export --output backup.csv
+sqlite3 -header -csv chuspapulse.db "SELECT * FROM snapshots;" > backup.csv
 ```
 
 Esto genera un archivo CSV con todos los snapshots almacenados que puedes conservar como respaldo.
@@ -90,7 +92,7 @@ Si no necesitas datos históricos con hostname, puedes dejarlo como `NULL` — C
 
 1. **Exportar datos actuales:**
 ```bash
-   chuspapulse storage export --output backup-$(date +%Y%m%d).csv
+   sqlite3 -header -csv chuspapulse.db "SELECT * FROM snapshots;" > backup-$(date +%Y%m%d).csv
 ```
 
 2. **Hacer copia de la base de datos:**
