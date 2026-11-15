@@ -3,6 +3,9 @@
 #include "core/types.hpp"
 
 #include <algorithm>
+#include <cmath>
+#include <cstdint>
+#include <limits>
 #include <string>
 
 using namespace chuspapulse::core;
@@ -152,4 +155,71 @@ TEST(TestBusquedaMetricas, RecuperarMetricaPorNombre) {
     EXPECT_DOUBLE_EQ(cpu->valor, 45.0);
 
     EXPECT_EQ(buscar("net.rx"), snapshot.metricas.end());
+}
+
+TEST(TestValoresLimite, ValorNegativoSeAlmacenaSinCambios) {
+    Metrica metrica{"cpu.usage", -5.0, "%", 1710000000};
+
+    EXPECT_DOUBLE_EQ(metrica.valor, -5.0);
+}
+
+TEST(TestValoresLimite, ValorCeroSeAlmacenaSinCambios) {
+    Metrica metrica{"cpu.usage", 0.0, "%", 1710000000};
+
+    EXPECT_DOUBLE_EQ(metrica.valor, 0.0);
+}
+
+TEST(TestValoresLimite, ValorNaNSeConservaComoNaN) {
+    Metrica metrica{"cpu.usage", std::numeric_limits<double>::quiet_NaN(), "%", 1710000000};
+
+    EXPECT_TRUE(std::isnan(metrica.valor));
+}
+
+TEST(TestValoresLimite, ValorInfinitoSeConservaComoInfinito) {
+    Metrica metrica{"cpu.usage", std::numeric_limits<double>::infinity(), "%", 1710000000};
+
+    EXPECT_TRUE(std::isinf(metrica.valor));
+    EXPECT_GT(metrica.valor, 0.0);
+}
+
+TEST(TestCamposVacios, NombreYUnidadVacios) {
+    Metrica metrica{"", 10.0, "", 1710000000};
+
+    EXPECT_TRUE(metrica.nombre.empty());
+    EXPECT_TRUE(metrica.unidad.empty());
+    EXPECT_DOUBLE_EQ(metrica.valor, 10.0);
+}
+
+TEST(TestTimestampsLimite, TimestampNegativo) {
+    Metrica metrica{"cpu.usage", 10.0, "%", -1};
+
+    EXPECT_EQ(metrica.timestamp, -1);
+}
+
+TEST(TestTimestampsLimite, TimestampMaximo) {
+    const std::int64_t maximo = std::numeric_limits<std::int64_t>::max();
+    Snapshot snapshot{
+        maximo,
+        {
+            {"cpu.usage", 10.0, "%", maximo}
+        }
+    };
+
+    EXPECT_EQ(snapshot.timestamp, maximo);
+    ASSERT_EQ(snapshot.metricas.size(), 1u);
+    EXPECT_EQ(snapshot.metricas[0].timestamp, maximo);
+}
+
+TEST(TestMetricasDuplicadas, NombresRepetidosSeConservan) {
+    Snapshot snapshot{
+        1710000001,
+        {
+            {"cpu.usage", 45.0, "%", 1710000001},
+            {"cpu.usage", 55.0, "%", 1710000001}
+        }
+    };
+
+    ASSERT_EQ(snapshot.metricas.size(), 2u);
+    EXPECT_DOUBLE_EQ(snapshot.metricas[0].valor, 45.0);
+    EXPECT_DOUBLE_EQ(snapshot.metricas[1].valor, 55.0);
 }
