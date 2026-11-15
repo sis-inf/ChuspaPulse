@@ -229,6 +229,20 @@ target_link_libraries(test_formatter_text PRIVATE
 )
 gtest_discover_tests(test_formatter_text)
 
+add_executable(test_formatter_json
+    formatters/test_formatter_json.cpp
+    ${PROJECT_SOURCE_DIR}/src/formatters/formatter_json.cpp
+)
+target_include_directories(test_formatter_json PRIVATE
+    ${PROJECT_SOURCE_DIR}/src
+)
+target_link_libraries(test_formatter_json PRIVATE
+    nlohmann_json::nlohmann_json
+    GTest::gtest
+    GTest::gtest_main
+)
+gtest_discover_tests(test_formatter_json)
+
 add_executable(test_metrics_integration
     automatizados/integration/test_metrics.cpp
     ${PROJECT_SOURCE_DIR}/src/http/handler_metrics.cpp
