@@ -21,7 +21,7 @@ Reglas importantes:
 
 | Aspecto | Valor |
 |---------|-------|
-| Nombre por defecto | `pulso.toml` |
+| Nombre por defecto | `pulso.toml` (nombre histórico que el código aún busca por defecto) |
 | Ubicación por defecto | Directorio desde el que se ejecuta el agente |
 | Ruta alternativa | Opción de línea de comandos `--config <ruta>` |
 
@@ -88,7 +88,7 @@ Define el formato de salida de las métricas. Los valores válidos son `json`, `
 
 ## Ejemplo completo comentado
 
-Archivo `pulso.toml` con todas las opciones y sus valores por defecto:
+Archivo `chuspapulse.toml` con todas las opciones y sus valores por defecto (se pasa con `--config chuspapulse.toml`):
 
 ```toml
 # Archivo de configuración del agente ChuspaPulse.
@@ -139,7 +139,7 @@ En Linux o macOS:
 export CHUSPAPULSE_SERVIDOR_PUERTO=9090
 export CHUSPAPULSE_NIVEL_LOG=debug
 export CHUSPAPULSE_STORAGE_RUTA_DB=/var/lib/chuspapulse/datos.db
-./chuspapulse --config pulso.toml
+./chuspapulse --config chuspapulse.toml
 ```
 
 En Windows con PowerShell:
@@ -147,7 +147,7 @@ En Windows con PowerShell:
 ```powershell
 $env:CHUSPAPULSE_SERVIDOR_PUERTO = "9090"
 $env:CHUSPAPULSE_NIVEL_LOG = "debug"
-.\chuspapulse.exe --config pulso.toml
+.\chuspapulse.exe --config chuspapulse.toml
 ```
 
 Con el archivo anterior, estas variables hacen que el servidor escuche en el puerto 9090 y que el nivel de log sea `debug`, aunque el archivo diga `puerto = 8080` y `nivel_log = "info"`. El resto de las claves conserva el valor del archivo.
@@ -162,7 +162,7 @@ kill -HUP <pid>
 
 Qué ocurre al recibir la señal:
 
-1. Se vuelve a leer el mismo archivo indicado al iniciar (`pulso.toml` o el de `--config`), con las variables de entorno aplicadas como en el arranque.
+1. Se vuelve a leer el mismo archivo indicado al iniciar (el archivo por defecto `pulso.toml` o el indicado con `--config`), con las variables de entorno aplicadas como en el arranque.
 2. Se aplican las mismas validaciones que al iniciar.
 3. Si la configuración es válida, reemplaza a la configuración activa y el log informa los campos que cambiaron, con un mensaje de nivel `WARN`. Si no cambió nada, se registra un mensaje `INFO`.
 4. Si la configuración es inválida (TOML mal formado, valor fuera de rango o archivo inexistente), se registra un mensaje `ERROR` con el motivo y el agente sigue funcionando con la configuración activa, sin cambios.
@@ -176,6 +176,6 @@ En plataformas sin `SIGHUP` (Windows) la señal no existe, no se registra ningú
 ## Notas y limitaciones conocidas
 
 - **Variable `CHUSPAPULSE_CONFIG`:** `docs/variables-entorno.md` la menciona para elegir la ruta del archivo, pero el código no la lee. La ruta solo se cambia con `--config`.
-- **Nombre del archivo:** `docs/variables-entorno.md` habla de `ChuspaPulse.toml`; el nombre por defecto que usa el código es `pulso.toml`.
+- **Nombre del archivo:** el nombre por defecto que busca el código es `pulso.toml` (aún no renombrado). Para usar otro nombre, como `chuspapulse.toml`, indícalo con `--config`. `docs/variables-entorno.md` habla de `ChuspaPulse.toml`, que tampoco coincide con el código.
 - **Umbrales:** `cpu_max`, `ram_max` y `disco_max` no tienen variable de entorno equivalente.
 - **Opciones de línea de comandos:** `--interval`, `--metrics`, `--once` y `--format` son opciones de la línea de comandos y no forman parte del archivo TOML.
