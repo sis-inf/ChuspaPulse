@@ -52,11 +52,12 @@ double AlertaUmbral::valorActual(const chuspapulse::MetricSnapshot& snap) const 
 
 bool AlertaUmbral::evaluar(const chuspapulse::MetricSnapshot& snap) const {
     const double valor = valorActual(snap);
+    const double umbral = static_cast<double>(umbral_);
 
     if (operador_ == '>') {
-        return valor > static_cast<double>(umbral_);
+        return valor > umbral;
     } else {
-        return valor < static_cast<double>(umbral_);
+        return valor < umbral;
     }
 }
 
