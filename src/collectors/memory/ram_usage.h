@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace pulso::collectors::memory {
+namespace chuspapulse::collectors::memory {
 
 /**
  * @brief Contiene la informacion de uso de memoria RAM del sistema.
@@ -24,4 +24,4 @@ struct RamInfo {
  */
 RamInfo getRamUsage();
 
-} // namespace pulso::collectors::memory
+} // namespace chuspapulse::collectors::memory

@@ -145,10 +145,10 @@ static std::string separador() {
  *  3. Formatea cada valor en la unidad adecuada (%, GB, KB/s).
  *  4. Ensambla la tabla con borde, cabecera, separador y cuatro filas.
  *
- * @param snap  Snapshot de métricas del agente Pulso.
+ * @param snap  Snapshot de métricas del agente ChuspaPulse.
  * @return      Tabla ASCII lista para imprimir, terminada en `\n`.
  */
-std::string formatAsTable(const pulso::core::Snapshot& snap) {
+std::string formatAsTable(const chuspapulse::core::Snapshot& snap) {
 
     // ── 1. Extraer métricas del snapshot ─────────────────────────────────────
 

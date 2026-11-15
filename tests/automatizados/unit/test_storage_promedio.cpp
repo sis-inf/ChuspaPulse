@@ -9,14 +9,14 @@
 namespace fs = std::filesystem;
 
 // Snapshot auxiliar para pruebas de promedio
-static pulso::core::Snapshot crearSnapshotCPU(
+static chuspapulse::core::Snapshot crearSnapshotCPU(
     std::int64_t timestamp,
     double cpu)
 {
-    pulso::core::Snapshot s;
+    chuspapulse::core::Snapshot s;
     s.timestamp = timestamp;
 
-    pulso::core::Metrica m;
+    chuspapulse::core::Metrica m;
     m.name = "cpu.usage";
     m.unit = "percent";
     m.value = cpu;
@@ -49,7 +49,7 @@ protected:
 // 1. Promedio de 30,60,90 debe dar 60
 TEST_F(StoragePromedioTest, PromedioCPU)
 {
-    pulso::storage::Storage storage(dbPath_);
+    chuspapulse::storage::Storage storage(dbPath_);
 
     std::int64_t ahora = static_cast<std::int64_t>(std::time(nullptr));
 
@@ -74,7 +74,7 @@ TEST_F(StoragePromedioTest, PromedioCPU)
 // 2. Ventana pequeña: solo debe considerar el snapshot más reciente
 TEST_F(StoragePromedioTest, VentanaSinDatosAntiguos)
 {
-    pulso::storage::Storage storage(dbPath_);
+    chuspapulse::storage::Storage storage(dbPath_);
 
     std::int64_t ahora = static_cast<std::int64_t>(std::time(nullptr));
 
@@ -99,7 +99,7 @@ TEST_F(StoragePromedioTest, VentanaSinDatosAntiguos)
 // 3. Sin snapshots debe devolver cpu = 0
 TEST_F(StoragePromedioTest, PromedioMultiplesMetricas)
 {
-    pulso::storage::Storage storage(dbPath_);
+    chuspapulse::storage::Storage storage(dbPath_);
 
     auto promedio = storage.getPromedio(60);
 

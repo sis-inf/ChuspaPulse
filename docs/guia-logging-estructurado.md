@@ -2,17 +2,17 @@
 
 ## Descripción
 
-Pulso soporta un modo de logging estructurado en JSON como alternativa al texto plano. Este modo facilita la integración con agregadores de logs externos como **Loki** o **Filebeat**, ya que cada línea de log es un objeto JSON parseable.
+ChuspaPulse soporta un modo de logging estructurado en JSON como alternativa al texto plano. Este modo facilita la integración con agregadores de logs externos como **Loki** o **Filebeat**, ya que cada línea de log es un objeto JSON parseable.
 
 ---
 
-## Configuración en pulso.toml
+## Configuración en ChuspaPulse.toml
 
-Para activar el logging estructurado, agrega la opción `log_formato` en el archivo `pulso.toml`:
+Para activar el logging estructurado, agrega la opción `log_formato` en el archivo `ChuspaPulse.toml`:
 
 ```toml
 [storage]
-ruta_db = "pulso.db"
+ruta_db = "ChuspaPulse.db"
 nivel_log = "info"
 log_formato = "json"
 ```
@@ -71,7 +71,7 @@ Cada línea de log en modo JSON tiene el siguiente esquema:
 ### Nivel error — fallo de escritura en base de datos
 
 ```json
-{"timestamp":"2026-03-07T23:45:20Z","nivel":"error","mensaje":"Error al escribir en la base de datos","contexto":{"ruta_db":"pulso.db","error":"disk full"}}
+{"timestamp":"2026-03-07T23:45:20Z","nivel":"error","mensaje":"Error al escribir en la base de datos","contexto":{"ruta_db":"ChuspaPulse.db","error":"disk full"}}
 ```
 
 ---
@@ -80,17 +80,17 @@ Cada línea de log en modo JSON tiene el siguiente esquema:
 
 ### Loki (con Promtail)
 
-Configuración mínima de Promtail para recolectar el log de pulso:
+Configuración mínima de Promtail para recolectar el log de ChuspaPulse:
 
 ```yaml
 scrape_configs:
-  - job_name: pulso
+  - job_name: ChuspaPulse
     static_configs:
       - targets:
           - localhost
         labels:
-          app: pulso
-          __path__: /var/log/pulso.log
+          app: ChuspaPulse
+          __path__: /var/log/ChuspaPulse.log
     pipeline_stages:
       - json:
           expressions:
@@ -106,14 +106,14 @@ scrape_configs:
 
 ### Filebeat
 
-Configuración mínima de Filebeat para recolectar el log de pulso:
+Configuración mínima de Filebeat para recolectar el log de ChuspaPulse:
 
 ```yaml
 filebeat.inputs:
   - type: log
     enabled: true
     paths:
-      - /var/log/pulso.log
+      - /var/log/ChuspaPulse.log
     json.keys_under_root: true
     json.add_error_key: true
     json.message_key: mensaje
@@ -127,5 +127,5 @@ output.elasticsearch:
 ## Notas
 
 - El log en modo JSON se escribe una línea por evento (NDJSON).
-- Si `log_formato` no está definido, pulso usa texto plano por defecto.
-- El nivel de log se controla con `nivel_log` en `pulso.toml`.
+- Si `log_formato` no está definido, ChuspaPulse usa texto plano por defecto.
+- El nivel de log se controla con `nivel_log` en `ChuspaPulse.toml`.

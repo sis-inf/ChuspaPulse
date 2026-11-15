@@ -1,15 +1,15 @@
-# Estructura del proyecto Pulso
+# Estructura del proyecto ChuspaPulse
 
 ## Introducción
 
-Este documento describe la estructura de directorios del proyecto Pulso y explica el propósito de cada carpeta principal. Su objetivo es facilitar la incorporación de nuevos colaboradores y servir como guía para ubicar correctamente el código fuente, pruebas y documentación.
+Este documento describe la estructura de directorios del proyecto ChuspaPulse y explica el propósito de cada carpeta principal. Su objetivo es facilitar la incorporación de nuevos colaboradores y servir como guía para ubicar correctamente el código fuente, pruebas y documentación.
 
 ---
 
 ## Árbol de directorios
 
 ```text
-pulso/
+ChuspaPulse/
 ├── .github/
 │   ├── ISSUE_TEMPLATE/
 │   ├── workflows/
@@ -77,7 +77,7 @@ pulso/
 ├── CMakeLists.txt
 ├── Makefile
 ├── README.md
-└── pulso.toml
+└── ChuspaPulse.toml
 ```
 
 ---

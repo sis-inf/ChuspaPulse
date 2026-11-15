@@ -6,7 +6,7 @@
 ```bash
 cmake --build build
 ```
-##2.  fatal error: no such file or directory: 'pulso/collector.hpp' 
+##2.  fatal error: no such file or directory: 'ChuspaPulse/collector.hpp' 
 - **Causa**: Ruta incorrecta o falta incluir la carpeta  include  en los directorios de búsqueda.
 - **Solución**: Asegura que en  CMakeLists.txt  esté:
 ``` cmake
@@ -63,7 +63,7 @@ cmake -B build -S .
 - **Causa**: Permisos insuficientes sobre archivos o rutas.
 - **Solución**:
 ```bash
-chmod +x ./build/bin/pulso
+chmod +x ./build/bin/ChuspaPulse
 chown -R usuario:usuario .
 ```
 ## 12.  error: expected ';' at end of declaration 

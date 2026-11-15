@@ -1,6 +1,6 @@
 # Índice General de la Documentación
 
-Este documento reúne toda la documentación del proyecto **Pulso**, organizada por categorías para facilitar su consulta.
+Este documento reúne toda la documentación del proyecto **ChuspaPulse**, organizada por categorías para facilitar su consulta.
 
 ---
 

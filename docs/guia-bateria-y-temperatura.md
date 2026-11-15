@@ -2,7 +2,7 @@
 
 ## Resumen
 
-Pulso incorpora collectors para obtener información de la **batería** y de los **sensores de temperatura** del sistema.
+ChuspaPulse incorpora collectors para obtener información de la **batería** y de los **sensores de temperatura** del sistema.
 
 Estos collectors tienen un comportamiento especial: cuando el hardware no proporciona esta información, **retornan un resultado vacío sin generar errores**.
 
@@ -29,7 +29,7 @@ En estas situaciones, el collector devuelve un resultado vacío porque simplemen
 
 Cuando el collector devuelve un vector vacío:
 
-- No significa que Pulso haya fallado.
+- No significa que ChuspaPulse haya fallado.
 - No indica un error interno.
 - No requiere reiniciar el agente.
 
@@ -148,7 +148,7 @@ Es recomendable abrir un reporte únicamente cuando:
 
 - El hardware sí expone la información mediante `/sys/class/power_supply/`.
 - El hardware sí expone sensores en `/sys/class/thermal/`.
-- Pulso continúa devolviendo resultados vacíos.
+- ChuspaPulse continúa devolviendo resultados vacíos.
 
 Si el sistema operativo no ofrece estos dispositivos, el comportamiento esperado del collector es retornar un resultado vacío.
 
@@ -158,4 +158,4 @@ Si el sistema operativo no ofrece estos dispositivos, el comportamiento esperado
 
 Los collectors de batería y temperatura están diseñados para funcionar en diferentes tipos de hardware.
 
-Cuando los dispositivos o sensores no existen, el collector retorna un resultado vacío sin producir errores. Esto permite que Pulso continúe monitoreando el resto del sistema sin interrumpir la ejecución del agente.
+Cuando los dispositivos o sensores no existen, el collector retorna un resultado vacío sin producir errores. Esto permite que ChuspaPulse continúe monitoreando el resto del sistema sin interrumpir la ejecución del agente.

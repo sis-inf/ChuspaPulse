@@ -1,6 +1,6 @@
-# Guía para crear un nuevo endpoint HTTP en Pulso
+# Guía para crear un nuevo endpoint HTTP en ChuspaPulse
 
-Esta guía explica cómo agregar un nuevo endpoint HTTP en el proyecto Pulso siguiendo la arquitectura y convenciones actuales del código.
+Esta guía explica cómo agregar un nuevo endpoint HTTP en el proyecto ChuspaPulse siguiendo la arquitectura y convenciones actuales del código.
 
 ---
 
@@ -32,7 +32,7 @@ El archivo `.hpp` contiene la declaración de la función y el archivo `.cpp` co
 
 # 2. Patrones utilizados para endpoints HTTP
 
-Pulso utiliza dos patrones principales para implementar endpoints HTTP:
+ChuspaPulse utiliza dos patrones principales para implementar endpoints HTTP:
 
 - Funciones `handle*` que generan directamente una respuesta.
 - Funciones `registrar*` que registran una ruta dentro del servidor HTTP.
@@ -85,7 +85,7 @@ server.Get("/health",
         httplib::Response& res)
 {
     res.set_content(
-        pulso::http::handleHealth(start_time),
+        ChuspaPulse::http::handleHealth(start_time),
         "application/json"
     );
 });
@@ -128,8 +128,8 @@ Declaración:
 ```cpp
 void registrarHistory(
     httplib::Server& servidor,
-    const pulso::storage::Storage& storage,
-    const pulso::formatters::IFormatter& formatter
+    const ChuspaPulse::storage::Storage& storage,
+    const ChuspaPulse::formatters::IFormatter& formatter
 );
 ```
 
@@ -138,8 +138,8 @@ Implementación:
 ```cpp
 void registrarHistory(
     httplib::Server& servidor,
-    const pulso::storage::Storage& storage,
-    const pulso::formatters::IFormatter& formatter)
+    const ChuspaPulse::storage::Storage& storage,
+    const ChuspaPulse::formatters::IFormatter& formatter)
 {
     servidor.Get("/metrics/history",
         [&](const httplib::Request& req,
@@ -155,7 +155,7 @@ void registrarHistory(
 Luego se registra desde `main.cpp`:
 
 ```cpp
-pulso::http::registrarHistory(
+ChuspaPulse::http::registrarHistory(
     server,
     storage,
     formatterJson
@@ -202,7 +202,7 @@ http/handler_nuevo.cpp
 Dentro de:
 
 ```cmake
-target_sources(pulso PRIVATE
+target_sources(ChuspaPulse PRIVATE
     ...
     http/handler_health.cpp
     http/handler_history.cpp
@@ -232,7 +232,7 @@ Contenido:
 
 #include <string>
 
-namespace pulso::http {
+namespace ChuspaPulse::http {
 
 std::string handleVersion();
 
@@ -254,7 +254,7 @@ Ejemplo:
 ```cpp
 #include "handler_version.hpp"
 
-namespace pulso::http {
+namespace ChuspaPulse::http {
 
 std::string handleVersion()
 {
@@ -298,7 +298,7 @@ server.Get("/version",
         httplib::Response& res)
 {
     res.set_content(
-        pulso::http::handleVersion(),
+        ChuspaPulse::http::handleVersion(),
         "application/json"
     );
 });
@@ -366,7 +366,7 @@ server.Get("/diagnostico",
         httplib::Response& res)
 {
     res.set_content(
-        pulso::http::handleDiagnostico(),
+        ChuspaPulse::http::handleDiagnostico(),
         "application/json"
     );
 });
@@ -391,7 +391,7 @@ curl http://localhost:8080/diagnostico
 
 # Conclusión
 
-Para agregar un nuevo endpoint HTTP en Pulso se deben seguir estos pasos:
+Para agregar un nuevo endpoint HTTP en ChuspaPulse se deben seguir estos pasos:
 
 1. Crear `handler_nombre.hpp` y `handler_nombre.cpp`.
 2. Elegir el patrón adecuado:
@@ -402,4 +402,4 @@ Para agregar un nuevo endpoint HTTP en Pulso se deben seguir estos pasos:
 5. Registrar la ruta HTTP.
 6. Compilar y probar el endpoint.
 
-Seguir esta estructura mantiene organizada la arquitectura HTTP de Pulso y facilita la incorporación de nuevos endpoints.
+Seguir esta estructura mantiene organizada la arquitectura HTTP de ChuspaPulse y facilita la incorporación de nuevos endpoints.

@@ -1,122 +1,131 @@
-# Guía de Configuración y Uso del Sistema de Alertas
+# Guía de alertas: reglas y umbrales
 
-## Introducción
+El módulo `GestorAlertas` evalúa las métricas del sistema en cada ciclo de muestreo. Si una métrica supera su umbral, se registra una advertencia (`WARN`) en los logs del agente.
 
-El sistema de alertas de Pulso permite detectar automáticamente situaciones anómalas en los recursos monitoreados. Su objetivo es notificar cuando una métrica supera un umbral configurado, permitiendo una respuesta rápida ante posibles problemas de rendimiento o disponibilidad.
+El sistema de alertas de Pulso notifica cuando una métrica del sistema cumple una condición definida mediante un umbral. Esta guía explica cómo se definen las reglas para CPU, memoria y disco, qué niveles de severidad expone la API y cómo se evitan los falsos positivos.
 
-Los componentes principales son:
+Componentes principales:
 
-* **AlertaUmbral**: representa una regla de alerta basada en un valor límite.
-* **GestorAlertas**: evalúa periódicamente las métricas y determina si una alerta debe activarse o resolverse.
+* **AlertaUmbral**: regla que compara una métrica contra un umbral.
+* **GestorAlertas**: registra varias reglas, las evalúa contra un `MetricSnapshot` y ejecuta un callback con el mensaje de cada alerta disparada.
 
----
+1. El `Sampler` recolecta las métricas de todos los collectors.
+2. Guarda el snapshot en la base de datos.
+3. Convierte el snapshot a porcentajes de CPU, RAM y disco.
+4. `GestorAlertas` evalúa cada alerta contra esos valores.
+5. Por cada alerta que cambia de estado, escribe un mensaje de nivel `WARN` en el log.
 
-## Cómo funcionan las alertas
+## Regla de umbral (`AlertaUmbral`)
 
-El sistema sigue un ciclo continuo de evaluación:
+Cada regla se construye con tres parámetros:
 
-1. Se recopilan las métricas del sistema.
-2. El GestorAlertas obtiene los valores actuales.
-3. Cada métrica se compara con su umbral configurado.
-4. Si el valor supera el umbral, se genera una alerta activa.
-5. Cuando el valor vuelve al rango normal, la alerta se marca como resuelta.
-6. Las alertas pueden consultarse mediante la API del sistema.
+| Parámetro  | Descripción                                         | Ejemplo  |
+| ---------- | --------------------------------------------------- | -------- |
+| `metrica`  | Nombre de la métrica a evaluar en el snapshot.      | `"cpu"`  |
+| `umbral`   | Valor numérico de referencia.                       | `90.0f`  |
+| `operador` | Comparación: `'>'` (mayor que) o `'<'` (menor que). | `'>'`    |
 
-Este proceso se ejecuta automáticamente durante el monitoreo.
+La regla está **activa** cuando la métrica cumple la condición.
 
----
+Errores posibles:
 
-## Métricas alertables
+* Si el operador no es `>` ni `<`, el constructor lanza `std::invalid_argument`.
+* Si la métrica no es una de las válidas (`cpu`, `cpu.usage_pct`, `ram`, `disk`, `rx_bytes`, `tx_bytes`), `evaluar()` lanza `std::invalid_argument`.
 
-| Métrica            | Rango normal | Unidad |
-| ------------------ | ------------ | ------ |
-| Uso de CPU         | 0 - 80       | %      |
-| Uso de RAM         | 0 - 75       | %      |
-| Uso de Disco       | 0 - 85       | %      |
-| Temperatura de CPU | 30 - 70      | °C     |
-| Latencia promedio  | 0 - 200      | ms     |
+### Métricas disponibles
 
-Los valores anteriores son referenciales y pueden ajustarse según las necesidades del entorno.
+Provienen de `MetricSnapshot`:
 
----
+| Métrica    | Descripción                  | Nombres aceptados       |
+| ---------- | ---------------------------- | ----------------------- |
+| CPU        | Uso de CPU.                  | `"cpu"`, `"cpu.usage_pct"` |
+| RAM        | Uso de memoria RAM.          | `"ram"`                 |
+| Disco      | Uso de disco.                | `"disk"`                |
+| Red (rx)   | Bytes recibidos.             | `"rx_bytes"`            |
+| Red (tx)   | Bytes enviados.              | `"tx_bytes"`            |
 
-## Configurar umbrales en pulso.toml
+El ciclo se repite cada `intervalo_segundos` (sección `[sampler]`).
 
-Los umbrales de alerta se configuran mediante el archivo `pulso.toml`.
+## Registrar y evaluar reglas (`GestorAlertas`)
 
-### Ejemplo de configuración
+```cpp
+pulso::alertas::GestorAlertas gestor;
 
-```toml
-[alertas.cpu]
-umbral = 90
+gestor.addAlerta(AlertaUmbral("cpu", 90.0f, '>'));
+gestor.addAlerta(AlertaUmbral("ram", 85.0f, '>'));
+gestor.addAlerta(AlertaUmbral("disk", 95.0f, '>'));
 
-[alertas.ram]
-umbral = 85
+gestor.setCallback([](const std::string& msg) {
+    std::cout << "ALERTA: " << msg << std::endl;
+});
 
-[alertas.disco]
-umbral = 95
+gestor.evaluar(snapshot);
 ```
 
-### Descripción de parámetros
+Comportamiento de `evaluar()`:
 
-| Parámetro | Descripción                                          |
-| --------- | ---------------------------------------------------- |
-| umbral    | Valor límite que activará la alerta.                 |
-| cpu       | Configuración de alertas para uso de CPU.            |
-| ram       | Configuración de alertas para uso de memoria RAM.    |
-| disco     | Configuración de alertas para uso de almacenamiento. |
+* Llama al callback solo para las alertas cuya condición se cumple.
+* No hace nada si no hay alertas registradas o si no hay callback.
+* `cantidadAlertas()` devuelve cuántas reglas hay registradas.
 
----
+### Dónde se configuran los umbrales
 
-## Consultar alertas activas
+Actualmente los umbrales se registran por código con `GestorAlertas::addAlerta()`. El archivo `pulso.toml` no incluye una sección de alertas, por lo que los umbrales no se pueden cambiar desde ese archivo.
 
-Las alertas activas pueden consultarse mediante el siguiente endpoint:
+Cuando el uso de CPU supera `cpu_max`, aparece una línea de nivel `WARN` con el mensaje de la alerta, por ejemplo:
 
-```http
-GET /alerts
-```
+## Niveles de severidad
 
-### Ejemplo de respuesta
+Las alertas que expone la API (`GET /alerts`) incluyen un campo `severity` con uno de estos valores:
+
+| Severidad  | Uso previsto                      |
+| ---------- | --------------------------------- |
+| `LOW`      | Desviación leve, informativa.     |
+| `MEDIUM`   | Requiere seguimiento.             |
+| `HIGH`     | Requiere atención pronto.         |
+| `CRITICAL` | Riesgo inmediato para el sistema. |
+
+## Comportamiento y limitaciones
 
 ```json
-[
-  {
-    "metrica": "cpu",
-    "valor": 93,
-    "umbral": 90,
-    "estado": "ACTIVA"
-  }
-]
+{
+  "alerts": [
+    {
+      "id": 1,
+      "severity": "CRITICAL",
+      "message": "Alerta: cpu > 90.000000"
+    }
+  ]
+}
 ```
+
+Para consultar alertas ya registradas, ver [historial de alertas](historial-alertas.md).
 
 ---
 
-## Ejemplos de alertas comunes
+## Prevención de falsos positivos
 
-### CPU mayor al 90%
+Una lectura aislada por encima del umbral puede ser un pico momentáneo. El caso de uso de monitoreo (ver [casos de uso](casos-de-uso.md)) establece que se genera una alerta cuando el uso de CPU supera el 90 % **durante 3 mediciones consecutivas**.
 
-Se activa cuando la utilización del procesador supera el 90%.
+Ejemplo con umbral `> 90 %` y 3 lecturas consecutivas:
 
-### RAM mayor al 85%
+| Lectura | CPU  | ¿Supera 90 %? | Lecturas seguidas | Estado     |
+| ------- | ---- | ------------- | ----------------- | ---------- |
+| 1       | 92 % | Sí            | 1                 | Sin alerta |
+| 2       | 88 % | No            | 0                 | Sin alerta |
+| 3       | 93 % | Sí            | 1                 | Sin alerta |
+| 4       | 94 % | Sí            | 2                 | Sin alerta |
+| 5       | 95 % | Sí            | 3                 | **Alerta** |
 
-Se activa cuando el consumo de memoria supera el 85%.
+Un valor aislado o una oscilación alrededor del umbral no dispara la alerta, porque el contador se reinicia cuando la condición deja de cumplirse.
 
-### Disco mayor al 95%
-
-Se activa cuando el uso del almacenamiento supera el 95%.
+> **Nota:** actualmente Pulso no aplica un margen de recuperación (histéresis) para resolver las alertas. La resolución depende únicamente de que la condición deje de cumplirse.
 
 ---
 
 ## Buenas prácticas
 
-* Configurar umbrales acordes al comportamiento esperado del sistema.
-* Evitar valores demasiado bajos para reducir falsas alarmas.
-* Revisar periódicamente las alertas activas.
-* Analizar tendencias históricas antes de modificar umbrales.
-* Mantener un equilibrio entre sensibilidad y estabilidad de las alertas.
-
----
-
-## Resumen
-
-El sistema de alertas de Pulso permite supervisar métricas críticas mediante reglas configurables. Gracias a la evaluación automática de umbrales y la consulta de alertas activas, es posible detectar rápidamente situaciones que requieren atención.
+* Elegir umbrales acordes al comportamiento normal del sistema.
+* Evitar umbrales demasiado bajos para reducir falsas alarmas.
+* Considerar el intervalo de muestreo (`intervalo_segundos` en `pulso.toml`): con 10 s, 3 lecturas consecutivas equivalen a unos 30 s sostenidos.
+* Revisar periódicamente las alertas activas y el historial.

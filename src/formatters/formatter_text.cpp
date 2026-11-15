@@ -6,7 +6,7 @@
 
 #include "utils/formato_bytes.hpp"
 
-namespace pulso::formatters {
+namespace chuspapulse::formatters {
 
 std::string FormatterText::formato() const {
     return "text";
@@ -20,14 +20,14 @@ std::string FormatterText::contentType() const {
 static std::string formatearTimestamp(std::int64_t ts) {
     std::time_t tiempo = static_cast<std::time_t>(ts);
     std::tm* tm = std::gmtime(&tiempo);
-    
+
     std::ostringstream oss;
     oss << std::put_time(tm, "%Y-%m-%dT%H:%M:%SZ");
     return oss.str();
 }
 
 std::string FormatterText::formatear(
-    const pulso::core::Snapshot& snapshot
+    const chuspapulse::core::Snapshot& snapshot
 ) const {
     // Extraer métricas del snapshot (valores crudos en bytes / bytes-por-segundo)
     double cpu_pct = 0.0;
@@ -56,22 +56,29 @@ std::string FormatterText::formatear(
         }
     }
 
-    // Formatear línea: timestamp | CPU: 45.3% | RAM: 2.1 GB/8.0 GB | Disco: 120.0 GB/500.0 GB | Red: 1.2 KB/s/800.0 B/s
+    // Convertir valores formateados a string para ajustarlos al ancho fijo de columna (< 80 cols)
+    std::string ram_str = chuspapulse::utils::formatearBytesHumanos(ram_usado_bytes) + "/" +
+                          chuspapulse::utils::formatearBytesHumanos(ram_total_bytes);
+    std::string disco_str = chuspapulse::utils::formatearBytesHumanos(disco_usado_bytes) + "/" +
+                            chuspapulse::utils::formatearBytesHumanos(disco_total_bytes);
+    std::string net_str = chuspapulse::utils::formatearBytesHumanos(net_rx_bytes) + "/s/" +
+                          chuspapulse::utils::formatearBytesHumanos(net_tx_bytes) + "/s";
+
     std::ostringstream oss;
-    oss << formatearTimestamp(snapshot.timestamp)
-        << " | CPU: " << std::fixed << std::setprecision(1) << cpu_pct << "%"
-        << " | RAM: " << pulso::utils::formatearBytesHumanos(ram_usado_bytes)
-        << "/" << pulso::utils::formatearBytesHumanos(ram_total_bytes)
-        << " | Disco: " << pulso::utils::formatearBytesHumanos(disco_usado_bytes)
-        << "/" << pulso::utils::formatearBytesHumanos(disco_total_bytes)
-        << " | Red: " << pulso::utils::formatearBytesHumanos(net_rx_bytes) << "/s"
-        << "/" << pulso::utils::formatearBytesHumanos(net_tx_bytes) << "/s";
+
+    // Usar std::setw y std::left con anchos controlados (total de línea menor a 80 caracteres)
+    oss << formatearTimestamp(snapshot.timestamp) << "\n"
+        << std::left
+        << "  " << std::setw(10) << "CPU"   << ": " << std::setw(8)  << std::fixed << std::setprecision(1) << cpu_pct << "%\n"
+        << "  " << std::setw(10) << "RAM"   << ": " << std::setw(18) << ram_str << "\n"
+        << "  " << std::setw(10) << "Disco" << ": " << std::setw(18) << disco_str << "\n"
+        << "  " << std::setw(10) << "Red"   << ": " << std::setw(22) << net_str;
 
     return oss.str();
 }
 
 std::string FormatterText::formatearHistorial(
-    const std::vector<pulso::core::Snapshot>& snapshots
+    const std::vector<chuspapulse::core::Snapshot>& snapshots
 ) const {
     std::ostringstream oss;
 
@@ -82,4 +89,4 @@ std::string FormatterText::formatearHistorial(
     return oss.str();
 }
 
-} // namespace pulso::formatters
+} // namespace chuspapulse::formatters

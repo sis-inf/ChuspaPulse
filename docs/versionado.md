@@ -1,13 +1,13 @@
-# Política de versionado semántico de Pulso
+# Política de versionado semántico de ChuspaPulse
 
 ## Introducción
 
-Pulso utiliza **Versionado Semántico (Semantic Versioning o SemVer)** para identificar las versiones del proyecto de forma consistente y predecible.
+ChuspaPulse utiliza **Versionado Semántico (Semantic Versioning o SemVer)** para identificar las versiones del proyecto de forma consistente y predecible.
 
 Actualmente el proyecto define su versión en `CMakeLists.txt` mediante:
 
 ```cmake
-project(pulso VERSION 0.1.0)
+project(ChuspaPulse VERSION 0.1.0)
 ```
 
 El formato de una versión es:
@@ -86,7 +86,7 @@ Ejemplo:
 
 # Relación con Conventional Commits
 
-Pulso utiliza los prefijos definidos en `docs/estilo-commits.md`.
+ChuspaPulse utiliza los prefijos definidos en `docs/estilo-commits.md`.
 
 La siguiente tabla resume la relación entre los tipos de commit y el versionado:
 

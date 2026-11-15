@@ -1,4 +1,4 @@
-﻿# Archivo de configuración del agente pulso
+﻿# Archivo de configuración del agente chuspapulse
 # Todas las opciones tienen valores por defecto; este archivo muestra los valores
 # explícitos para fines de documentación.
 
@@ -21,4 +21,9 @@ intervalo_segundos = 10
 [storage]
 # Ruta del archivo de base de datos SQLite.
 # Puede ser relativa al directorio de ejecución o absoluta.
-ruta_db = "pulso.db"
+ruta_db = "chuspapulse.db"
+
+[umbrales]
+cpu_max = 80.0
+ram_max = 85.0
+disco_max = 90.0

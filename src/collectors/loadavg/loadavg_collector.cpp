@@ -1,6 +1,12 @@
 #include "loadavg_collector.h"
 #include <fstream>
 #include <stdexcept>
+#include <cmath>
+
+// Función auxiliar para asegurar precisión de dos decimales
+static float redondearDosDecimales(float val) {
+    return std::round(val * 100.0f) / 100.0f;
+}
 
 LoadAvgInfo getLoadAverage() {
     // Abrir el archivo virtual del sistema operativo Linux
@@ -18,5 +24,23 @@ LoadAvgInfo getLoadAverage() {
         throw std::runtime_error("Error: El formato de /proc/loadavg es invalido");
     }
     
+    // Normalizar asegurando precisión de dos decimales
+    info.load1 = redondearDosDecimales(info.load1);
+    info.load5 = redondearDosDecimales(info.load5);
+    info.load15 = redondearDosDecimales(info.load15);
+    
     return info;
 }
+
+namespace chuspapulse::collectors {
+
+std::vector<chuspapulse::core::Metrica> LoadAvgCollector::colectar() const {
+    LoadAvgInfo info = getLoadAverage();
+    return {
+        {"system.loadavg.1m", static_cast<double>(info.load1)},
+        {"system.loadavg.5m", static_cast<double>(info.load5)},
+        {"system.loadavg.15m", static_cast<double>(info.load15)}
+    };
+}
+
+} // namespace chuspapulse::collectors

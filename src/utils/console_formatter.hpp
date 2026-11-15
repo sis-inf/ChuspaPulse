@@ -38,7 +38,7 @@
  * ============================================================
  * @endcode
  *
- * @param snap  Snapshot de métricas capturado por el agente Pulso.
+ * @param snap  Snapshot de métricas capturado por el agente ChuspaPulse.
  * @return      String con la tabla ASCII completa, lista para imprimir con
  *              `std::cout`.
  *
@@ -46,10 +46,10 @@
  *       respectivamente. Si un valor total es 0, el porcentaje de la barra
  *       se muestra como 0%.
  *
- * @see pulso::core::Snapshot
- * @see pulso::core::Metrica
+ * @see chuspapulse::core::Snapshot
+ * @see chuspapulse::core::Metrica
  */
-std::string formatAsTable(const pulso::core::Snapshot& snap);
+std::string formatAsTable(const chuspapulse::core::Snapshot& snap);
 
 /**
  * @brief Imprime métricas clave-valor directamente en `std::cout` (legacy).

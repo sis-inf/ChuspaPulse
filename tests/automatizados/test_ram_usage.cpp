@@ -11,8 +11,8 @@
 
 #include "collectors/memory/ram_usage.hpp"
 
-using pulso::collectors::memory::getRamUsage;
-using pulso::collectors::memory::RamInfo;
+using chuspapulse::collectors::memory::getRamUsage;
+using chuspapulse::collectors::memory::RamInfo;
 
 namespace {
 

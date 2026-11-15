@@ -7,9 +7,9 @@
 
 namespace {
 
-pulso::core::Snapshot crearSnapshotConocido()
+chuspapulse::core::Snapshot crearSnapshotConocido()
 {
-    pulso::core::Snapshot snapshot;
+    chuspapulse::core::Snapshot snapshot;
 
     snapshot.timestamp = 1710000000;
 
@@ -46,8 +46,8 @@ bool llavesBalanceadas(const std::string& texto)
 
 TEST(FormatterJSONTest, ResultadoNoEsVacio)
 {
-    pulso::core::Snapshot snapshot = crearSnapshotConocido();
-    pulso::formatters::FormatterJSON formatter;
+    chuspapulse::core::Snapshot snapshot = crearSnapshotConocido();
+    chuspapulse::formatters::FormatterJSON formatter;
 
     const std::string resultado = formatter.formatear(snapshot);
 
@@ -56,8 +56,8 @@ TEST(FormatterJSONTest, ResultadoNoEsVacio)
 
 TEST(FormatterJSONTest, ContieneCpu)
 {
-    pulso::core::Snapshot snapshot = crearSnapshotConocido();
-    pulso::formatters::FormatterJSON formatter;
+    chuspapulse::core::Snapshot snapshot = crearSnapshotConocido();
+    chuspapulse::formatters::FormatterJSON formatter;
 
     const std::string resultado = formatter.formatear(snapshot);
 
@@ -66,8 +66,8 @@ TEST(FormatterJSONTest, ContieneCpu)
 
 TEST(FormatterJSONTest, ContieneTimestamp)
 {
-    pulso::core::Snapshot snapshot = crearSnapshotConocido();
-    pulso::formatters::FormatterJSON formatter;
+    chuspapulse::core::Snapshot snapshot = crearSnapshotConocido();
+    chuspapulse::formatters::FormatterJSON formatter;
 
     const std::string resultado = formatter.formatear(snapshot);
 
@@ -76,8 +76,8 @@ TEST(FormatterJSONTest, ContieneTimestamp)
 
 TEST(FormatterJSONTest, ContieneCamposRequeridos)
 {
-    pulso::core::Snapshot snapshot = crearSnapshotConocido();
-    pulso::formatters::FormatterJSON formatter;
+    chuspapulse::core::Snapshot snapshot = crearSnapshotConocido();
+    chuspapulse::formatters::FormatterJSON formatter;
 
     const std::string resultado = formatter.formatear(snapshot);
 
@@ -90,8 +90,8 @@ TEST(FormatterJSONTest, ContieneCamposRequeridos)
 
 TEST(FormatterJSONTest, LlavesEstanBalanceadas)
 {
-    pulso::core::Snapshot snapshot = crearSnapshotConocido();
-    pulso::formatters::FormatterJSON formatter;
+    chuspapulse::core::Snapshot snapshot = crearSnapshotConocido();
+    chuspapulse::formatters::FormatterJSON formatter;
 
     const std::string resultado = formatter.formatear(snapshot);
 

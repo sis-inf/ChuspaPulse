@@ -1,12 +1,12 @@
-# Flujo de datos en el sistema Pulso
+# Flujo de datos en el sistema ChuspaPulse
 
-Este documento describe cómo fluye la información dentro del sistema Pulso desde la recolección de métricas hasta la visualización de datos.
+Este documento describe cómo fluye la información dentro del sistema ChuspaPulse desde la recolección de métricas hasta la visualización de datos.
 
 ---
 
 ## 1. Recolección de datos
 
-Pulso obtiene información del sistema operativo relacionada con:
+ChuspaPulse obtiene información del sistema operativo relacionada con:
 
 - Uso de CPU
 - Memoria
