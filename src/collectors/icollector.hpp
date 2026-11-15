@@ -3,7 +3,7 @@
 #include <vector>
 #include "core/types.hpp"
 
-namespace pulso::collectors {
+namespace chuspapulse::collectors {
 
 /**
  * @brief Interfaz abstracta común para todos los recolectores de métricas.
@@ -24,10 +24,10 @@ class ICollector {
 
   /**
    * @brief Ejecuta una medición y devuelve las métricas obtenidas.
-   * @return Vector de pulso::core::Metrica con las métricas recolectadas.
-   * @throws pulso::core::ErrorRecoleccion si la medición falla.
+   * @return Vector de chuspapulse::core::Metrica con las métricas recolectadas.
+   * @throws chuspapulse::core::ErrorRecoleccion si la medición falla.
    */
-  virtual std::vector<pulso::core::Metrica> recolectar() = 0;
+  virtual std::vector<chuspapulse::core::Metrica> recolectar() = 0;
 };
 
-}  // namespace pulso::collectors
+}  // namespace chuspapulse::collectors

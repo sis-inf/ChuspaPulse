@@ -1,4 +1,4 @@
-# Tipos de datos del proyecto Pulso
+# Tipos de datos del proyecto ChuspaPulse
 
 ## MetricSnapshot
 
@@ -76,7 +76,7 @@ Configuración del monitor del sistema.
 
 | Campo   | Tipo C++    | Valor por defecto | Descripción              |
 | ------- | ----------- | ----------------- | ------------------------ |
-| ruta_db | std::string | "pulso.db"        | Ruta de la base de datos |
+| ruta_db | std::string | "chuspapulse.db"        | Ruta de la base de datos |
 
 ### Config
 

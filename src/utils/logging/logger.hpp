@@ -3,7 +3,7 @@
 #include <mutex>
 #include <string>
 
-namespace pulso::utils::logging {
+namespace chuspapulse::utils::logging {
 
 /**
  * @brief Niveles de log disponibles para el Logger.
@@ -42,4 +42,4 @@ private:
     std::mutex mutex_;
 };
 
-} // namespace pulso::utils::logging
+} // namespace chuspapulse::utils::logging

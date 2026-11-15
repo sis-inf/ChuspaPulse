@@ -4,7 +4,7 @@
 
 #include "../alertas/gestor_alertas.hpp"
 
-namespace pulso::http {
+namespace chuspapulse::http {
 
 /**
  * @brief Registra el endpoint GET /alerts/history.
@@ -12,10 +12,15 @@ namespace pulso::http {
  * Devuelve el historial de alertas persistido, ordenado por timestamp
  * descendente, con paginación básica mediante los parámetros opcionales
  * `limite` (1 a 1000, por defecto 100) y `offset` (0 o más, por defecto 0).
- * Responde 400 si algún parámetro es inválido.
+ *
+ * Respuestas:
+ * - 200 con el arreglo JSON de alertas.
+ * - 400 `{"error":"parametro invalido: ..."}` si algún parámetro no es un
+ *   entero o está fuera de rango.
+ * - 500 `{"error":"error interno"}` si falla la obtención o la serialización.
  */
 void registrarAlertsHistory(
     httplib::Server& servidor,
-    const pulso::alertas::GestorAlertas& gestor);
+    const chuspapulse::alertas::GestorAlertas& gestor);
 
-} // namespace pulso::http
+} // namespace chuspapulse::http

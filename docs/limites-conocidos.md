@@ -16,7 +16,7 @@ No describe mejoras futuras ni propuestas de desarrollo; únicamente documenta l
 
 - **Storage:** ChuspaPulse utiliza SQLite para almacenar métricas históricas. Es adecuado para almacenamiento local, pero no está diseñado para escenarios multi-host ni replicación distribuida.
 - **Load average:** la métrica depende de la implementación del sistema operativo. Los valores obtenidos en Linux y Windows no tienen necesariamente la misma semántica y no deben compararse directamente.
-- **macOS:** actualmente no está soportado. Los colectores nativos para macOS 12+ están pendientes.
+- **macOS:** no está soportado actualmente. Los colectores de plataforma solo existen para Linux y Windows; el soporte para macOS 12+ queda como trabajo futuro.
 - **Interfaces de red:** actualmente no existe una configuración para seleccionar manualmente interfaces específicas de monitoreo.
 
 ---
@@ -65,6 +65,13 @@ Referencia:
 macOS 12+ no está soportado actualmente. Los colectores nativos para esa plataforma están pendientes, por lo que ChuspaPulse no debe desplegarse en macOS hasta que exista soporte oficial.
 
 Las plataformas soportadas actualmente son Linux (Kernel 5.4+) y Windows 10/11.
+macOS no está soportado actualmente. Los colectores específicos de plataforma solo están implementados para Linux (`src/platform/linux/`) y Windows (`src/platform/windows/`).
+
+Limitaciones:
+
+- No existen colectores nativos para macOS (por ejemplo, basados en `sysctl` o `mach`), por lo que no se garantiza que las métricas de CPU, memoria, disco, red y uptime funcionen en ese sistema.
+- No se debe asumir paridad funcional con Linux y Windows en macOS 12+.
+- El soporte para macOS está planificado como trabajo futuro (ver `docs/roadmap.md` y RNF-009 en `docs/requerimientos.md`).
 
 ---
 

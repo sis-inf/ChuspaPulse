@@ -4,7 +4,7 @@
 #include <vector>
 #include <cstdint>
 
-namespace pulso::core {
+namespace chuspapulse::core {
 
 /**
  * @brief Representa una metrica individual del sistema con sus metadatos
@@ -39,4 +39,4 @@ struct Snapshot {
     /** @brief Coleccion de métricas individuales capturadas en este snapshot. */
     std::vector<Metrica> metricas;
 };
-} // namespace pulso::core
+} // namespace chuspapulse::core

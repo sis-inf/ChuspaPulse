@@ -2,19 +2,7 @@
 
 #include <chrono>
 
-namespace pulso::alertas {
-namespace {
-
-double valorDeMetrica(const std::string& metrica, const pulso::MetricSnapshot& snap) {
-    if (metrica == "cpu" || metrica == "cpu.usage_pct") return snap.cpu;
-    if (metrica == "ram") return snap.ram;
-    if (metrica == "disk") return snap.disk;
-    if (metrica == "rx_bytes") return snap.rx_bytes;
-    if (metrica == "tx_bytes") return snap.tx_bytes;
-    return 0.0;
-}
-
-} // namespace
+namespace chuspapulse::alertas {
 
 GestorAlertas::GestorAlertas(SQLite::Database& db) : db_(&db) {}
 
@@ -26,16 +14,30 @@ void GestorAlertas::setCallback(std::function<void(const std::string&)> callback
     callback_ = callback;
 }
 
-void GestorAlertas::evaluar(const pulso::MetricSnapshot& snap) const {
+void GestorAlertas::evaluar(const chuspapulse::MetricSnapshot& snap) {
     if (alertas_.empty()) {
         return;
     }
 
-    for (const auto& alerta : alertas_) {
-        if (!alerta.evaluar(snap)) {
+    for (auto& alerta : alertas_) {
+        const bool cumple = alerta.evaluar(snap);
+
+        // Sin cambio de estado (sigue activa o sigue normal): no se emite nada.
+        if (cumple == alerta.activa()) {
             continue;
         }
 
+        alerta.setActiva(cumple);
+
+        // Transición activa -> normal: se notifica la recuperación.
+        if (!cumple) {
+            if (callback_) {
+                callback_(alerta.mensajeRecuperacion());
+            }
+            continue;
+        }
+
+        // Transición normal -> activa: se notifica y se guarda en el historial.
         if (callback_) {
             callback_(alerta.mensaje());
         }
@@ -53,7 +55,7 @@ void GestorAlertas::evaluar(const pulso::MetricSnapshot& snap) const {
                 query.bind(1, static_cast<std::int64_t>(timestamp));
                 query.bind(2, alerta.metrica());
                 query.bind(3, static_cast<double>(alerta.umbral()));
-                query.bind(4, valorDeMetrica(alerta.metrica(), snap));
+                query.bind(4, alerta.valorActual(snap));
                 query.bind(5, alerta.mensaje());
                 query.exec();
             } catch (const std::exception& e) {
@@ -105,4 +107,4 @@ std::vector<RegistroAlerta> GestorAlertas::obtenerHistorial(
     return historial;
 }
 
-} // namespace pulso::alertas
+} // namespace chuspapulse::alertas

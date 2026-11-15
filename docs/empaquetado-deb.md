@@ -2,7 +2,7 @@
 
 ## Introducción
 
-Pulso permite generar paquetes Debian (`.deb`) mediante CPack.
+ChuspaPulse permite generar paquetes Debian (`.deb`) mediante CPack.
 
 Este documento explica el proceso para generar un paquete, revisar su contenido antes de distribuirlo e instalarlo en sistemas basados en Debian o Ubuntu.
 
@@ -40,7 +40,7 @@ El nombre exacto del archivo generado puede variar dependiendo de la versión y 
 Ejemplo:
 
 ```text
-pulso-0.1.0-Linux.deb
+ChuspaPulse-0.1.0-Linux.deb
 ```
 
 ## Verificación del paquete generado
@@ -58,7 +58,7 @@ dpkg -c paquete.deb
 Ejemplo:
 
 ```bash
-dpkg -c pulso-0.1.0-Linux.deb
+dpkg -c ChuspaPulse-0.1.0-Linux.deb
 ```
 
 Este comando permite comprobar qué archivos serán instalados por el paquete.
@@ -74,7 +74,7 @@ dpkg -I paquete.deb
 Ejemplo:
 
 ```bash
-dpkg -I pulso-0.1.0-Linux.deb
+dpkg -I ChuspaPulse-0.1.0-Linux.deb
 ```
 
 Este comando muestra información del paquete como nombre, versión, arquitectura y otros datos de configuración.
@@ -90,7 +90,7 @@ sudo dpkg -i paquete.deb
 Ejemplo:
 
 ```bash
-sudo dpkg -i pulso-0.1.0-Linux.deb
+sudo dpkg -i ChuspaPulse-0.1.0-Linux.deb
 ```
 
 Después de la instalación, el usuario puede verificar la disponibilidad del programa según la configuración incluida en el paquete.

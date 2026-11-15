@@ -29,7 +29,7 @@ Los siguientes requerimientos definen las restricciones técnicas y de calidad b
 | **RNF-006** | **Seguridad** | Los datos transmitidos entre el agente y el servidor deben estar cifrados mediante TLS 1.2 o superior. | Media |
 | **RNF-007** | **Escalabilidad** | El agente debe poder ejecutarse en arquitecturas de procesador x86_64 y ARM64. | Baja |
 | **RNF-008** | **Rendimiento** | El sistema debe responder en menos de **500ms** al consultar métricas de CPU y memoria en tablas de hasta 10,000 registros. | Alta |
-| **RNF-009** | **Portabilidad** | El agente debe mantener compatibilidad con **Windows 10/11 y Linux Kernel 5.4+**. El soporte para **macOS 12+** queda como trabajo futuro. | Media |
+| **RNF-009** | **Portabilidad** | El agente debe mantener compatibilidad con **Windows 10/11 y Linux Kernel 5.4+**. El soporte para **macOS 12+** queda como trabajo futuro y no está soportado actualmente (ver `docs/limites-conocidos.md`). | Baja |
 | **RNF-010** | **Seguridad** | El sistema debe acceder a métricas de bajo nivel (ej. `/proc`) únicamente con permisos adecuados y cifrar la transmisión con **TLS 1.2+**. | Alta |
 | **RNF-011** | **Mantenibilidad** | La cobertura de pruebas unitarias debe ser al menos del **80%** en cada release. | Media |
 

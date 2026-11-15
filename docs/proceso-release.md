@@ -2,7 +2,7 @@
 
 ## Resumen
 
-El proceso de publicación (release) de Pulso consiste en preparar una nueva versión del proyecto, actualizar la documentación correspondiente y generar los artefactos de distribución para los usuarios.
+El proceso de publicación (release) de ChuspaPulse consiste en preparar una nueva versión del proyecto, actualizar la documentación correspondiente y generar los artefactos de distribución para los usuarios.
 
 Este flujo busca garantizar que cada versión publicada sea consistente, trazable y reproducible.
 
@@ -23,7 +23,7 @@ El proceso recomendado es el siguiente:
 
 # Actualizar la versión
 
-Pulso utiliza la versión definida dentro de `CMakeLists.txt`.
+ChuspaPulse utiliza la versión definida dentro de `CMakeLists.txt`.
 
 Cuando se prepara una nueva versión debe actualizarse el parámetro `VERSION` del proyecto siguiendo la política de versionado documentada en:
 
@@ -35,7 +35,7 @@ Ejemplo:
 
 ```cmake
 project(
-    pulso
+    ChuspaPulse
     VERSION 1.4.0
 )
 ```
@@ -83,7 +83,7 @@ El flujo de despliegue se encuentra definido en:
 
 Dependiendo de la configuración del repositorio, este pipeline puede:
 
-- Compilar Pulso.
+- Compilar ChuspaPulse.
 - Ejecutar pruebas.
 - Construir la imagen Docker.
 - Generar paquetes binarios.

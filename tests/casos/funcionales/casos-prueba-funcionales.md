@@ -14,3 +14,5 @@
 | CUF‑Export‑01 | RF‑010 | Validar exportación CSV correcta | Métricas disponibles en memoria | 1. Ejecutar exportación a ruta válida<br>2. Verificar archivo | Archivo CSV con encabezados y filas completas |
 | CUF‑Once‑01 | RF‑011 | Validar ejecución en modo --once | Sistema estable, sin carga extraña | 1. Ejecutar `pulso --once`<br>2. Revisar salida y código | Código 0, salida JSON bien formada |
 | CUF‑Health‑01 | RF‑012 | Validar endpoint de estado HTTP | Servidor HTTP activo y accesible | 1. Petición `GET /health`<br>2. Leer respuesta | Código 200, cuerpo `{"estado":"ok"}` |
+| CUF-Config-01 | RF-013 | Validar consulta de configuración del agente | Servidor HTTP activo y accesible | 1. Petición `GET /config`<br>2. Leer respuesta | Código 200, JSON con `interval_ms`, `http_port` y `version` |
+| CUF-Version-01 | RF-014 | Validar consulta de versión del agente | Servidor HTTP activo y accesible | 1. Petición `GET /version`<br>2. Leer respuesta | Código 200, cuerpo `{"version": "..."}` |

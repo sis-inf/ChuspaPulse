@@ -1,10 +1,10 @@
 # Referencias a la documentación del kernel de Linux
 
-Este documento lista las fuentes de datos y llamadas al sistema que utiliza Pulso, con su descripción, campos relevantes y enlaces a la documentación oficial.
+Este documento lista las fuentes de datos y llamadas al sistema que utiliza ChuspaPulse, con su descripción, campos relevantes y enlaces a la documentación oficial.
 
 ## Fuentes de datos del sistema de archivos `/proc`
 
-| Ruta / interfaz         | Descripción breve                                                                 | Campos principales que lee Pulso                  | Enlace a documentación                                                         |
+| Ruta / interfaz         | Descripción breve                                                                 | Campos principales que lee ChuspaPulse                  | Enlace a documentación                                                         |
 |------------------------|-----------------------------------------------------------------------------------|--------------------------------------------------|--------------------------------------------------------------------------------|
 | `/proc/stat`           | Estadísticas globales del procesador y del sistema desde el arranque.             | `cpu`, `intr`, `ctxt`, `btime`                   | https://www.kernel.org/doc/html/latest/filesystems/proc.html#proc-stat         |
 | `/proc/meminfo`        | Resumen detallado de la memoria física y de intercambio.                          | `MemTotal`, `MemFree`, `MemAvailable`, `Buffers` | https://www.kernel.org/doc/html/latest/filesystems/proc.html#proc-meminfo      |
@@ -14,7 +14,7 @@ Este documento lista las fuentes de datos y llamadas al sistema que utiliza Puls
 
 ## Llamadas al sistema adicionales
 
-| Llamada al sistema | Descripción                                                                 | Uso en Pulso                                  | Enlace a documentación                        |
+| Llamada al sistema | Descripción                                                                 | Uso en ChuspaPulse                                  | Enlace a documentación                        |
 |--------------------|-----------------------------------------------------------------------------|-----------------------------------------------|-----------------------------------------------|
 | `statvfs()`        | Obtiene información sobre el sistema de archivos: tamaño, espacio libre, etc. | Cálculo de uso de disco por punto de montaje  | https://man7.org/linux/man-pages/man2/statvfs.2.html |
 | `gethostname()`    | Recupera el nombre del host del sistema.                                    | Identificación del agente en los registros    | https://man7.org/linux/man-pages/man2/gethostname.2.html |

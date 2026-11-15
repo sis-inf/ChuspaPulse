@@ -1,8 +1,8 @@
-# Guía de depuración de Pulso con GDB y Valgrind
+# Guía de depuración de ChuspaPulse con GDB y Valgrind
 
 ## Introducción
 
-Durante el desarrollo de Pulso pueden presentarse errores como cierres inesperados, fugas de memoria o comportamientos incorrectos. Esta guía explica cómo compilar el proyecto en modo depuración y utilizar herramientas comunes para diagnosticar estos problemas.
+Durante el desarrollo de ChuspaPulse pueden presentarse errores como cierres inesperados, fugas de memoria o comportamientos incorrectos. Esta guía explica cómo compilar el proyecto en modo depuración y utilizar herramientas comunes para diagnosticar estos problemas.
 
 ---
 
@@ -24,7 +24,7 @@ El parámetro `CMAKE_BUILD_TYPE=Debug` permite incluir información de depuraci�
 Ejecute el programa con GDB:
 
 ```bash
-gdb ./pulso
+gdb ./ChuspaPulse
 ```
 
 Inicie la ejecución:
@@ -62,13 +62,13 @@ Valgrind permite detectar pérdidas de memoria y accesos inválidos.
 Ejecute:
 
 ```bash
-valgrind --leak-check=full ./pulso
+valgrind --leak-check=full ./ChuspaPulse
 ```
 
 Para obtener información más detallada:
 
 ```bash
-valgrind --leak-check=full --show-leak-kinds=all ./pulso
+valgrind --leak-check=full --show-leak-kinds=all ./ChuspaPulse
 ```
 
 Esta herramienta resulta especialmente útil para revisar componentes que administran recursos, como:

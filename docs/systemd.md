@@ -1,12 +1,12 @@
 # Administración del servicio con systemd
 
-Este documento describe cómo administrar Pulso como un servicio utilizando **systemd**. Se presentan los comandos básicos para iniciar, detener, habilitar y supervisar el servicio, además de la consulta de registros y recomendaciones para aplicar cambios en la configuración.
+Este documento describe cómo administrar ChuspaPulse como un servicio utilizando **systemd**. Se presentan los comandos básicos para iniciar, detener, habilitar y supervisar el servicio, además de la consulta de registros y recomendaciones para aplicar cambios en la configuración.
 
 ---
 
 ## Instalación del servicio
 
-Pulso puede instalarse como un servicio del sistema mediante el mecanismo de instalación disponible para la distribución utilizada, ya sea mediante un paquete `.deb` o utilizando el subcomando `pulso instalar-servicio`, cuando corresponda.
+ChuspaPulse puede instalarse como un servicio del sistema mediante el mecanismo de instalación disponible para la distribución utilizada, ya sea mediante un paquete `.deb` o utilizando el subcomando `ChuspaPulse instalar-servicio`, cuando corresponda.
 
 Una vez instalado el servicio, su administración puede realizarse con las herramientas estándar de **systemd**.
 
@@ -19,7 +19,7 @@ Una vez instalado el servicio, su administración puede realizarse con las herra
 Para iniciar el servicio manualmente:
 
 ```bash
-sudo systemctl start pulso
+sudo systemctl start ChuspaPulse
 ```
 
 ### Detener el servicio
@@ -27,7 +27,7 @@ sudo systemctl start pulso
 Para detener el servicio:
 
 ```bash
-sudo systemctl stop pulso
+sudo systemctl stop ChuspaPulse
 ```
 
 ### Consultar el estado
@@ -35,7 +35,7 @@ sudo systemctl stop pulso
 Para verificar si el servicio se encuentra en ejecución:
 
 ```bash
-sudo systemctl status pulso
+sudo systemctl status ChuspaPulse
 ```
 
 ### Habilitar el inicio automático
@@ -43,7 +43,7 @@ sudo systemctl status pulso
 Para configurar el inicio automático del servicio durante el arranque del sistema:
 
 ```bash
-sudo systemctl enable pulso
+sudo systemctl enable ChuspaPulse
 ```
 
 ---
@@ -55,13 +55,13 @@ Los registros del servicio pueden consultarse mediante `journalctl`.
 Mostrar los registros almacenados:
 
 ```bash
-sudo journalctl -u pulso
+sudo journalctl -u ChuspaPulse
 ```
 
 Seguir los registros en tiempo real:
 
 ```bash
-sudo journalctl -u pulso -f
+sudo journalctl -u ChuspaPulse -f
 ```
 
 ---
@@ -76,7 +76,7 @@ Cuando se modifica la configuración del servicio, existen dos acciones habitual
 Si el servicio no admite la recarga mediante `reload`, utilice:
 
 ```bash
-sudo systemctl restart pulso
+sudo systemctl restart ChuspaPulse
 ```
 
 ---
@@ -86,13 +86,13 @@ sudo systemctl restart pulso
 El siguiente ejemplo muestra una secuencia básica para habilitar el servicio, iniciarlo y comprobar su estado:
 
 ```bash
-sudo systemctl enable pulso
-sudo systemctl start pulso
-sudo systemctl status pulso
+sudo systemctl enable ChuspaPulse
+sudo systemctl start ChuspaPulse
+sudo systemctl status ChuspaPulse
 ```
 
 ---
 
 ## Conclusión
 
-El uso de **systemd** facilita la administración de Pulso mediante comandos estándar para iniciar, detener, supervisar y consultar los registros del servicio, simplificando su operación en entornos Linux.
+El uso de **systemd** facilita la administración de ChuspaPulse mediante comandos estándar para iniciar, detener, supervisar y consultar los registros del servicio, simplificando su operación en entornos Linux.

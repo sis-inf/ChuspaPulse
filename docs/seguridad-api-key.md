@@ -2,11 +2,11 @@
 
 ## Introducción
 
-Pulso permite habilitar una autenticación opcional mediante una API key para proteger los endpoints HTTP. Cuando esta opción está configurada, los clientes deben autenticarse enviando la clave correspondiente en cada solicitud.
+ChuspaPulse permite habilitar una autenticación opcional mediante una API key para proteger los endpoints HTTP. Cuando esta opción está configurada, los clientes deben autenticarse enviando la clave correspondiente en cada solicitud.
 
 ## Configuración
 
-Configure la API key en el archivo `pulso.toml`:
+Configure la API key en el archivo `ChuspaPulse.toml`:
 
 ```toml
 [servidor]
@@ -23,7 +23,7 @@ Los clientes deben enviar el siguiente encabezado HTTP en cada solicitud protegi
 Authorization: Bearer <api_key>
 ```
 
-Donde `<api_key>` corresponde al valor configurado en `pulso.toml`.
+Donde `<api_key>` corresponde al valor configurado en `ChuspaPulse.toml`.
 
 ## Endpoints exceptuados
 

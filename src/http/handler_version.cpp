@@ -1,12 +1,12 @@
 #include "handler_version.hpp"
 #include "../core/version.hpp"
 
-namespace pulso {
+namespace chuspapulse {
 namespace http {
 
     std::string handleVersion() {
-        return "{\"version\": \"" + pulso::APP_VERSION + "\"}";
+        return "{\"version\": \"" + chuspapulse::APP_VERSION + "\"}";
     }
 
 } // namespace http
-} // namespace pulso
+} // namespace chuspapulse

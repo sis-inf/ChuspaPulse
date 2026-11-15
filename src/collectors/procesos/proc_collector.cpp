@@ -4,7 +4,7 @@
 #include <sstream>
 #include <stdexcept>
 
-namespace pulso::collectors {
+namespace chuspapulse::collectors {
 
 ProcInfo getProcInfo() {
     ProcInfo info{};
@@ -83,4 +83,4 @@ ProcInfo getProcInfo() {
     return info;
 }
 
-} // namespace pulso::collectors
+} // namespace chuspapulse::collectors

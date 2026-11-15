@@ -39,13 +39,13 @@ DiskUsage getDiskUsage(const std::string& ruta = "/") {
     return uso;
 }
 
-namespace pulso::collectors::disk {
+namespace chuspapulse::collectors::disk {
 
 std::string DiskCollector::nombre() const {
     return "disk";
 }
 
-std::vector<pulso::core::Metrica> DiskCollector::recolectar() {
+std::vector<chuspapulse::core::Metrica> DiskCollector::recolectar() {
     const DiskUsage uso = getDiskUsage();
     const std::int64_t ahora = static_cast<std::int64_t>(std::time(nullptr));
 
@@ -56,4 +56,4 @@ std::vector<pulso::core::Metrica> DiskCollector::recolectar() {
     };
 }
 
-}  // namespace pulso::collectors::disk
+}  // namespace chuspapulse::collectors::disk

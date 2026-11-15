@@ -2,7 +2,7 @@
 
 ## Consumo de recursos del agente
 
-Pulso está diseñado para ser un agente de monitoreo ligero con un consumo de recursos mínimo. Al estar implementado en C++, el agente tiene una huella de memoria pequeña y un uso de CPU bajo, lo que lo hace ideal para servidores con recursos limitados o entornos donde cada MB de RAM cuenta.
+ChuspaPulse está diseñado para ser un agente de monitoreo ligero con un consumo de recursos mínimo. Al estar implementado en C++, el agente tiene una huella de memoria pequeña y un uso de CPU bajo, lo que lo hace ideal para servidores con recursos limitados o entornos donde cada MB de RAM cuenta.
 
 ### Consumo de memoria
 
@@ -38,7 +38,7 @@ El agente no realiza conexiones salientes; todo el tráfico es iniciado por clie
 
 ## Requisitos mínimos de hardware
 
-Pulso puede ejecutarse en hardware muy modesto gracias a su diseño eficiente. Los siguientes son los requisitos mínimos recomendados para una operación estable:
+ChuspaPulse puede ejecutarse en hardware muy modesto gracias a su diseño eficiente. Los siguientes son los requisitos mínimos recomendados para una operación estable:
 
 ### Requisitos mínimos
 
@@ -70,7 +70,7 @@ Pulso puede ejecutarse en hardware muy modesto gracias a su diseño eficiente. L
 
 ## Impacto por intervalo de muestreo
 
-El intervalo de muestreo configurado en `pulso.toml` (parámetro `intervalo_segundos` en la sección `[sampler]`) tiene un impacto directo en el consumo de recursos y la resolución de las métricas.
+El intervalo de muestreo configurado en `ChuspaPulse.toml` (parámetro `intervalo_segundos` en la sección `[sampler]`) tiene un impacto directo en el consumo de recursos y la resolución de las métricas.
 
 ### Intervalos cortos (1-5 segundos)
 
@@ -109,40 +109,40 @@ Se puede implementar una política de retención (por ejemplo, eliminar snapshot
 
 ## Cómo medir el rendimiento del agente
 
-Para evaluar el rendimiento de Pulso en un entorno específico, se recomienda seguir este procedimiento:
+Para evaluar el rendimiento de ChuspaPulse en un entorno específico, se recomienda seguir este procedimiento:
 
 ### Herramientas de medición
 
 ```bash
 # Medir consumo de memoria y CPU en tiempo real
-pidstat -p $(pgrep pulso) 1
+pidstat -p $(pgrep ChuspaPulse) 1
 
 # Medir consumo de memoria detallado
-ps aux | grep pulso
+ps aux | grep ChuspaPulse
 
 # Medir latencia de endpoints
 curl -w "@curl-format.txt" -o /dev/null -s http://localhost:8080/metrics
 
 # Medir rendimiento de la base de datos
-sqlite3 pulso.db "PRAGMA cache_size;"
-sqlite3 pulso.db "SELECT COUNT(*) FROM snapshots;"
+sqlite3 ChuspaPulse.db "PRAGMA cache_size;"
+sqlite3 ChuspaPulse.db "SELECT COUNT(*) FROM snapshots;"
 ```
 
 ### Script de benchmark
 
 ```bash
 #!/bin/bash
-# benchmark_pulso.sh
+# benchmark_ChuspaPulse.sh
 
-echo "=== Benchmark de Pulso ==="
+echo "=== Benchmark de ChuspaPulse ==="
 echo "Iniciando agente en background..."
-./build/bin/pulso --config pulso.toml &
-PULSO_PID=$!
+./build/bin/ChuspaPulse --config ChuspaPulse.toml &
+CHUSPAPULSE_PID=$!
 
 sleep 5
 
 echo "=== Métricas iniciales ==="
-ps -p $PULSO_PID -o pid,vsz,rss,pcpu,pmem,cmd
+ps -p $CHUSPAPULSE_PID -o pid,vsz,rss,pcpu,pmem,cmd
 
 echo "=== Prueba de carga: 100 solicitudes a /metrics ==="
 for i in {1..100}; do
@@ -150,7 +150,7 @@ for i in {1..100}; do
 done
 
 echo "=== Métricas después de carga ==="
-ps -p $PULSO_PID -o pid,vsz,rss,pcpu,pmem,cmd
+ps -p $CHUSPAPULSE_PID -o pid,vsz,rss,pcpu,pmem,cmd
 
 echo "=== Latencia promedio de /metrics ==="
 time for i in {1..10}; do
@@ -158,10 +158,10 @@ time for i in {1..10}; do
 done
 
 echo "=== Tamaño de base de datos ==="
-du -h pulso.db
+du -h ChuspaPulse.db
 
 echo "=== Deteniendo agente ==="
-kill $PULSO_PID
+kill $CHUSPAPULSE_PID
 ```
 
 ### Métricas clave a monitorear
@@ -185,11 +185,11 @@ Para evaluar el impacto de cambios en el código o configuración:
 
 ## Comparación con otros agentes
 
-Pulso ofrece ventajas significativas frente a otras soluciones de monitoreo en términos de consumo de recursos y simplicidad.
+ChuspaPulse ofrece ventajas significativas frente a otras soluciones de monitoreo en términos de consumo de recursos y simplicidad.
 
 ### Comparación con Node Exporter (Prometheus)
 
-| Métrica | Pulso | Node Exporter |
+| Métrica | ChuspaPulse | Node Exporter |
 |---------|-------|---------------|
 | Memoria base | 15-25 MB | 30-50 MB |
 | CPU en reposo | <0.1% | 0.2-0.5% |
@@ -199,12 +199,12 @@ Pulso ofrece ventajas significativas frente a otras soluciones de monitoreo en t
 | Endpoints HTTP | 4 (health, metrics, history, prometheus) | ~20 (más especializados) |
 | Configuración | 1 archivo TOML | Flags de línea de comandos |
 
-**Ventajas de Pulso**: Almacenamiento histórico integrado, configuración más simple, menor consumo de memoria.
+**Ventajas de ChuspaPulse**: Almacenamiento histórico integrado, configuración más simple, menor consumo de memoria.
 **Ventajas de Node Exporter**: Sin dependencias externas, más collectors especializados, ecosistema más amplio.
 
 ### Comparación con Telegraf (InfluxData)
 
-| Métrica | Pulso | Telegraf |
+| Métrica | ChuspaPulse | Telegraf |
 |---------|-------|----------|
 | Memoria base | 15-25 MB | 40-80 MB |
 | CPU en reposo | <0.1% | 0.5-1% |
@@ -215,12 +215,12 @@ Pulso ofrece ventajas significativas frente a otras soluciones de monitoreo en t
 | Plugins | 7 collectors básicos | 200+ plugins |
 | Configuración | TOML simple | TOML complejo con muchos plugins |
 
-**Ventajas de Pulso**: Mucho menor consumo de recursos, más simple de configurar y mantener.
+**Ventajas de ChuspaPulse**: Mucho menor consumo de recursos, más simple de configurar y mantener.
 **Ventajas de Telegraf**: Ecosistema de plugins enorme, soporte para múltiples protocolos de salida.
 
 ### Comparación con Collectd
 
-| Métrica | Pulso | Collectd |
+| Métrica | ChuspaPulse | Collectd |
 |---------|-------|----------|
 | Memoria base | 15-25 MB | 10-20 MB |
 | CPU en reposo | <0.1% | <0.1% |
@@ -231,19 +231,19 @@ Pulso ofrece ventajas significativas frente a otras soluciones de monitoreo en t
 | Plugins | 7 collectors básicos | 100+ plugins |
 | HTTP endpoints | Nativo | Requiere plugin http |
 
-**Ventajas de Pulso**: HTTP endpoints nativos, almacenamiento histórico integrado, configuración más moderna.
+**Ventajas de ChuspaPulse**: HTTP endpoints nativos, almacenamiento histórico integrado, configuración más moderna.
 **Ventajas de Collectd**: Muy ligero, maduro, amplio ecosistema de plugins.
 
-### Cuándo elegir Pulso
+### Cuándo elegir ChuspaPulse
 
-Pulso es la mejor opción cuando:
+ChuspaPulse es la mejor opción cuando:
 - Se necesita un agente ligero con mínimo consumo de recursos
 - Se requiere almacenamiento histórico sin configurar una base de datos externa
 - La configuración debe ser simple y mantenible
 - El entorno tiene recursos limitados (VPS pequeños, embedded systems)
 - Se prefiere C++ por su rendimiento y control de memoria
 
-Pulso puede no ser la mejor opción cuando:
+ChuspaPulse puede no ser la mejor opción cuando:
 - Se requiere soporte para múltiples protocolos de salida (InfluxDB, Graphite, etc.)
 - Se necesita un ecosistema amplio de plugins especializados
 - La organización ya tiene una infraestructura basada en otra solución

@@ -47,7 +47,7 @@ SystemMonitor::SystemMonitor()
  *                   nullptr; de serlo, el comportamiento es indefinido.
  */
 void SystemMonitor::addCollector(
-    std::shared_ptr<pulso::collectors::ICollector> collector)
+    std::shared_ptr<chuspapulse::collectors::ICollector> collector)
 {
     collectors_.push_back(std::move(collector));
 }
@@ -67,8 +67,8 @@ void SystemMonitor::addCollector(
  *
  * @return Snapshot consolidado con métricas de todos los collectors activos.
  */
-pulso::core::Snapshot SystemMonitor::collectAll() {
-    pulso::core::Snapshot snapshot;
+chuspapulse::core::Snapshot SystemMonitor::collectAll() {
+    chuspapulse::core::Snapshot snapshot;
     snapshot.timestamp = static_cast<std::int64_t>(
         std::chrono::duration_cast<std::chrono::seconds>(
             std::chrono::system_clock::now().time_since_epoch()

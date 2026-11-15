@@ -6,7 +6,7 @@
 #include "iformatter.hpp"
 #include "core/types.hpp"
 
-namespace pulso::formatters {
+namespace chuspapulse::formatters {
 
 /**
  * @brief Formateador de texto plano legible para humanos.
@@ -30,15 +30,15 @@ public:
      * @brief Serializa un snapshot individual en texto plano.
      */
     std::string formatear(
-        const pulso::core::Snapshot& snapshot
+        const chuspapulse::core::Snapshot& snapshot
     ) const override;
 
     /**
      * @brief Serializa un historial de snapshots en texto plano.
      */
     std::string formatearHistorial(
-        const std::vector<pulso::core::Snapshot>& snapshots
+        const std::vector<chuspapulse::core::Snapshot>& snapshots
     ) const override;
 };
 
-} // namespace pulso::formatters
+} // namespace chuspapulse::formatters

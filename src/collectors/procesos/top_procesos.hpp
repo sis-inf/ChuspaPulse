@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-namespace pulso::collectors::procesos {
+namespace chuspapulse::collectors::procesos {
 
 /**
  * @brief Informacion resumida de un proceso para el ranking de "top procesos".
@@ -66,4 +66,4 @@ struct ProcesoInfo {
  */
 std::vector<ProcesoInfo> getTopProcesos(int n = 5, int intervalo_ms = 100);
 
-} // namespace pulso::collectors::procesos
+} // namespace chuspapulse::collectors::procesos

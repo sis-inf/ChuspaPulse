@@ -4,7 +4,7 @@
 #include <fstream>
 #include <string>
 
-namespace pulso::collectors::bateria {
+namespace chuspapulse::collectors::bateria {
 
 BateriaInfo getBateriaInfo(const std::string& base_path) {
     const std::string capacity_path = base_path + "/capacity";
@@ -52,7 +52,7 @@ std::string CollectorBateria::nombre() const {
     return "bateria";
 }
 
-std::vector<pulso::core::Metrica> CollectorBateria::recolectar() {
+std::vector<chuspapulse::core::Metrica> CollectorBateria::recolectar() {
     BateriaInfo info = getBateriaInfo();
 
     // Sin bateria presente: vector vacio, sin metricas vacias ni enganosas.
@@ -66,7 +66,7 @@ std::vector<pulso::core::Metrica> CollectorBateria::recolectar() {
         )
     );
 
-    std::vector<pulso::core::Metrica> metricas;
+    std::vector<chuspapulse::core::Metrica> metricas;
 
     metricas.push_back({
         "bateria.porcentaje",
@@ -89,4 +89,4 @@ std::vector<pulso::core::Metrica> CollectorBateria::recolectar() {
     return metricas;
 }
 
-} // namespace pulso::collectors::bateria
+} // namespace chuspapulse::collectors::bateria

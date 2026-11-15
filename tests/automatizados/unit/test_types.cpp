@@ -1,8 +1,11 @@
 #include <gtest/gtest.h>
 
-#include "../../src/core/types.hpp"
+#include "core/types.hpp"
 
-using namespace pulso::core;
+#include <algorithm>
+#include <string>
+
+using namespace chuspapulse::core;
 
 TEST(TestConstruccionMetrica, ValoresExplicitos) {
     Metrica metrica{
@@ -12,9 +15,9 @@ TEST(TestConstruccionMetrica, ValoresExplicitos) {
         1710000000
     };
 
-    EXPECT_EQ(metrica.name, "cpu.usage");
-    EXPECT_DOUBLE_EQ(metrica.value, 75.5);
-    EXPECT_EQ(metrica.unit, "porcentaje");
+    EXPECT_EQ(metrica.nombre, "cpu.usage");
+    EXPECT_DOUBLE_EQ(metrica.valor, 75.5);
+    EXPECT_EQ(metrica.unidad, "porcentaje");
     EXPECT_EQ(metrica.timestamp, 1710000000);
 }
 
@@ -32,9 +35,9 @@ TEST(TestConstruccionSnapshot, SnapshotConMetricas) {
     };
 
     EXPECT_EQ(snapshot.timestamp, 1710000001);
-    EXPECT_EQ(snapshot.metrics.size(), 1);
+    EXPECT_EQ(snapshot.metricas.size(), 1);
 
-    EXPECT_EQ(snapshot.metrics[0].name, "ram.used");
+    EXPECT_EQ(snapshot.metricas[0].nombre, "ram.used");
 }
 
 TEST(TestSnapshotVacio, SinMetricas) {
@@ -43,7 +46,7 @@ TEST(TestSnapshotVacio, SinMetricas) {
         {}
     };
 
-    EXPECT_EQ(snapshot.metrics.size(), 0);
+    EXPECT_EQ(snapshot.metricas.size(), 0);
 }
 
 TEST(TestAgregarMetricasASnapshot, IncrementoCorrecto) {
@@ -52,21 +55,21 @@ TEST(TestAgregarMetricasASnapshot, IncrementoCorrecto) {
         {}
     };
 
-    snapshot.metrics.push_back({
+    snapshot.metricas.push_back({
         "cpu.usage",
         50.0,
         "%",
         1710000001
     });
 
-    snapshot.metrics.push_back({
+    snapshot.metricas.push_back({
         "disk.used",
         80.0,
         "%",
         1710000001
     });
 
-    EXPECT_EQ(snapshot.metrics.size(), 2);
+    EXPECT_EQ(snapshot.metricas.size(), 2);
 }
 
 TEST(TestCopiaDeSnapshot, CopiaIndependiente) {
@@ -84,8 +87,69 @@ TEST(TestCopiaDeSnapshot, CopiaIndependiente) {
 
     Snapshot copia = original;
 
-    copia.metrics[0].value = 99.0;
+    copia.metricas[0].valor = 99.0;
 
-    EXPECT_DOUBLE_EQ(original.metrics[0].value, 60.0);
-    EXPECT_DOUBLE_EQ(copia.metrics[0].value, 99.0);
+    EXPECT_DOUBLE_EQ(original.metricas[0].valor, 60.0);
+    EXPECT_DOUBLE_EQ(copia.metricas[0].valor, 99.0);
+}
+
+TEST(TestTimestampCero, MetricaConTimestampCero) {
+    Metrica metrica{
+        "cpu.usage",
+        10.0,
+        "%",
+        0
+    };
+
+    EXPECT_EQ(metrica.timestamp, 0);
+    EXPECT_EQ(metrica.nombre, "cpu.usage");
+    EXPECT_DOUBLE_EQ(metrica.valor, 10.0);
+}
+
+TEST(TestTimestampCero, SnapshotConTimestampCero) {
+    Snapshot snapshot{
+        0,
+        {
+            {"cpu.usage", 10.0, "%", 0}
+        }
+    };
+
+    EXPECT_EQ(snapshot.timestamp, 0);
+    ASSERT_EQ(snapshot.metricas.size(), 1u);
+    EXPECT_EQ(snapshot.metricas[0].timestamp, 0);
+}
+
+TEST(TestBusquedaMetricas, RecuperarMetricaPorNombre) {
+    Snapshot snapshot{
+        1710000001,
+        {
+            {"cpu.usage", 45.0, "%", 1710000001},
+            {"ram.used", 2048.0, "MB", 1710000001},
+            {"disk.used", 70.0, "%", 1710000001}
+        }
+    };
+
+    ASSERT_EQ(snapshot.metricas.size(), 3u);
+
+    auto buscar = [&snapshot](const std::string& nombre) {
+        return std::find_if(
+            snapshot.metricas.begin(),
+            snapshot.metricas.end(),
+            [&nombre](const Metrica& m) { return m.nombre == nombre; });
+    };
+
+    auto ram = buscar("ram.used");
+    ASSERT_NE(ram, snapshot.metricas.end());
+    EXPECT_DOUBLE_EQ(ram->valor, 2048.0);
+    EXPECT_EQ(ram->unidad, "MB");
+
+    auto disco = buscar("disk.used");
+    ASSERT_NE(disco, snapshot.metricas.end());
+    EXPECT_DOUBLE_EQ(disco->valor, 70.0);
+
+    auto cpu = buscar("cpu.usage");
+    ASSERT_NE(cpu, snapshot.metricas.end());
+    EXPECT_DOUBLE_EQ(cpu->valor, 45.0);
+
+    EXPECT_EQ(buscar("net.rx"), snapshot.metricas.end());
 }
