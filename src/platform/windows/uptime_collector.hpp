@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../collectors/uptime/uptime_collector.hpp"
+#include "../../collectors/uptime/uptime_collector.h"
 
 #ifdef _WIN32
 
