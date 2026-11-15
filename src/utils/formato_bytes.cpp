@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstddef>
 #include <sstream>
+#include <string>
 #include <iomanip>
 
 namespace chuspapulse::utils {
