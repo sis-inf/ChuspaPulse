@@ -13,10 +13,6 @@ option(BUILD_WITH_ASAN "Build tests with AddressSanitizer" OFF)
 # Activar con -DCHUSPAPULSE_STATIC_LINK=ON para producir un binario standalone sin dependencias dinámicas.
 option(CHUSPAPULSE_STATIC_LINK "Link statically against libgcc, libstdc++ and system libs" OFF)
 
-if(CHUSPAPULSE_STATIC_LINK)
-    target_link_options(chuspapulse PRIVATE -static-libgcc -static-libstdc++)
-endif()
-
 # Si el usuario activa cualquiera de las dos opciones, sincronizamos el estado
 if(BUILD_TESTS OR CHUSPAPULSE_BUILD_TESTS)
     set(BUILD_TESTS ON CACHE BOOL "Build tests" FORCE)
@@ -29,6 +25,11 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 include(cmake/Dependencies.cmake)
 add_subdirectory(src)
+
+# Va después de add_subdirectory(src): el target chuspapulse se crea en src/CMakeLists.txt.
+if(CHUSPAPULSE_STATIC_LINK)
+    target_link_options(chuspapulse PRIVATE -static-libgcc -static-libstdc++)
+endif()
 
 # Estos subdirectorios no se agregan con add_subdirectory porque sus archivos
 # fuente ya se compilan vía target_sources en src/CMakeLists.txt.
