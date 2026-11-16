@@ -144,3 +144,47 @@ TEST_F(IntegrationMetricsTest, CoincideConMetricsPrometheus) {
   ASSERT_TRUE(prometheus);
   EXPECT_EQ(metrics->body, prometheus->body);
 }
+
+TEST_F(IntegrationMetricsTest, MetricasEnCero) {
+  guardarSnapshot(0.0, 0.0);
+
+  auto res = get("/metrics");
+
+  ASSERT_TRUE(res);
+  ASSERT_EQ(res->status, 200);
+  EXPECT_NE(res->body.find("\nchuspapulse_cpu_usage 0\n"),
+            std::string::npos);
+  EXPECT_NE(res->body.find("\nchuspapulse_memory_used 0\n"),
+            std::string::npos);
+}
+
+TEST_F(IntegrationMetricsTest, ValoresLimiteDeMetricas) {
+  guardarSnapshot(100.0, 1048576.0);
+
+  auto res = get("/metrics");
+
+  ASSERT_TRUE(res);
+  ASSERT_EQ(res->status, 200);
+  EXPECT_NE(res->body.find("\nchuspapulse_cpu_usage 100\n"),
+            std::string::npos);
+  EXPECT_NE(res->body.find("\nchuspapulse_memory_used 1048576\n"),
+            std::string::npos);
+}
+
+TEST_F(IntegrationMetricsTest, MetricaNegativaNoProvocaFalloHTTP) {
+  guardarSnapshot(-1.0, 1024.0);
+
+  auto res = get("/metrics");
+
+  ASSERT_TRUE(res);
+  EXPECT_EQ(res->status, 200);
+  EXPECT_NE(res->body.find("\nchuspapulse_cpu_usage -1\n"),
+            std::string::npos);
+}
+
+TEST_F(IntegrationMetricsTest, RutaInexistenteDevuelve404) {
+  auto res = get("/metrics/ruta-inexistente");
+
+  ASSERT_TRUE(res);
+  EXPECT_EQ(res->status, 404);
+}
