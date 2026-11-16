@@ -17,12 +17,12 @@ static chuspapulse::core::Snapshot crearSnapshotCPU(
     s.timestamp = timestamp;
 
     chuspapulse::core::Metrica m;
-    m.name = "cpu.usage";
-    m.unit = "percent";
-    m.value = cpu;
+    m.nombre = "cpu.usage";
+    m.unidad = "percent";
+    m.valor = cpu;
     m.timestamp = timestamp;
 
-    s.metrics.push_back(m);
+    s.metricas.push_back(m);
 
     return s;
 }
@@ -61,9 +61,9 @@ TEST_F(StoragePromedioTest, PromedioCPU)
 
     bool encontrado = false;
 
-    for (const auto& m : promedio.metrics) {
-        if (m.name == "cpu.usage") {
-            EXPECT_DOUBLE_EQ(m.value, 60.0);
+    for (const auto& m : promedio.metricas) {
+        if (m.nombre == "cpu.usage") {
+            EXPECT_DOUBLE_EQ(m.valor, 60.0);
             encontrado = true;
         }
     }
@@ -86,9 +86,9 @@ TEST_F(StoragePromedioTest, VentanaSinDatosAntiguos)
 
     bool encontrado = false;
 
-    for (const auto& m : promedio.metrics) {
-        if (m.name == "cpu.usage") {
-            EXPECT_DOUBLE_EQ(m.value, 90.0);
+    for (const auto& m : promedio.metricas) {
+        if (m.nombre == "cpu.usage") {
+            EXPECT_DOUBLE_EQ(m.valor, 90.0);
             encontrado = true;
         }
     }
@@ -105,9 +105,99 @@ TEST_F(StoragePromedioTest, PromedioMultiplesMetricas)
 
     bool encontrado = false;
 
-    for (const auto& m : promedio.metrics) {
-        if (m.name == "cpu.usage") {
-            EXPECT_DOUBLE_EQ(m.value, 0.0);
+    for (const auto& m : promedio.metricas) {
+        if (m.nombre == "cpu.usage") {
+            EXPECT_DOUBLE_EQ(m.valor, 0.0);
+            encontrado = true;
+        }
+    }
+
+    EXPECT_TRUE(encontrado);
+}
+
+TEST_F(StoragePromedioTest, MetricaDesconocidaNoAfectaPromedio)
+{
+    chuspapulse::storage::Storage storage(dbPath_);
+    auto ahora = static_cast<std::int64_t>(std::time(nullptr));
+
+    auto snapshot = crearSnapshotCPU(ahora - 1, 40.0);
+
+    chuspapulse::core::Metrica desconocida;
+    desconocida.nombre = "metrica.invalida";
+    desconocida.unidad = "unknown";
+    desconocida.valor = 999.0;
+    desconocida.timestamp = ahora - 1;
+
+    snapshot.metricas.push_back(desconocida);
+    storage.save(snapshot);
+
+    auto promedio = storage.getPromedio(10);
+
+    bool encontrado = false;
+    for (const auto& m : promedio.metricas) {
+        EXPECT_NE(m.nombre, "metrica.invalida");
+
+        if (m.nombre == "cpu.usage") {
+            EXPECT_DOUBLE_EQ(m.valor, 40.0);
+            encontrado = true;
+        }
+    }
+
+    EXPECT_TRUE(encontrado);
+}
+
+TEST_F(StoragePromedioTest, ValorLimiteCPU)
+{
+    chuspapulse::storage::Storage storage(dbPath_);
+    auto ahora = static_cast<std::int64_t>(std::time(nullptr));
+
+    storage.save(crearSnapshotCPU(ahora - 1, 100.0));
+
+    auto promedio = storage.getPromedio(10);
+
+    bool encontrado = false;
+    for (const auto& m : promedio.metricas) {
+        if (m.nombre == "cpu.usage") {
+            EXPECT_DOUBLE_EQ(m.valor, 100.0);
+            encontrado = true;
+        }
+    }
+
+    EXPECT_TRUE(encontrado);
+}
+
+TEST_F(StoragePromedioTest, VentanaSinRegistrosDevuelveCeros)
+{
+    chuspapulse::storage::Storage storage(dbPath_);
+    auto ahora = static_cast<std::int64_t>(std::time(nullptr));
+
+    storage.save(crearSnapshotCPU(ahora - 100, 75.0));
+
+    auto promedio = storage.getPromedio(5);
+
+    ASSERT_EQ(promedio.metricas.size(), 10u);
+
+    for (const auto& m : promedio.metricas) {
+        EXPECT_DOUBLE_EQ(m.valor, 0.0);
+    }
+}
+
+TEST_F(StoragePromedioTest, MetricaAusenteSeGuardaComoCero)
+{
+    chuspapulse::storage::Storage storage(dbPath_);
+    auto ahora = static_cast<std::int64_t>(std::time(nullptr));
+
+    chuspapulse::core::Snapshot snapshot;
+    snapshot.timestamp = ahora - 1;
+
+    storage.save(snapshot);
+
+    auto promedio = storage.getPromedio(10);
+
+    bool encontrado = false;
+    for (const auto& m : promedio.metricas) {
+        if (m.nombre == "cpu.usage") {
+            EXPECT_DOUBLE_EQ(m.valor, 0.0);
             encontrado = true;
         }
     }
