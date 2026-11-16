@@ -15,9 +15,20 @@ void HandleMetrics(
     const httplib::Request& req,
     httplib::Response&      res)
   {
-    // /metrics no recibe parametros: la query string se ignora a proposito.
     auto& logger = chuspapulse::utils::logging::Logger::instancia();
-
+    // /metrics no recibe parametros: cualquier query string se rechaza con 400.
+    if (!req.params.empty()) {
+      res.set_content(
+        R"({"error":"parametros no soportados"})",
+        "application/json"
+      );
+      res.status = 400;
+      logger.info(
+        req.method + " " + req.path +
+        " -> " + std::to_string(res.status)
+      );
+      return;
+    }
     try {
       auto body = renderizarUltimoSnapshotPrometheus(storage);
 
