@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CHUSPAPULSE_UTILS_CONSOLE_FORMATTER_HPP
+#define CHUSPAPULSE_UTILS_CONSOLE_FORMATTER_HPP
 
 #include <map>
 #include <string>
@@ -67,3 +68,4 @@ std::string formatAsTable(const chuspapulse::core::Snapshot& snap);
  *             legacy ConsoleFormatterTest.
  */
 void printMetrics(const std::map<std::string, double>& data);
+#endif // CHUSPAPULSE_UTILS_CONSOLE_FORMATTER_HPP
