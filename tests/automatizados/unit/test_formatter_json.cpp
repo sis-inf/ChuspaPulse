@@ -29,6 +29,25 @@ chuspapulse::core::Snapshot crearSnapshotConocido()
     return snapshot;
 }
 
+bool llavesBalanceadas(const std::string& texto)
+{
+    int balance = 0;
+
+    for (char c : texto) {
+        if (c == '{') {
+            ++balance;
+        } else if (c == '}') {
+            --balance;
+
+            if (balance < 0) {
+                return false;
+            }
+        }
+    }
+
+    return balance == 0;
+}
+
 }
 
 TEST(FormatterJSONTest, ResultadoNoEsVacio)
@@ -214,4 +233,34 @@ TEST(FormatterJSONTest, ResultadoEsJSONValido)
     });
 
     EXPECT_TRUE(resultado.is_object());
+}
+
+TEST(FormatterJSONTest, ContieneCpu)
+{
+    chuspapulse::core::Snapshot snapshot = crearSnapshotConocido();
+    chuspapulse::formatters::FormatterJSON formatter;
+
+    const std::string resultado = formatter.formatear(snapshot);
+
+    EXPECT_NE(resultado.find("cpu"), std::string::npos);
+}
+
+TEST(FormatterJSONTest, ContieneTimestamp)
+{
+    chuspapulse::core::Snapshot snapshot = crearSnapshotConocido();
+    chuspapulse::formatters::FormatterJSON formatter;
+
+    const std::string resultado = formatter.formatear(snapshot);
+
+    EXPECT_NE(resultado.find("timestamp"), std::string::npos);
+}
+
+TEST(FormatterJSONTest, LlavesEstanBalanceadas)
+{
+    chuspapulse::core::Snapshot snapshot = crearSnapshotConocido();
+    chuspapulse::formatters::FormatterJSON formatter;
+
+    const std::string resultado = formatter.formatear(snapshot);
+
+    EXPECT_TRUE(llavesBalanceadas(resultado));
 }
