@@ -11,11 +11,21 @@ namespace chuspapulse::http {
  * El handler expone el snapshot más reciente guardado en Storage por el
  * sampler, en el formato de exposición de texto de Prometheus
  * (`text/plain; version=0.0.4`), con el mismo contenido que
- * /metrics/prometheus.
+ * /metrics/prometheus cuando hay datos.
  *
+ * El endpoint no recibe parámetros: cualquier parámetro o query string
+ * se rechaza (ver el caso HTTP 400 más abajo).
+ *
+ * - Si la petición incluye parámetros o query string: responde con
+ *   HTTP 400 y el JSON `{"error":"parametros no soportados"}`
+ *   (application/json).
  * - Si hay datos: responde con HTTP 200 y las métricas.
- * - Si todavía no hay datos: responde con HTTP 503 y un JSON de error.
- * - Si falla la lectura del almacenamiento: responde con HTTP 500.
+ * - Si todavía no hay datos: responde con HTTP 503 y el JSON
+ *   `{"error":"no data available"}` (application/json). A diferencia de
+ *   /metrics/prometheus, que en ese caso responde 200 con cuerpo vacío.
+ * - Si falla la lectura del almacenamiento o la generación de las métricas:
+ *   responde con HTTP 500 y el JSON `{"error":"error interno"}`
+ *   (application/json).
  *
  * Cada request se registra en el log con nivel INFO incluyendo
  * método, ruta y código de respuesta.
