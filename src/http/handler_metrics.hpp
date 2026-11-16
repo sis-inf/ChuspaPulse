@@ -13,8 +13,12 @@ namespace chuspapulse::http {
  * (`text/plain; version=0.0.4`), con el mismo contenido que
  * /metrics/prometheus cuando hay datos.
  *
- * El endpoint no recibe parámetros: la query string se ignora.
+ * El endpoint no recibe parámetros: cualquier parámetro o query string
+ * se rechaza (ver el caso HTTP 400 más abajo).
  *
+ * - Si la petición incluye parámetros o query string: responde con
+ *   HTTP 400 y el JSON `{"error":"parametros no soportados"}`
+ *   (application/json).
  * - Si hay datos: responde con HTTP 200 y las métricas.
  * - Si todavía no hay datos: responde con HTTP 503 y el JSON
  *   `{"error":"no data available"}` (application/json). A diferencia de
