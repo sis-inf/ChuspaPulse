@@ -34,7 +34,7 @@ TEST(FormatterTextTest, FormateaTimestampYValorDeCpu) {
     std::string resultado = formatter.formatear(snapshot);
 
     EXPECT_NE(resultado.find("1970-01-01T00:00:00Z"), std::string::npos);
-    EXPECT_NE(resultado.find("45.3"), std::string::npos);
+    EXPECT_NE(resultado.find("CPU       : 45.3    %"), std::string::npos);
 }
 
 TEST(FormatterTextTest, ManejaSnapshotSinMetricas) {
@@ -46,7 +46,7 @@ TEST(FormatterTextTest, ManejaSnapshotSinMetricas) {
     std::string resultado = formatter.formatear(snapshot);
 
     EXPECT_NE(resultado.find("1970-01-01T00:00:00Z"), std::string::npos);
-    EXPECT_NE(resultado.find("0.0"), std::string::npos);
+    EXPECT_NE(resultado.find("CPU       : 0.0     %"), std::string::npos);
 }
 
 TEST(FormatterTextTest, FormateaHistorialDeSnapshots) {
@@ -70,8 +70,8 @@ TEST(FormatterTextTest, FormateaHistorialDeSnapshots) {
 
     EXPECT_NE(resultado.find("1970-01-01T00:00:00Z"), std::string::npos);
     EXPECT_NE(resultado.find("1970-01-01T00:00:01Z"), std::string::npos);
-    EXPECT_NE(resultado.find("45.3"), std::string::npos);
-    EXPECT_NE(resultado.find("60.0"), std::string::npos);
+    EXPECT_NE(resultado.find("CPU       : 45.3    %"), std::string::npos);
+    EXPECT_NE(resultado.find("CPU       : 60.0    %"), std::string::npos);
 }
 
 // Pruebas adicionales de casos borde
@@ -87,7 +87,7 @@ TEST(FormatterTextTest, IgnoraMetricasDesconocidas) {
 
     std::string resultado = formatter.formatear(snapshot);
 
-    EXPECT_NE(resultado.find("0.0"), std::string::npos);
+    EXPECT_NE(resultado.find("CPU       : 0.0     %"), std::string::npos);
     EXPECT_NE(resultado.find("0.0 B/0.0 B"), std::string::npos);
 }
 
@@ -101,7 +101,7 @@ TEST(FormatterTextTest, FormateaCpuConValorCero) {
 
     std::string resultado = formatter.formatear(snapshot);
 
-    EXPECT_NE(resultado.find("0.0"), std::string::npos);
+    EXPECT_NE(resultado.find("CPU       : 0.0     %"), std::string::npos);
 }
 
 TEST(FormatterTextTest, FormateaCpuConValorNegativo) {
