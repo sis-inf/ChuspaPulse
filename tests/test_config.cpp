@@ -36,4 +36,4 @@ TEST(ErrorConfigTest, WhatPreservesMessage) {
     EXPECT_STREQ(error.what(), "error de prueba");
 }
 
-} // namespace chuspapulse::config
+} // namespace chuspapulse::config
