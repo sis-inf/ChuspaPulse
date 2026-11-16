@@ -451,14 +451,35 @@ int main(int argc, char* argv[]) {
     });
 
     // GET /version
+    // - 200: JSON con la version (application/json), generado por handleVersion().
+    // - 400: JSON {"error":"parametros no soportados"} si la peticion incluye
+    //        parametros o query string.
+    // - 500: JSON {"error":"error interno"} si falla la generacion de la respuesta.
 server.Get("/version", [](
-    const httplib::Request&,
+    const httplib::Request& req,
     httplib::Response& res)
 {
-    res.set_content(
-        pulso::http::handleVersion(),
-        "application/json"
-    );
+    if (!req.params.empty()) {
+        res.status = 400;
+        res.set_content(
+            R"({"error":"parametros no soportados"})",
+            "application/json"
+        );
+        return;
+    }
+
+    try {
+        res.set_content(
+            pulso::http::handleVersion(),
+            "application/json"
+        );
+    } catch (...) {
+        res.status = 500;
+        res.set_content(
+            R"({"error":"error interno"})",
+            "application/json"
+        );
+    }
 });
 server.Get("/config", handle_config);
 
