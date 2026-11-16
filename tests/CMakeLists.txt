@@ -292,3 +292,16 @@ target_link_libraries(test_bateria_collector PRIVATE
     GTest::gtest_main
 )
 gtest_discover_tests(test_bateria_collector)
+
+add_executable(test_ram_usage_unit
+    automatizados/unit/test_ram_usage.cpp
+    ${PROJECT_SOURCE_DIR}/src/collectors/memory/ram_usage.cpp
+)
+target_include_directories(test_ram_usage_unit PRIVATE
+    ${PROJECT_SOURCE_DIR}/src
+)
+target_link_libraries(test_ram_usage_unit PRIVATE
+    GTest::gtest
+    GTest::gtest_main
+)
+gtest_discover_tests(test_ram_usage_unit TEST_PREFIX "unit_")
