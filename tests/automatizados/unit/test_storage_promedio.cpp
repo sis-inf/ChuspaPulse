@@ -71,7 +71,7 @@ TEST_F(StoragePromedioTest, PromedioCPU)
     EXPECT_TRUE(encontrado);
 }
 
-// 2. Ventana pequeÃ±a: solo debe considerar el snapshot mÃ¡s reciente
+// 2. Ventana pequeña: solo debe considerar el snapshot más reciente
 TEST_F(StoragePromedioTest, VentanaSinDatosAntiguos)
 {
     chuspapulse::storage::Storage storage(dbPath_);
