@@ -279,3 +279,16 @@ target_link_libraries(test_health_integration PRIVATE
     Threads::Threads
 )
 gtest_discover_tests(test_health_integration)
+
+add_executable(test_bateria_collector
+    automatizados/unit/test_bateria_collector.cpp
+    ${PROJECT_SOURCE_DIR}/src/collectors/bateria/bateria_collector.cpp
+)
+target_include_directories(test_bateria_collector PRIVATE
+    ${PROJECT_SOURCE_DIR}/src
+)
+target_link_libraries(test_bateria_collector PRIVATE
+    GTest::gtest
+    GTest::gtest_main
+)
+gtest_discover_tests(test_bateria_collector)

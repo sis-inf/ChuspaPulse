@@ -9,7 +9,7 @@ En el proyecto coexisten dos estructuras de configuración con responsabilidades
 ## Estructura `Config`
 
 - **Propósito**: Configuración completa del servidor, sampler y almacenamiento. Define el comportamiento general del sistema en modo normal.
-- **Origen de los datos**: Archivo `pulso.toml` (ruta por defecto; se puede cambiar con `--config <ruta>`) y variables de entorno `PULSO_*`, que tienen prioridad sobre el archivo. Si el archivo no existe, se usan los valores por defecto.
+- **Origen de los datos**: Archivo `pulso.toml` (el que incluye el repositorio; el programa busca primero `chuspapulse.toml` y, si no existe, usa `pulso.toml`; se puede indicar otra ruta con `--config <ruta>`) y variables de entorno `CHUSPAPULSE_*`, que tienen prioridad sobre el archivo. Si el archivo no existe, se usan los valores por defecto.
 - **Ámbito de uso**: Utilizada por el servidor principal, el sampler y los módulos de almacenamiento durante toda la ejecución.
 - **Campos principales**:
   - `servidor.host` y `servidor.puerto` – dirección y puerto del servidor HTTP.
@@ -41,7 +41,7 @@ En el proyecto coexisten dos estructuras de configuración con responsabilidades
 
 | Aspecto               | `Config`                                    | `MonitorConfig`                               |
 |-----------------------|---------------------------------------------|-----------------------------------------------|
-| **Origen**            | Archivo `pulso.toml` y variables `PULSO_*`  | Argumentos de CLI (`--metrics`, `--interval`) |
+| **Origen**            | Archivo `pulso.toml` y variables `CHUSPAPULSE_*`  | Argumentos de CLI (`--metrics`, `--interval`) |
 | **Formato de tiempo** | `sampler.intervalo_segundos` en segundos    | `interval_ms` en milisegundos                 |
 | **Métricas**          | Límites de alerta en `[umbrales]`           | Activación booleana por recurso (cpu/ram/disk) |
 | **Uso**               | Servidor, sampler, storage, alertas         | Selección de collectors (`--once` y servidor) |
@@ -51,7 +51,7 @@ En el proyecto coexisten dos estructuras de configuración con responsabilidades
 
 ## ¿Cuál usar?
 
-- **Puerto, host, base de datos, intervalo de muestreo, umbrales de alerta o nivel de log** → `Config` (`pulso.toml` o variables `PULSO_*`).
+- **Puerto, host, base de datos, intervalo de muestreo, umbrales de alerta o nivel de log** → `Config` (`pulso.toml` o variables `CHUSPAPULSE_*`).
 - **Activar solo algunas métricas (`cpu`, `ram`, `disk`) en una ejecución concreta** → `MonitorConfig` (`--metrics`).
 - **Un ajuste permanente nuevo** → agrégalo a `Config` y a su sección en `pulso.toml`.
 - **Un flag de CLI para una ejecución puntual** → agrégalo a `CliOptions`.
