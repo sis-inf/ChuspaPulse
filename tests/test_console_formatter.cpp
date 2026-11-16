@@ -7,7 +7,7 @@
 #include <sstream>
 #include <string>
 
-// Declaración de la función legacy.
+// Declaración de la función
 void printMetrics(const std::map<std::string, double> &data);
 
 TEST(ConsoleFormatterTest, OutputContainsMetrics) {
@@ -15,12 +15,13 @@ TEST(ConsoleFormatterTest, OutputContainsMetrics) {
 
   std::ostringstream output;
 
-  // Redirigir std::cout.
+  // Redirigir std::cout
   auto *oldCout = std::cout.rdbuf(output.rdbuf());
 
+  // Llamar formateador con datos mock
   printMetrics(data);
 
-  // Restaurar std::cout.
+  // Limpiar/restaurar stream
   std::cout.rdbuf(oldCout);
 
   std::string result = output.str();
@@ -31,7 +32,6 @@ TEST(ConsoleFormatterTest, OutputContainsMetrics) {
 
 static chuspapulse::core::Snapshot crearSnapshotConMetricas() {
   const double gigabyte = 1024.0 * 1024.0 * 1024.0;
-
   return {1700000000,
           {{"cpu.usage", 25.5, "%", 1700000000},
            {"ram.used", 2.0 * gigabyte, "bytes", 1700000000},
@@ -45,14 +45,11 @@ static chuspapulse::core::Snapshot crearSnapshotConMetricas() {
 static std::string obtenerFila(const std::string &tabla,
                                const std::string &etiqueta) {
   const auto inicio = tabla.find("| " + etiqueta);
-
   if (inicio == std::string::npos) {
     return "";
   }
-
   return tabla.substr(inicio, tabla.find('\n', inicio) - inicio);
 }
-
 TEST(ConsoleFormatterTest, TablaIncluyeEncabezados) {
   const auto tabla = formatAsTable(crearSnapshotConMetricas());
 
@@ -81,8 +78,7 @@ TEST(ConsoleFormatterTest, SnapshotVacioNoLanzaExcepciones) {
   EXPECT_NO_THROW(tabla = formatAsTable(snapshot));
   EXPECT_FALSE(tabla.empty());
   EXPECT_NE(obtenerFila(tabla, "CPU").find("0.0 %"), std::string::npos);
-  EXPECT_NE(obtenerFila(tabla, "RAM").find("0.0 / 0.0 GB"),
-            std::string::npos);
+  EXPECT_NE(obtenerFila(tabla, "RAM").find("0.0 / 0.0 GB"), std::string::npos);
   EXPECT_NE(obtenerFila(tabla, "Disco").find("0.0 / 0.0 GB"),
             std::string::npos);
   EXPECT_NE(obtenerFila(tabla, "Red").find("0.0 / 0.0 KB/s"),
@@ -93,7 +89,6 @@ TEST(ConsoleFormatterTest, TotalesCeroProducenBarrasVacias) {
   auto snapshot = crearSnapshotConMetricas();
   snapshot.metricas[2].valor = 0.0;
   snapshot.metricas[4].valor = 0.0;
-
   const auto tabla = formatAsTable(snapshot);
 
   EXPECT_NE(obtenerFila(tabla, "RAM").find("[------------------]"),
@@ -106,16 +101,13 @@ TEST(ConsoleFormatterTest, TotalesCeroProducenBarrasVacias) {
 
 TEST(ConsoleFormatterTest, BarraCpuRespetaLosLimitesDePorcentaje) {
   auto snapshot = crearSnapshotConMetricas();
-
   snapshot.metricas[0].valor = 150.0;
   const auto tablaSuperior = formatAsTable(snapshot);
-
   EXPECT_NE(obtenerFila(tablaSuperior, "CPU").find("[##################]"),
             std::string::npos);
 
   snapshot.metricas[0].valor = -20.0;
   const auto tablaInferior = formatAsTable(snapshot);
-
   EXPECT_NE(obtenerFila(tablaInferior, "CPU").find("[------------------]"),
             std::string::npos);
 }
@@ -123,7 +115,6 @@ TEST(ConsoleFormatterTest, BarraCpuRespetaLosLimitesDePorcentaje) {
 TEST(ConsoleFormatterTest, AliasDeMetricasConservanLaTabla) {
   const auto original = crearSnapshotConMetricas();
   auto alias = original;
-
   alias.metricas[0].nombre = "cpu";
   alias.metricas[1].nombre = "ram.usado";
   alias.metricas[3].nombre = "disco.usado";
@@ -133,8 +124,6 @@ TEST(ConsoleFormatterTest, AliasDeMetricasConservanLaTabla) {
 
   EXPECT_EQ(formatAsTable(alias), formatAsTable(original));
 }
-
-// Casos borde adicionales del Issue #1684.
 
 TEST(ConsoleFormatterTest, PrintMetricsOmiteValoresNegativos) {
   const std::map<std::string, double> data = {
