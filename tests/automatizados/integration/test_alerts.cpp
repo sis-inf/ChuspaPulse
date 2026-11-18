@@ -2,6 +2,7 @@
 #include <httplib.h>
 #include <nlohmann/json.hpp>
 
+#include <stdexcept>
 #include <string>
 #include <thread>
 #include <vector>
@@ -122,4 +123,60 @@ TEST(SerializarAlertasTest, VariasAlertasConservanOrden) {
     EXPECT_EQ(json["alerts"][0]["message"], "primera \"a\"");
     EXPECT_EQ(json["alerts"][1]["id"], 3);
     EXPECT_EQ(json["alerts"][1]["message"], "tercera\\b");
+}
+
+TEST_F(AlertsEndpointTest, CpuExactamenteEnUmbralNoGeneraAlerta) {
+    snapshot_ = chuspapulse::MetricSnapshot(80.0, 10.0, 10.0, 1.0, 1.0);
+
+    httplib::Client cli("127.0.0.1", port_);
+    auto res = cli.Get("/alerts");
+
+    ASSERT_TRUE(res);
+    EXPECT_EQ(res->status, 200);
+
+    const auto json = nlohmann::json::parse(res->body);
+    ASSERT_TRUE(json["alerts"].is_array());
+    EXPECT_TRUE(json["alerts"].empty());
+}
+
+TEST_F(AlertsEndpointTest, CpuSuperiorAlUmbralGeneraAlerta) {
+    snapshot_ = chuspapulse::MetricSnapshot(80.1, 10.0, 10.0, 1.0, 1.0);
+
+    httplib::Client cli("127.0.0.1", port_);
+    auto res = cli.Get("/alerts");
+
+    ASSERT_TRUE(res);
+    EXPECT_EQ(res->status, 200);
+
+    const auto json = nlohmann::json::parse(res->body);
+    ASSERT_EQ(json["alerts"].size(), 1U);
+    EXPECT_EQ(json["alerts"][0]["id"], 1);
+}
+
+TEST_F(AlertsEndpointTest, CpuNegativaNoGeneraAlerta) {
+    snapshot_ = chuspapulse::MetricSnapshot(-10.0, 10.0, 10.0, 1.0, 1.0);
+
+    httplib::Client cli("127.0.0.1", port_);
+    auto res = cli.Get("/alerts");
+
+    ASSERT_TRUE(res);
+    EXPECT_EQ(res->status, 200);
+
+    const auto json = nlohmann::json::parse(res->body);
+    ASSERT_TRUE(json["alerts"].is_array());
+    EXPECT_TRUE(json["alerts"].empty());
+}
+
+TEST(AlertaUmbralTest, MetricaDesconocidaLanzaExcepcion) {
+    EXPECT_THROW(
+        chuspapulse::alertas::AlertaUmbral("desconocida", 80.0f, '>'),
+        std::invalid_argument
+    );
+}
+
+TEST(AlertaUmbralTest, OperadorInvalidoLanzaExcepcion) {
+    EXPECT_THROW(
+        chuspapulse::alertas::AlertaUmbral("cpu", 80.0f, '='),
+        std::invalid_argument
+    );
 }
