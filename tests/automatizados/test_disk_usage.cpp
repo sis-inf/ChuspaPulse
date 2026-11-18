@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <cmath>
 #include "collectors/disk/disk_usage.cpp"
 
 namespace {
@@ -161,5 +162,50 @@ TEST(DiskCollectorTest, LosValoresCoincidenConLaLecturaDelDisco) {
     ASSERT_EQ(static_cast<size_t>(3), metricas.size());
     EXPECT_LE(metricas[1].valor + metricas[2].valor,
               metricas[0].valor + static_cast<double>(TOLERANCIA));
+}
+
+/**
+ * @brief Una ruta vacia provoca un error de lectura.
+ */
+TEST(DiskUsageTest, RutaVaciaLanzaRuntimeError) {
+    EXPECT_THROW(getDiskUsage(""), std::runtime_error);
+}
+
+/**
+ * @brief Una ruta inexistente dentro de un directorio inexistente falla.
+ */
+TEST(DiskUsageTest, RutaAnidadaInexistenteLanzaRuntimeError) {
+    EXPECT_THROW(
+        getDiskUsage("/chuspapulse/directorio_inexistente/disco"),
+        std::runtime_error
+    );
+}
+
+/**
+ * @brief El espacio libre no puede superar el espacio total.
+ */
+TEST(DiskUsageTest, EspacioLibreNoSuperaTotal) {
+    const DiskUsage uso = getDiskUsage();
+
+    ASSERT_GT(uso.total, static_cast<uint64_t>(0));
+    EXPECT_LE(uso.libre, uso.total);
+    EXPECT_LE(uso.usado, uso.total);
+}
+
+/**
+ * @brief Las metricas entregadas son finitas y no negativas.
+ */
+TEST(DiskCollectorTest, MetricasSonFinitasYNoNegativas) {
+    chuspapulse::collectors::disk::DiskCollector colector;
+
+    const std::vector<chuspapulse::core::Metrica> metricas =
+        colector.recolectar();
+
+    ASSERT_EQ(static_cast<size_t>(3), metricas.size());
+
+    for (const auto& metrica : metricas) {
+        EXPECT_TRUE(std::isfinite(metrica.valor));
+        EXPECT_GE(metrica.valor, 0.0);
+    }
 }
 } // namespace
