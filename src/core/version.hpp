@@ -4,7 +4,7 @@
 #include <string>
 
 namespace chuspapulse {
-    const std::string APP_VERSION = "0.1.0";
+    inline constexpr char APP_VERSION[] = "0.1.0";
 }
 
 #endif
