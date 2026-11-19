@@ -1,3 +1,4 @@
+
 #include <gtest/gtest.h>
 #include <httplib.h>
 
@@ -22,15 +23,15 @@ bool consume_reload_request();
 // Test de integración para validar el endpoint /config
 TEST(IntegrationConfigTest, GetConfigReturns200) {
     // Nota: Asumiendo que el entorno de pruebas levanta el servidor o se prueba de forma local
-    httplib::Client cli("localhost", 8080); // O el puerto configurado en las pruebas
-    
+    httplib::Client cli("localhost", 8080);
+
     auto res = cli.Get("/config");
-    
+
     ASSERT_TRUE(res != nullptr);
     EXPECT_EQ(res->status, 200);
     EXPECT_EQ(res->get_header_value("Content-Type"), "application/json");
-    
-    // Validar que la respuesta contenga los campos requeridos (interval_ms, http_port, log_level, etc.)
+
+    // Validar que la respuesta contenga los campos requeridos
     EXPECT_NE(res->body.find("interval_ms"), std::string::npos);
     EXPECT_NE(res->body.find("http_port"), std::string::npos);
     EXPECT_NE(res->body.find("log_level"), std::string::npos);
@@ -192,6 +193,144 @@ TEST_F(IntegrationCargaConfigTest, NivelLogNoPermitidoLanzaInvalidArgument) {
   EXPECT_THROW(cargar(ruta), std::invalid_argument);
 }
 
+// Pruebas de límites y valores inválidos de los umbrales.
+
+TEST_F(IntegrationCargaConfigTest, UmbralesNegativosLanzanInvalidArgument) {
+  const std::string rutaCpu = escribirArchivo(
+      "[umbrales]\ncpu_max = -1.0\n");
+
+  EXPECT_THROW(cargar(rutaCpu), std::invalid_argument);
+
+  const std::string rutaRam = escribirArchivo(
+      "[umbrales]\nram_max = -1.0\n");
+
+  EXPECT_THROW(cargar(rutaRam), std::invalid_argument);
+
+  const std::string rutaDisco = escribirArchivo(
+      "[umbrales]\ndisco_max = -1.0\n");
+
+  EXPECT_THROW(cargar(rutaDisco), std::invalid_argument);
+}
+
+TEST_F(IntegrationCargaConfigTest, UmbralesMayoresA100LanzanInvalidArgument) {
+  const std::string rutaCpu = escribirArchivo(
+      "[umbrales]\ncpu_max = 100.1\n");
+
+  EXPECT_THROW(cargar(rutaCpu), std::invalid_argument);
+
+  const std::string rutaRam = escribirArchivo(
+      "[umbrales]\nram_max = 100.1\n");
+
+  EXPECT_THROW(cargar(rutaRam), std::invalid_argument);
+
+  const std::string rutaDisco = escribirArchivo(
+      "[umbrales]\ndisco_max = 100.1\n");
+
+  EXPECT_THROW(cargar(rutaDisco), std::invalid_argument);
+}
+
+TEST_F(IntegrationCargaConfigTest, UmbralesEnLimiteInferiorSeAceptan) {
+  const std::string ruta = escribirArchivo(
+      "[umbrales]\n"
+      "cpu_max = 0.0\n"
+      "ram_max = 0.0\n"
+      "disco_max = 0.0\n");
+
+  const Config cfg = cargar(ruta);
+
+  EXPECT_DOUBLE_EQ(cfg.umbrales.cpu_max, 0.0);
+  EXPECT_DOUBLE_EQ(cfg.umbrales.ram_max, 0.0);
+  EXPECT_DOUBLE_EQ(cfg.umbrales.disco_max, 0.0);
+}
+
+TEST_F(IntegrationCargaConfigTest, UmbralesEnLimiteSuperiorSeAceptan) {
+  const std::string ruta = escribirArchivo(
+      "[umbrales]\n"
+      "cpu_max = 100.0\n"
+      "ram_max = 100.0\n"
+      "disco_max = 100.0\n");
+
+  const Config cfg = cargar(ruta);
+
+  EXPECT_DOUBLE_EQ(cfg.umbrales.cpu_max, 100.0);
+  EXPECT_DOUBLE_EQ(cfg.umbrales.ram_max, 100.0);
+  EXPECT_DOUBLE_EQ(cfg.umbrales.disco_max, 100.0);
+}
+
+// Pruebas de valores inválidos del intervalo del sampler.
+
+TEST_F(IntegrationCargaConfigTest, IntervaloCeroLanzaInvalidArgument) {
+  const std::string ruta = escribirArchivo(
+      "[sampler]\nintervalo_segundos = 0\n");
+
+  EXPECT_THROW(cargar(ruta), std::invalid_argument);
+}
+
+TEST_F(IntegrationCargaConfigTest, IntervaloNegativoLanzaInvalidArgument) {
+  const std::string ruta = escribirArchivo(
+      "[sampler]\nintervalo_segundos = -1\n");
+
+  EXPECT_THROW(cargar(ruta), std::invalid_argument);
+}
+
+// Pruebas de límites del puerto del servidor.
+
+TEST_F(IntegrationCargaConfigTest, PuertoCeroLanzaInvalidArgument) {
+  const std::string ruta = escribirArchivo(
+      "[servidor]\npuerto = 0\n");
+
+  EXPECT_THROW(cargar(ruta), std::invalid_argument);
+}
+
+TEST_F(IntegrationCargaConfigTest, PuertoMayorA65535LanzaInvalidArgument) {
+  const std::string ruta = escribirArchivo(
+      "[servidor]\npuerto = 65536\n");
+
+  EXPECT_THROW(cargar(ruta), std::invalid_argument);
+}
+
+TEST_F(IntegrationCargaConfigTest, PuertoEnLimiteInferiorSeAcepta) {
+  const std::string ruta = escribirArchivo(
+      "[servidor]\npuerto = 1\n");
+
+  const Config cfg = cargar(ruta);
+
+  EXPECT_EQ(cfg.servidor.puerto, 1);
+}
+
+TEST_F(IntegrationCargaConfigTest, PuertoEnLimiteSuperiorSeAcepta) {
+  const std::string ruta = escribirArchivo(
+      "[servidor]\npuerto = 65535\n");
+
+  const Config cfg = cargar(ruta);
+
+  EXPECT_EQ(cfg.servidor.puerto, 65535);
+}
+
+// Pruebas de valores inválidos mediante variables de entorno.
+
+TEST_F(IntegrationCargaConfigTest, PuertoInvalidoEnVariableEntornoLanzaError) {
+  definirVariable("CHUSPAPULSE_SERVIDOR_PUERTO", "65536");
+
+  EXPECT_THROW(cargar(rutaInexistente()), std::invalid_argument);
+}
+
+TEST_F(IntegrationCargaConfigTest, IntervaloCeroEnVariableEntornoLanzaError) {
+  definirVariable("CHUSPAPULSE_SAMPLER_INTERVALO_SEGUNDOS", "0");
+
+  EXPECT_THROW(cargar(escribirArchivo(kTomlValido)),
+               std::invalid_argument);
+}
+
+TEST_F(IntegrationCargaConfigTest, IntervaloNegativoEnVariableEntornoLanzaError) {
+  definirVariable("CHUSPAPULSE_SAMPLER_INTERVALO_SEGUNDOS", "-5");
+
+  EXPECT_THROW(cargar(escribirArchivo(kTomlValido)),
+               std::invalid_argument);
+}
+
+// Pruebas de recarga de configuración.
+
 TEST_F(IntegrationCargaConfigTest, RecargarArchivoValidoActualizaLaConfiguracion) {
   Config cfg = chuspapulse::config::porDefecto();
   const std::string ruta = escribirArchivo(kTomlValido);
@@ -262,7 +401,9 @@ TEST(SenalRecargaTest, SighupSolicitaRecargaSinTerminarElProceso) {
   GTEST_SKIP() << "La plataforma no tiene SIGHUP";
 #endif
 }
+
 // Errores de /alerts/history: 400 para entradas invalidas, 200 para validas.
+
 class IntegrationAlertsHistoryErroresTest : public ::testing::Test {
 protected:
   httplib::Server servidor_;
