@@ -371,3 +371,53 @@ TEST_F(ConfigCompletoTest, IntervalCliFueraDeRangoSeRechaza)
     EXPECT_FALSE(opciones.interval_cli);
     EXPECT_EQ(chuspapulse::cli::resolver_intervalo_ms(opciones, cfg), 10000);
 }
+// --- Casos borde: umbrales/métricas y condiciones de error (issue #1693) ---
+
+TEST_F(ConfigCompletoTest, UmbralesEnLimitesSeAceptan)
+{
+    std::ofstream out(archivo_);
+    out << "[alertas]\n"
+        << "cpu_max = 0.0\n"
+        << "ram_max = 0.0\n"
+        << "disco_max = 100.0\n";
+    out.close();
+
+    const auto cfg = chuspapulse::config::cargar(archivo_);
+    EXPECT_DOUBLE_EQ(cfg.umbrales.cpu_max, 0.0);
+    EXPECT_DOUBLE_EQ(cfg.umbrales.ram_max, 0.0);
+    EXPECT_DOUBLE_EQ(cfg.umbrales.disco_max, 100.0);
+}
+
+TEST_F(ConfigCompletoTest, UmbralesFueraDeRangoLanzanExcepcion)
+{
+    for (const std::string campo : {"cpu_max", "ram_max", "disco_max"}) {
+        for (const std::string valor : {"-1.0", "100.1", "150.0"}) {
+            {
+                std::ofstream out(archivo_);
+                out << "[alertas]\n"
+                    << campo << " = " << valor << "\n";
+                out.close();
+            }
+            EXPECT_THROW(chuspapulse::config::cargar(archivo_),
+                         std::invalid_argument)
+                << campo << " = " << valor;
+        }
+    }
+}
+
+TEST_F(ConfigCompletoTest, IntervaloCeroEnTomlLanzaExcepcion)
+{
+    crearArchivoConIntervalo(0);
+    EXPECT_THROW(chuspapulse::config::cargar(archivo_),
+                 std::invalid_argument);
+}
+
+TEST_F(ConfigCompletoTest, ArchivoTomlInvalidoLanzaExcepcion)
+{
+    std::ofstream out(archivo_);
+    out << "[servidor\npuerto = no_valido ===\n";
+    out.close();
+
+    EXPECT_THROW(chuspapulse::config::cargar(archivo_),
+                 std::exception);
+}
