@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CHUSPAPULSE_UTILS_LOGGING_LOGGER_HPP
+#define CHUSPAPULSE_UTILS_LOGGING_LOGGER_HPP
 
 #include <mutex>
 #include <string>
@@ -9,7 +10,7 @@ namespace chuspapulse::utils::logging {
  * @brief Niveles de log disponibles para el Logger.
  * DEBUG=0, INFO=1, WARN=2, ERROR=3
  */
-enum class LogLevel {
+enum class LogLevel : int {
     DEBUG = 0,
     INFO  = 1,
     WARN  = 2,
@@ -43,3 +44,5 @@ private:
 };
 
 } // namespace chuspapulse::utils::logging
+
+#endif // CHUSPAPULSE_UTILS_LOGGING_LOGGER_HPP
