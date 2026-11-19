@@ -1,5 +1,5 @@
 #include "collector_cpu.hpp"
-#include "../../core/error_recoleccion.hpp"
+#include "../../collectors/error_recoleccion.hpp"
 
 #include <fstream>
 #include <thread>
@@ -8,6 +8,7 @@
 #include <vector>
 #include <cctype>
 #include <string>
+#include <ctime>
 
 namespace chuspapulse::collectors {
 
@@ -99,13 +100,14 @@ std::vector<chuspapulse::core::Metrica> CollectorCPU::recolectar() {
 
     double usage = calcularUso(a, b);
     int cores    = contarCores();
+    const auto timestamp = static_cast<std::int64_t>(std::time(nullptr));
 
     if (usage < 0)   usage = 0;
     if (usage > 100) usage = 100;
 
     return {
-        chuspapulse::core::Metrica{"cpu.usage", usage, "porcentaje"},
-        chuspapulse::core::Metrica{"cpu.cores", cores, "cantidad"}
+        chuspapulse::core::Metrica{"cpu.usage", usage, "porcentaje", timestamp},
+        chuspapulse::core::Metrica{"cpu.cores", static_cast<double>(cores), "cantidad", timestamp}
     };
 }
 

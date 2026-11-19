@@ -1,4 +1,4 @@
-##include "cpu_usage.hpp"
+#include "cpu_usage.hpp"
 #include "../../collectors/error_recoleccion.hpp"
 #include <fstream>
 #include <sstream>
@@ -99,48 +99,3 @@ double ObtenerUsoCPU() {
 
   return uso;
 }
-
-/// @brief Obtiene el número de núcleos de CPU del sistema.
-/// @return Número de núcleos lógicos disponibles.
-static int ObtenerNucleosCPU() {
-  int nucleos = 0;
-  std::ifstream archivo("/proc/stat");
-  if (!archivo.is_open()) {
-    return 0;
-  }
-  std::string linea;
-  while (std::getline(archivo, linea)) {
-    if (linea.rfind("cpu", 0) == 0 && linea.size() > 3 &&
-        std::isdigit(linea[3])) {
-      nucleos++;
-    }
-  }
-  return nucleos;
-}
-
-// Implementación de CollectorCPU
-namespace chuspapulse::collectors {
-
-std::string CollectorCPU::nombre() const {
-  return "cpu";
-}
-
-std::vector<chuspapulse::core::Metrica> CollectorCPU::recolectar() {
-  std::int64_t ahora = static_cast<std::int64_t>(std::time(nullptr));
-
-  chuspapulse::core::Metrica uso;
-  uso.name      = "cpu.usage";
-  uso.value     = ObtenerUsoCPU();
-  uso.unit      = "porcentaje";
-  uso.timestamp = ahora;
-
-  chuspapulse::core::Metrica nucleos;
-  nucleos.name      = "cpu.cores";
-  nucleos.value     = static_cast<double>(ObtenerNucleosCPU());
-  nucleos.unit      = "nucleos";
-  nucleos.timestamp = ahora;
-
-  return { uso, nucleos };
-}
-
-}  // namespace chuspapulse::collectors

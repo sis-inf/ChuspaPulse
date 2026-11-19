@@ -1,7 +1,7 @@
 #pragma once
 
-#include <SQLiteCpp/SQLiteCpp.h>
 #include <cstdint>
+#include <SQLiteCpp/SQLiteCpp.h>
 #include <vector>
 #include <functional>
 #include <string>

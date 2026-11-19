@@ -49,17 +49,3 @@ LoadAvgInfo getLoadAverage() {
 
     return info;
 }
-
-
-namespace chuspapulse::collectors {
-
-std::vector<chuspapulse::core::Metrica> LoadAvgCollector::colectar() const {
-    LoadAvgInfo info = getLoadAverage();
-    return {
-        {"system.loadavg.1m", static_cast<double>(info.load1)},
-        {"system.loadavg.5m", static_cast<double>(info.load5)},
-        {"system.loadavg.15m", static_cast<double>(info.load15)}
-    };
-}
-
-} // namespace chuspapulse::collectors
