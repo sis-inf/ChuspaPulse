@@ -5,7 +5,6 @@
 #include <toml++/toml.hpp>
 
 #include <filesystem>
-#include <format>
 #include <string>
 #include <fstream>
 #include <sstream>
@@ -16,37 +15,17 @@ namespace chuspapulse::config {
 
 namespace {
 
-/// Lee un valor escalar del nodo TOML; si no existe devuelve `porDefecto`.
 template <typename T>
-T leer(const toml::table& tabla,
-       std::string_view seccion,
-       std::string_view clave,
-       T porDefecto)
+T leer(toml::node_view<const toml::node> nodo, T porDefecto)
 {
-    if (auto* sec = tabla[seccion].as_table()) {
-        if (auto nodo = (*sec)[clave]) {
-            if (auto val = nodo.value<T>()) {
-                return *val;
-            }
-        }
-    }
-
-    return porDefecto;
+    return nodo.value<T>().value_or(porDefecto);
 }
 
-/// Sobrecarga sin sección (claves en la raíz del documento).
-template <typename T>
-T leer(const toml::table& tabla,
-       std::string_view clave,
-       T porDefecto)
+toml::node_view<const toml::node> preferir(
+    toml::node_view<const toml::node> nuevo,
+    toml::node_view<const toml::node> anterior)
 {
-    if (auto nodo = tabla[clave]) {
-        if (auto val = nodo.value<T>()) {
-            return *val;
-        }
-    }
-
-    return porDefecto;
+    return nuevo ? nuevo : anterior;
 }
 
 
@@ -100,63 +79,60 @@ Config mapear(const toml::table& doc)
 {
     Config cfg;
 
-    // [servidor]
+    const auto http = doc["http"];
+    const auto servidor = doc["servidor"];
     cfg.servidor.host =
-        leer<std::string>(doc, "servidor", "host", cfg.servidor.host);
+        leer(preferir(http["host"], servidor["host"]), cfg.servidor.host);
 
     // El puerto se valida sobre el valor original del TOML, antes de
     // convertirlo a int (así 4294975376 no se trunca a 8080).
-    if (auto* sec = doc["servidor"].as_table()) {
-        if (auto nodo = (*sec)["puerto"]) {
-            auto valor = nodo.value_exact<int64_t>();
-            if (!valor) {
-                throw std::invalid_argument(
-                    "Valor inválido para puerto: debe ser un entero entre 1 y 65535"
-                );
-            }
-            if (*valor < 1 || *valor > 65535) {
-                throw std::invalid_argument(
-                    "Valor inválido para puerto: " + std::to_string(*valor) +
-                    " (debe estar entre 1 y 65535)"
-                );
-            }
-            cfg.servidor.puerto = static_cast<int>(*valor);
+    if (auto nodo = preferir(http["puerto"], servidor["puerto"])) {
+        auto valor = nodo.value_exact<int64_t>();
+        if (!valor) {
+            throw std::invalid_argument(
+                "Valor inválido para puerto: debe ser un entero entre 1 y 65535"
+            );
         }
+        if (*valor < 1 || *valor > 65535) {
+            throw std::invalid_argument(
+                "Valor inválido para puerto: " + std::to_string(*valor) +
+                " (debe estar entre 1 y 65535)"
+            );
+        }
+        cfg.servidor.puerto = static_cast<int>(*valor);
     }
 
 
     // [sampler]
     cfg.sampler.intervalo_segundos =
-        leer<int64_t>(doc, "sampler", "intervalo_segundos",
+        leer<int64_t>(doc["sampler"]["intervalo_segundos"],
                       cfg.sampler.intervalo_segundos);
 
 
     // [storage]
     cfg.storage.ruta_db =
-        leer<std::string>(doc, "storage", "ruta_db",
-                          cfg.storage.ruta_db);
+        leer(doc["storage"]["ruta_db"], cfg.storage.ruta_db);
 
-    // [umbrales]
+    const auto alertas = doc["alertas"];
+    const auto umbrales = doc["umbrales"];
     cfg.umbrales.cpu_max =
-        leer<double>(doc, "umbrales", "cpu_max", cfg.umbrales.cpu_max);
+        leer(preferir(alertas["cpu_max"], umbrales["cpu_max"]), cfg.umbrales.cpu_max);
 
     cfg.umbrales.ram_max =
-        leer<double>(doc, "umbrales", "ram_max", cfg.umbrales.ram_max);
+        leer(preferir(alertas["ram_max"], umbrales["ram_max"]), cfg.umbrales.ram_max);
 
     cfg.umbrales.disco_max =
-        leer<double>(doc, "umbrales", "disco_max", cfg.umbrales.disco_max);
+        leer(preferir(alertas["disco_max"], umbrales["disco_max"]), cfg.umbrales.disco_max);
 
 
 
-    // nivel_log (clave raíz)
+    const auto general = doc["general"];
     cfg.nivel_log =
-        leer<std::string>(doc, "nivel_log", cfg.nivel_log);
+        leer(preferir(general["nivel_log"], doc["nivel_log"]), cfg.nivel_log);
 
 
-    // output_format (clave raíz)
     cfg.output_format =
-        leer<std::string>(doc, "output_format",
-                          cfg.output_format);
+        leer(preferir(general["output_format"], doc["output_format"]), cfg.output_format);
 
 
     aplicarEnv(cfg);

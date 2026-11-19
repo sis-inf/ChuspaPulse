@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../config/config.hpp"
+#include <filesystem>
 #include <string>
 
 namespace chuspapulse::cli {
@@ -9,6 +10,29 @@ namespace chuspapulse::cli {
 /// El minimo mantiene la regla documentada "mayor a 100 ms".
 constexpr long long INTERVALO_MIN_MS = 101;
 constexpr long long INTERVALO_MAX_MS = 3600000; // 1 hora
+
+/// Archivo de configuracion por defecto, relativo al directorio de trabajo.
+constexpr const char* CONFIG_POR_DEFECTO = "chuspapulse.toml";
+/// Nombre historico del archivo de configuracion, aceptado por compatibilidad.
+constexpr const char* CONFIG_HISTORICO = "pulso.toml";
+
+/**
+ * @brief Ruta inicial del archivo de configuracion TOML.
+ *
+ * Devuelve "chuspapulse.toml". Si ese archivo no existe pero si existe
+ * "pulso.toml" (nombre historico), devuelve "pulso.toml" para no perder
+ * la configuracion de instalaciones anteriores. La opcion --config <ruta>
+ * reemplaza este valor.
+ */
+inline std::string config_path_por_defecto()
+{
+    std::error_code ec;
+    if (!std::filesystem::exists(CONFIG_POR_DEFECTO, ec) &&
+        std::filesystem::exists(CONFIG_HISTORICO, ec)) {
+        return CONFIG_HISTORICO;
+    }
+    return CONFIG_POR_DEFECTO;
+}
 
 /**
  * @brief Opciones extendidas de linea de comandos.
@@ -20,7 +44,9 @@ struct CliOptions {
     chuspapulse::config::MonitorConfig monitor;
     bool once = false;
     std::string format = "json";
-    std::string config_path = "pulso.toml";
+    /// Archivo TOML a cargar: "chuspapulse.toml" por defecto, con fallback a
+    /// "pulso.toml" (ver config_path_por_defecto). Se cambia con --config.
+    std::string config_path = config_path_por_defecto();
     /// true si --interval se paso por linea de comandos.
     bool interval_cli = false;
 };

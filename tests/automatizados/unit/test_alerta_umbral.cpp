@@ -190,3 +190,39 @@ TEST(AlertaUmbralTest, MensajeContieneMetricaYOperador)
     EXPECT_NE(msg.find("disk"), std::string::npos);
     EXPECT_NE(msg.find('>'), std::string::npos);
 }
+
+TEST(AlertaUmbralTest, ConstructorRechazaMetricaConMayusculas)
+{
+    EXPECT_THROW(
+        AlertaUmbral("CPU", 50.0f, '>'),
+        std::invalid_argument
+    );
+}
+
+TEST(AlertaUmbralTest, ConstructorRechazaMetricaConEspacios)
+{
+    EXPECT_THROW(
+        AlertaUmbral(" cpu", 50.0f, '>'),
+        std::invalid_argument
+    );
+}
+
+TEST(AlertaUmbralTest, OperadorMayorDisparaJustoPorEncimaDelUmbral)
+{
+    AlertaUmbral alerta("cpu", 50.0f, '>');
+
+    MetricSnapshot snap;
+    snap.cpu = 50.0001;
+
+    EXPECT_TRUE(alerta.evaluar(snap));
+}
+
+TEST(AlertaUmbralTest, OperadorMenorDisparaJustoPorDebajoDelUmbral)
+{
+    AlertaUmbral alerta("ram", 20.0f, '<');
+
+    MetricSnapshot snap;
+    snap.ram = 19.9999;
+
+    EXPECT_TRUE(alerta.evaluar(snap));
+}

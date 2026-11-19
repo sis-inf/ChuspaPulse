@@ -78,6 +78,74 @@ TEST_F(ConfigCompletoTest, CargaArchivoValido)
     EXPECT_EQ(cfg.sampler.intervalo_segundos, 5);
 }
 
+TEST_F(ConfigCompletoTest, CargaTodasLasSeccionesDocumentadas)
+{
+    std::ofstream out(archivo_);
+    out << "[general]\nnivel_log = \"warn\"\noutput_format = \"csv\"\n"
+        << "[http]\nhost = \"127.0.0.1\"\npuerto = 9011\n"
+        << "[sampler]\nintervalo_segundos = 25\n"
+        << "[storage]\nruta_db = \"pruebas.db\"\n"
+        << "[alertas]\ncpu_max = 41.5\nram_max = 51\ndisco_max = 61.5\n";
+    out.close();
+
+    const auto cfg = chuspapulse::config::cargar(archivo_);
+    EXPECT_EQ(cfg.nivel_log, "warn");
+    EXPECT_EQ(cfg.output_format, "csv");
+    EXPECT_EQ(cfg.servidor.host, "127.0.0.1");
+    EXPECT_EQ(cfg.servidor.puerto, 9011);
+    EXPECT_EQ(cfg.sampler.intervalo_segundos, 25);
+    EXPECT_EQ(cfg.storage.ruta_db, "pruebas.db");
+    EXPECT_DOUBLE_EQ(cfg.umbrales.cpu_max, 41.5);
+    EXPECT_DOUBLE_EQ(cfg.umbrales.ram_max, 51);
+    EXPECT_DOUBLE_EQ(cfg.umbrales.disco_max, 61.5);
+}
+
+TEST_F(ConfigCompletoTest, UsaValoresAnterioresCuandoFaltanClavesNuevas)
+{
+    std::ofstream out(archivo_);
+    out << "nivel_log = \"debug\"\noutput_format = \"text\"\n"
+        << "[servidor]\nhost = \"127.0.0.2\"\npuerto = 9012\n"
+        << "[umbrales]\ncpu_max = 42.5\nram_max = 52\ndisco_max = 62.5\n";
+    out.close();
+
+    const auto cfg = chuspapulse::config::cargar(archivo_);
+    EXPECT_EQ(cfg.nivel_log, "debug");
+    EXPECT_EQ(cfg.output_format, "text");
+    EXPECT_EQ(cfg.servidor.host, "127.0.0.2");
+    EXPECT_EQ(cfg.servidor.puerto, 9012);
+    EXPECT_DOUBLE_EQ(cfg.umbrales.cpu_max, 42.5);
+    EXPECT_DOUBLE_EQ(cfg.umbrales.ram_max, 52);
+    EXPECT_DOUBLE_EQ(cfg.umbrales.disco_max, 62.5);
+}
+
+TEST_F(ConfigCompletoTest, FormatoNuevoPrioritarioPorClave)
+{
+    std::ofstream out(archivo_);
+    out << "nivel_log = \"debug\"\n"
+        << "[servidor]\nhost = \"127.0.0.3\"\npuerto = \"invalido\"\n"
+        << "[umbrales]\ncpu_max = 43\nram_max = 53\n"
+        << "[general]\nnivel_log = \"error\"\n"
+        << "[http]\npuerto = 9013\n"
+        << "[alertas]\nram_max = 63\n";
+    out.close();
+
+    const auto cfg = chuspapulse::config::cargar(archivo_);
+    EXPECT_EQ(cfg.nivel_log, "error");
+    EXPECT_EQ(cfg.servidor.host, "127.0.0.3");
+    EXPECT_EQ(cfg.servidor.puerto, 9013);
+    EXPECT_DOUBLE_EQ(cfg.umbrales.cpu_max, 43);
+    EXPECT_DOUBLE_EQ(cfg.umbrales.ram_max, 63);
+}
+
+TEST_F(ConfigCompletoTest, PuertoNuevoInvalidoSeRechaza)
+{
+    std::ofstream out(archivo_);
+    out << "[servidor]\npuerto = 9014\n[http]\npuerto = \"9015\"\n";
+    out.close();
+
+    EXPECT_THROW(chuspapulse::config::cargar(archivo_), std::invalid_argument);
+}
+
 TEST_F(ConfigCompletoTest, IntervaloInvalidoLanzaExcepcion)
 {
     std::ofstream out(archivo_);

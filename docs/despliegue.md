@@ -42,7 +42,7 @@ docker run -d -p 8080:8080 -v chuspapulse-data:/data chuspapulse
 Datos que conviene tener en cuenta:
 
 - **Puerto:** el valor por defecto es `8080`, definido en `config.servidor.puerto`.
-- **Base de datos:** las métricas se guardan en un archivo SQLite. Por defecto es `chuspapulse.db`, relativo al directorio de ejecución. Se puede cambiar con `CHUSPAPULSE_STORAGE_RUTA_DB` o con `storage.ruta_db` en el archivo de configuración; por ejemplo, para usar un archivo llamado `pulso.db` dentro del volumen: `CHUSPAPULSE_STORAGE_RUTA_DB=/data/pulso.db`. En Docker, el archivo se crea en `/data`, que es el volumen.
+- **Base de datos:** las métricas se guardan en un archivo SQLite. Por defecto es `chuspapulse.db`, relativo al directorio de ejecución. Se puede cambiar con `CHUSPAPULSE_STORAGE_RUTA_DB` o con `storage.ruta_db` en el archivo de configuración; por ejemplo, para guardarlo dentro del volumen: `CHUSPAPULSE_STORAGE_RUTA_DB=/data/chuspapulse.db`. En Docker, el archivo se crea en `/data`, que es el volumen.
 - **Configuración:** el archivo `pulso.toml` del repositorio contiene los valores por defecto de las opciones.
 
 ## Variables de entorno
@@ -52,7 +52,7 @@ Datos que conviene tener en cuenta:
 | `CHUSPAPULSE_SERVIDOR_HOST` | Dirección en la que escucha el servidor HTTP (por defecto `0.0.0.0`) | `127.0.0.1` |
 | `CHUSPAPULSE_SERVIDOR_PUERTO` | Puerto del servidor HTTP (por defecto `8080`) | `9090` |
 | `CHUSPAPULSE_SAMPLER_INTERVALO_SEGUNDOS` | Intervalo entre muestreos, en segundos; debe ser mayor que 0 (por defecto `10`) | `30` |
-| `CHUSPAPULSE_STORAGE_RUTA_DB` | Ruta del archivo SQLite (por defecto `chuspapulse.db`) | `/data/pulso.db` |
+| `CHUSPAPULSE_STORAGE_RUTA_DB` | Ruta del archivo SQLite (por defecto `chuspapulse.db`) | `/data/chuspapulse.db` |
 | `CHUSPAPULSE_NIVEL_LOG` | Nivel de log: `debug`, `info`, `warn` o `error` (por defecto `info`) | `debug` |
 | `CHUSPAPULSE_OUTPUT_FORMAT` | Formato de salida de métricas: `json`, `csv` o `prometheus` (por defecto `json`) | `prometheus` |
 

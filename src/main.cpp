@@ -56,6 +56,7 @@
 
 // Core types
 #include "core/types.hpp"
+#include "core/version.hpp"
 
 // Signal handler
 extern std::atomic<bool> isRunning;
@@ -371,9 +372,8 @@ int main(int argc, char* argv[]) {
     log.info("Puerto: "        + std::to_string(cfg.servidor.puerto));
     log.info("Base de datos: " + cfg.storage.ruta_db);
 
-    // Abrir base de datos e inicializar esquema
+    // Abrir el almacenamiento (el constructor inicializa el esquema)
     chuspapulse::storage::Storage storage(cfg.storage.ruta_db);
-    chuspapulse::storage::inicializarEsquema(storage);
 
 
     // Gestor de alertas con umbrales leídos desde pulso.toml
@@ -452,16 +452,39 @@ int main(int argc, char* argv[]) {
     });
 
     // GET /version
+    // - 200: JSON con la version (application/json), generado por handleVersion().
+    // - 400: JSON {"error":"parametros no soportados"} si la peticion incluye
+    //        parametros o query string.
+    // - 500: JSON {"error":"error interno"} si falla la generacion de la respuesta.
 server.Get("/version", [](
-    const httplib::Request&,
+    const httplib::Request& req,
     httplib::Response& res)
 {
-    res.set_content(
-        chuspapulse::http::handleVersion(),
-        "application/json"
-    );
+    if (!req.params.empty()) {
+        res.status = 400;
+        res.set_content(
+            R"({"error":"parametros no soportados"})",
+            "application/json"
+        );
+        return;
+    }
+
+    try {
+        res.set_content(
+            chuspapulse::http::handleVersion(),
+            "application/json"
+        );
+    } catch (...) {
+        res.status = 500;
+        res.set_content(
+            R"({"error":"error interno"})",
+            "application/json"
+        );
+    }
 });
-server.Get("/config", handle_config);
+server.Get("/config", [&cfg](const httplib::Request&, httplib::Response& res) {
+    res.set_content(chuspapulse::http::handleConfig(cfg), "application/json");
+});
 
     // GET /alerts
     server.Get("/alerts", [&storage, &gestorAlertas](

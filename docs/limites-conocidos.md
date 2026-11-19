@@ -1,6 +1,6 @@
 # Limitaciones conocidas
 
-Este documento lista las limitaciones conocidas de Pulso a la fecha (rama `dev`). Su objetivo es aclarar qué capacidades no deben asumirse sin una validación adicional.
+Este documento lista las limitaciones conocidas de ChuspaPulse a la fecha (rama `dev`). Su objetivo es aclarar qué capacidades no deben asumirse sin una validación adicional.
 
 ---
 
@@ -14,7 +14,7 @@ No describe mejoras futuras ni propuestas de desarrollo; únicamente documenta l
 
 ## Resumen ejecutivo
 
-- **Storage:** Pulso utiliza SQLite para almacenar métricas históricas. Es adecuado para almacenamiento local, pero no está diseñado para escenarios multi-host ni replicación distribuida.
+- **Storage:** ChuspaPulse utiliza SQLite para almacenar métricas históricas. Es adecuado para almacenamiento local, pero no está diseñado para escenarios multi-host ni replicación distribuida.
 - **Load average:** la métrica depende de la implementación del sistema operativo. Los valores obtenidos en Linux y Windows no tienen necesariamente la misma semántica y no deben compararse directamente.
 - **macOS:** no está soportado actualmente. Los colectores de plataforma solo existen para Linux y Windows; el soporte para macOS 12+ queda como trabajo futuro.
 - **Interfaces de red:** actualmente no existe una configuración para seleccionar manualmente interfaces específicas de monitoreo.
@@ -25,7 +25,7 @@ No describe mejoras futuras ni propuestas de desarrollo; únicamente documenta l
 
 ### Storage (SQLite)
 
-Pulso utiliza SQLite como almacenamiento local de métricas históricas.
+ChuspaPulse utiliza SQLite como almacenamiento local de métricas históricas.
 
 El modo WAL (`Write-Ahead Log`) permite mejorar la concurrencia dentro del mismo entorno local, pero no convierte SQLite en una base de datos distribuida.
 
@@ -44,7 +44,7 @@ Referencias:
 
 ## Load average: diferencias entre Linux y Windows
 
-En Linux, Pulso obtiene la métrica load average mediante fuentes del sistema como `/proc/loadavg`.
+En Linux, ChuspaPulse obtiene la métrica load average mediante fuentes del sistema como `/proc/loadavg`.
 
 Esta métrica representa los promedios de carga del sistema a 1, 5 y 15 minutos.
 
@@ -62,6 +62,9 @@ Referencia:
 
 ## Soporte en macOS
 
+macOS 12+ no está soportado actualmente. Los colectores nativos para esa plataforma están pendientes, por lo que ChuspaPulse no debe desplegarse en macOS hasta que exista soporte oficial.
+
+Las plataformas soportadas actualmente son Linux (Kernel 5.4+) y Windows 10/11.
 macOS no está soportado actualmente. Los colectores específicos de plataforma solo están implementados para Linux (`src/platform/linux/`) y Windows (`src/platform/windows/`).
 
 Limitaciones:
@@ -92,4 +95,4 @@ Referencias:
 
 Las limitaciones descritas corresponden al estado actual del proyecto en la rama `dev`.
 
-Estas restricciones deben considerarse al desplegar Pulso en entornos con requisitos de alta disponibilidad, múltiples sistemas operativos o configuraciones avanzadas de red.
+Estas restricciones deben considerarse al desplegar ChuspaPulse en entornos con requisitos de alta disponibilidad, múltiples sistemas operativos o configuraciones avanzadas de red.

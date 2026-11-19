@@ -1,9 +1,12 @@
 #include "SystemMonitor.hpp"
 
 #include <chrono>
+#include <cstdint>
 #include <iostream>
 #include <map>
+#include <memory>
 #include <string>
+#include <utility>
 
 // ─── Declaraciones de funciones del flujo legacy ─────────────────────────────
 

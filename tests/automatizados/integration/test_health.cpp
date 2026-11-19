@@ -115,3 +115,41 @@ TEST_F(IntegrationHealthTest, HealthResponde200AunqueReadinessFalle) {
   EXPECT_NE(health->body.find(R"("status":"ok")"), std::string::npos);
   EXPECT_EQ(ready->status, 503);
 }
+
+TEST_F(IntegrationHealthTest, ReadyConTodosLosComponentesNoDisponiblesDevuelve503) {
+  iniciar({
+      {"storage", []() { return false; }},
+      {"sampler", []() { return false; }},
+  });
+
+  auto res = get("/ready");
+
+  ASSERT_TRUE(res);
+  EXPECT_EQ(res->status, 503);
+  EXPECT_EQ(res->get_header_value("Content-Type"), "application/json");
+  EXPECT_EQ(
+      res->body,
+      R"({"status":"not_ready","components":{"storage":false,"sampler":false}})");
+}
+
+TEST_F(IntegrationHealthTest, HealthResponde200AunqueComprobacionLanceExcepcion) {
+  iniciar({
+      {"storage", []() -> bool {
+         throw std::runtime_error("storage no disponible");
+      }},
+      {"sampler", []() { return true; }},
+  });
+
+  auto health = get("/health");
+  auto ready = get("/ready");
+
+  ASSERT_TRUE(health);
+  ASSERT_TRUE(ready);
+
+  EXPECT_EQ(health->status, 200);
+  EXPECT_NE(health->body.find(R"("status":"ok")"), std::string::npos);
+
+  EXPECT_EQ(ready->status, 503);
+  EXPECT_NE(ready->body.find(R"("status":"not_ready")"),
+            std::string::npos);
+}

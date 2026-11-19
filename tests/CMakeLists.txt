@@ -1,6 +1,4 @@
-enable_testing()
 message(STATUS "Tests are enabled (CHUSPAPULSE_BUILD_TESTS=ON)")
-find_package(GTest REQUIRED)
 include(GoogleTest)
 
 # Apply AddressSanitizer flags if BUILD_WITH_ASAN is enabled
@@ -229,6 +227,20 @@ target_link_libraries(test_formatter_text PRIVATE
 )
 gtest_discover_tests(test_formatter_text)
 
+add_executable(test_formatter_json
+    formatters/test_formatter_json.cpp
+    ${PROJECT_SOURCE_DIR}/src/formatters/formatter_json.cpp
+)
+target_include_directories(test_formatter_json PRIVATE
+    ${PROJECT_SOURCE_DIR}/src
+)
+target_link_libraries(test_formatter_json PRIVATE
+    nlohmann_json::nlohmann_json
+    GTest::gtest
+    GTest::gtest_main
+)
+gtest_discover_tests(test_formatter_json)
+
 add_executable(test_metrics_integration
     automatizados/integration/test_metrics.cpp
     ${PROJECT_SOURCE_DIR}/src/http/handler_metrics.cpp
@@ -265,3 +277,29 @@ target_link_libraries(test_health_integration PRIVATE
     Threads::Threads
 )
 gtest_discover_tests(test_health_integration)
+
+add_executable(test_bateria_collector
+    automatizados/unit/test_bateria_collector.cpp
+    ${PROJECT_SOURCE_DIR}/src/collectors/bateria/bateria_collector.cpp
+)
+target_include_directories(test_bateria_collector PRIVATE
+    ${PROJECT_SOURCE_DIR}/src
+)
+target_link_libraries(test_bateria_collector PRIVATE
+    GTest::gtest
+    GTest::gtest_main
+)
+gtest_discover_tests(test_bateria_collector)
+
+add_executable(test_ram_usage_unit
+    automatizados/unit/test_ram_usage.cpp
+    ${PROJECT_SOURCE_DIR}/src/collectors/memory/ram_usage.cpp
+)
+target_include_directories(test_ram_usage_unit PRIVATE
+    ${PROJECT_SOURCE_DIR}/src
+)
+target_link_libraries(test_ram_usage_unit PRIVATE
+    GTest::gtest
+    GTest::gtest_main
+)
+gtest_discover_tests(test_ram_usage_unit TEST_PREFIX "unit_")

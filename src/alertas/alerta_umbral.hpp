@@ -1,7 +1,6 @@
 #pragma once
 
 #include <string>
-#include <stdexcept>
 #include "../core/MetricSnapshot.hpp"
 
 namespace chuspapulse::alertas {

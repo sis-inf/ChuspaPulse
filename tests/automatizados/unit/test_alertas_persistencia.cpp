@@ -60,3 +60,63 @@ TEST_F(AlertasPersistencia, HistorialOrdenadoPorTimestampYPaginado) {
     ASSERT_EQ(pagina.size(), 1u);
     EXPECT_EQ(pagina[0].timestamp, 200);
 }
+
+TEST_F(AlertasPersistencia, MetricaInvalidaNoSeRegistra)
+{
+    EXPECT_THROW(
+        gestor.addAlerta(chuspapulse::alertas::AlertaUmbral("temperatura", 80.0f, '>')),
+        std::invalid_argument
+    );
+
+    EXPECT_EQ(gestor.cantidadAlertas(), 0u);
+    EXPECT_EQ(contarAlertas(), 0);
+}
+
+TEST_F(AlertasPersistencia, ValorIgualAlUmbralNoSeGuarda)
+{
+    gestor.addAlerta(chuspapulse::alertas::AlertaUmbral("cpu", 80.0f, '>'));
+
+    chuspapulse::MetricSnapshot snap;
+    snap.cpu = 80.0;
+
+    gestor.evaluar(snap);
+
+    EXPECT_EQ(contarAlertas(), 0);
+    EXPECT_TRUE(gestor.obtenerHistorial().empty());
+}
+
+TEST_F(AlertasPersistencia, AlertaActivaNoGeneraRegistrosDuplicados)
+{
+    gestor.addAlerta(chuspapulse::alertas::AlertaUmbral("cpu", 80.0f, '>'));
+
+    chuspapulse::MetricSnapshot snap;
+    snap.cpu = 90.0;
+
+    gestor.evaluar(snap);
+    gestor.evaluar(snap);
+    gestor.evaluar(snap);
+
+    EXPECT_EQ(contarAlertas(), 1);
+    EXPECT_EQ(gestor.obtenerHistorial().size(), 1u);
+}
+
+TEST_F(AlertasPersistencia, ErrorAlGuardarNotificaSinLanzarExcepcion)
+{
+    gestor.addAlerta(chuspapulse::alertas::AlertaUmbral("cpu", 80.0f, '>'));
+
+    std::string mensajeError;
+    gestor.setCallback([&mensajeError](const std::string& mensaje) {
+        if (mensaje.find("No se pudo guardar la alerta:") != std::string::npos) {
+            mensajeError = mensaje;
+        }
+    });
+
+    db.exec("DROP TABLE alerts");
+
+    chuspapulse::MetricSnapshot snap;
+    snap.cpu = 90.0;
+
+    EXPECT_NO_THROW(gestor.evaluar(snap));
+    EXPECT_FALSE(mensajeError.empty());
+    EXPECT_TRUE(gestor.obtenerHistorial().empty());
+}
