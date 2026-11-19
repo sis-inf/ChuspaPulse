@@ -1,6 +1,12 @@
 #include "gestor_alertas.hpp"
 
 #include <chrono>
+#include <cstddef>
+#include <cstdint>
+#include <exception>
+#include <functional>
+#include <string>
+#include <vector>
 
 namespace chuspapulse::alertas {
 
