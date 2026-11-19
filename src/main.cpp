@@ -55,6 +55,10 @@
 
 // Core types
 #include "core/types.hpp"
+#include "core/version.hpp"
+
+// Alias temporal de compatibilidad para los componentes que aún usan pulso::.
+namespace pulso = chuspapulse;
 
 // Signal handler
 extern std::atomic<bool> isRunning;
@@ -372,7 +376,6 @@ int main(int argc, char* argv[]) {
 
     // Abrir base de datos e inicializar esquema
     pulso::storage::Storage storage(cfg.storage.ruta_db);
-    pulso::storage::inicializarEsquema(storage);
 
 
     // Gestor de alertas con umbrales leídos desde pulso.toml
@@ -481,7 +484,9 @@ server.Get("/version", [](
         );
     }
 });
-server.Get("/config", handle_config);
+server.Get("/config", [&cfg](const httplib::Request&, httplib::Response& res) {
+    res.set_content(pulso::http::handleConfig(cfg), "application/json");
+});
 
     // GET /alerts
     server.Get("/alerts", [&storage, &gestorAlertas](

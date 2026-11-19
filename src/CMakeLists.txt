@@ -14,7 +14,6 @@ target_sources(chuspapulse PRIVATE
     collectors/procesos/top_procesos.cpp
     collectors/temperatura/temp_collector.cpp
     config/config.cpp
-    core/SystemMonitor.cpp
     formatters/formatter_json.cpp
     formatters/formatter_csv.cpp
     formatters/formatter_text.cpp
@@ -22,8 +21,11 @@ target_sources(chuspapulse PRIVATE
     http/handler_health.cpp
     http/handler_history.cpp
     http/handler_alerts_history.cpp
+    http/handler_config.cpp
+    http/handler_prometheus.cpp
     http/handler_metrics.cpp
     platform/linux/collector_cpu.cpp
+    sampler/sampler.cpp
     storage/schema.cpp
     storage/storage.cpp
     utils/console_formatter.cpp
@@ -56,7 +58,7 @@ target_include_directories(chuspapulse PRIVATE
 target_link_libraries(chuspapulse PRIVATE
     httplib
     nlohmann_json
-    tomlplusplus
+    tomlplusplus::tomlplusplus
     SQLiteCpp
     sqlite3
 )
