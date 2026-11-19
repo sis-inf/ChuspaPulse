@@ -2,7 +2,10 @@
 
 #include <chrono>
 #include <ctime>
+#include <exception>
 #include <iostream>
+#include <mutex>
+#include <utility>
 
 namespace chuspapulse::sampler {
 
@@ -63,7 +66,7 @@ void Sampler::iniciar() {
                           << std::endl;
             }
             
-                        if (onSnapshot_) {
+            if (onSnapshot_) {
                 try {
                     onSnapshot_(snapshot);
                 } catch (const std::exception& e) {
