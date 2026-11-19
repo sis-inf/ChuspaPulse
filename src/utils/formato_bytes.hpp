@@ -1,4 +1,6 @@
-#pragma once
+
+#ifndef PULSO_UTILS_FORMATO_BYTES_HPP
+#define PULSO_UTILS_FORMATO_BYTES_HPP
 
 #include <string>
 
@@ -27,3 +29,5 @@ namespace chuspapulse::utils {
 std::string formatearBytesHumanos(double bytes);
 
 } // namespace chuspapulse::utils
+
+#endif // PULSO_UTILS_FORMATO_BYTES_HPP
