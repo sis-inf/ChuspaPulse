@@ -2,7 +2,7 @@
 
 #include <chrono>
 
-namespace pulso {
+namespace chuspapulse {
 
 struct MetricSnapshot {
     double cpu;
@@ -37,4 +37,4 @@ struct MetricSnapshot {
     }
 };
 
-} // namespace pulso
+} // namespace chuspapulse

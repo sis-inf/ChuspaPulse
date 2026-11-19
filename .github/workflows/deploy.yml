@@ -9,6 +9,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # Cada proyecto define sus pasos aquí
-      - name: Deploy
-        run: echo "Definir pasos de despliegue"
+
+      - name: Instalar dependencias de compilación
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake g++ libsqlite3-dev
+
+      - name: Configurar CMake (Release)
+        run: cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
+
+      - name: Compilar
+        run: cmake --build build --parallel
+
+      - name: Subir binario como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: pulso-linux
+          path: build/bin/chuspapulse
+          if-no-files-found: error

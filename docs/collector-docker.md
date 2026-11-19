@@ -2,7 +2,7 @@
 
 ## Resumen
 
-Pulso incluye un collector capaz de detectar contenedores Docker en ejecución mediante la consulta del socket Unix de Docker.
+ChuspaPulse incluye un collector capaz de detectar contenedores Docker en ejecución mediante la consulta del socket Unix de Docker.
 
 Este collector permite obtener métricas generales sobre el estado de los contenedores disponibles en el host, proporcionando una visión rápida del entorno Docker sin necesidad de instalar componentes adicionales.
 
@@ -10,7 +10,7 @@ Este collector permite obtener métricas generales sobre el estado de los conten
 
 # Prerrequisitos
 
-Para que el collector funcione correctamente, el usuario que ejecuta Pulso debe tener permisos para acceder al socket de Docker.
+Para que el collector funcione correctamente, el usuario que ejecuta ChuspaPulse debe tener permisos para acceder al socket de Docker.
 
 La ubicación habitual del socket es:
 

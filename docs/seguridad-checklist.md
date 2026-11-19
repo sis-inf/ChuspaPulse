@@ -1,6 +1,6 @@
 # Checklist de Hardening de Seguridad
 
-> Este documento es una lista de verificación rápida para asegurar Pulso antes de
+> Este documento es una lista de verificación rápida para asegurar ChuspaPulse antes de
 > exponerlo fuera de localhost. Para la política de seguridad completa, consulta
 > [docs/seguridad.md](seguridad.md).
 
@@ -8,7 +8,7 @@
 
 ## ¿Cómo usar este checklist?
 
-Revisa cada ítem antes de desplegar Pulso en un entorno accesible desde la red.
+Revisa cada ítem antes de desplegar ChuspaPulse en un entorno accesible desde la red.
 Cada ítem enlaza al documento detallado con instrucciones de configuración.
 
 ---
@@ -57,7 +57,7 @@ Cada ítem enlaza al documento detallado con instrucciones de configuración.
 
 ### 👤 Permisos del proceso
 
-- [ ] Pulso no corre como root salvo que un collector específico lo requiera.
+- [ ] ChuspaPulse no corre como root salvo que un collector específico lo requiera.
 - [ ] El colector de batería puede correr sin privilegios elevados.
 - [ ] Se usan los permisos mínimos necesarios para cada collector.
 - [ ] Los permisos requeridos están documentados.
@@ -70,7 +70,7 @@ Cada ítem enlaza al documento detallado con instrucciones de configuración.
 
 - [ ] El servidor HTTP está vinculado a `127.0.0.1` si no se necesita acceso externo.
 - [ ] El puerto no está expuesto públicamente sin firewall.
-- [ ] Solo las IPs confiables tienen acceso al puerto de Pulso.
+- [ ] Solo las IPs confiables tienen acceso al puerto de ChuspaPulse.
 
 ```toml
 [servidor]

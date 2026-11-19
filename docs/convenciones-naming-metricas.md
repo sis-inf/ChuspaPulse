@@ -1,6 +1,6 @@
 # Convenciones para el nombrado de métricas
 
-Este documento define la convención utilizada para nombrar las métricas del proyecto Pulso. Mantener un formato consistente facilita el desarrollo de nuevos collectors y evita inconsistencias entre plataformas y componentes.
+Este documento define la convención utilizada para nombrar las métricas del proyecto ChuspaPulse. Mantener un formato consistente facilita el desarrollo de nuevos collectors y evita inconsistencias entre plataformas y componentes.
 
 ## Formato general
 
@@ -59,3 +59,28 @@ Ejemplos:
 - `disk.<punto_montaje>.used_bytes`
 
 Esta estructura permite representar múltiples interfaces de red, discos u otros recursos manteniendo una convención uniforme y fácil de extender.
+
+## Normalización al exportar a Prometheus
+
+Prometheus solo acepta nombres de métrica que cumplan `[a-zA-Z_:][a-zA-Z0-9_:]*`. Como los nombres internos usan puntos y pueden incluir identificadores de recursos (interfaces, puntos de montaje) con guiones, espacios u otros caracteres, el formatter Prometheus (`FormatterPrometheus::normalizarNombre`) los convierte con esta regla determinista:
+
+1. Se antepone el prefijo `chuspapulse_` (así el primer carácter siempre es válido).
+2. Cada carácter que no sea letra ASCII, dígito ni `_` se reemplaza por `_`. Esto incluye `.`, `-`, espacios, `/`, `%`, letras con tilde y también `:`, que Prometheus reserva para reglas de grabación.
+3. Las etiquetas (`{core="0"}`) se conservan tal cual; solo se normaliza el nombre.
+
+| Nombre interno | Nombre exportado |
+| -------------- | ---------------- |
+| `cpu.usage` | `chuspapulse_cpu_usage` |
+| `disk.sda-1.used` | `chuspapulse_disk_sda_1_used` |
+| `net rx bytes` | `chuspapulse_net_rx_bytes` |
+| `uptime_seconds` | `chuspapulse_uptime_seconds` |
+
+### Colisiones
+
+Si en un mismo snapshot dos nombres internos distintos normalizan al mismo nombre (por ejemplo `net.rx` y `net-rx` dan `chuspapulse_net_rx`), no se fusionan en silencio: cada uno recibe el sufijo `_<hash>`, donde `<hash>` son 8 caracteres hexadecimales del hash FNV-1a del nombre interno, y su línea `# HELP` indica el nombre original:
+
+```text
+# HELP chuspapulse_net_rx_548b0eb8 Metrica de chuspapulse (nombre original: net.rx)
+```
+
+El sufijo depende solo del nombre interno, no del orden en que llegan las métricas, así que el resultado es siempre el mismo. Para evitar sufijos, conviene no crear nombres que solo difieran en caracteres que la normalización reemplaza.

@@ -7,7 +7,7 @@
 #include "../icollector.hpp"
 #include "core/types.hpp"
 
-namespace pulso::collectors::bateria {
+namespace chuspapulse::collectors::bateria {
 
 /**
  * @brief Contiene la informacion de estado de bateria del sistema.
@@ -52,11 +52,11 @@ BateriaInfo getBateriaInfo(
  * retorna un vector vacio, sin lanzar excepcion ni agregar metricas
  * vacias o enganosas.
  */
-class CollectorBateria : public pulso::collectors::ICollector {
+class CollectorBateria : public chuspapulse::collectors::ICollector {
 public:
     std::string nombre() const override;
 
-    std::vector<pulso::core::Metrica> recolectar() override;
+    std::vector<chuspapulse::core::Metrica> recolectar() override;
 };
 
-} // namespace pulso::collectors::bateria
+} // namespace chuspapulse::collectors::bateria

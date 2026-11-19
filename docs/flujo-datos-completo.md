@@ -1,8 +1,8 @@
-# Flujo de datos completo del sistema Pulso
+# Flujo de datos completo del sistema ChuspaPulse
 
 ## Introducción
 
-Este documento describe el flujo completo de datos dentro de Pulso, desde la obtención de métricas del sistema operativo hasta su exposición mediante la API HTTP para clientes externos.
+Este documento describe el flujo completo de datos dentro de ChuspaPulse, desde la obtención de métricas del sistema operativo hasta su exposición mediante la API HTTP para clientes externos.
 
 El objetivo es mostrar cómo interactúan los distintos componentes del sistema y cómo viajan las métricas a través de cada etapa del pipeline.
 
@@ -222,4 +222,4 @@ Los datos pueden ser consumidos por:
 - Scripts automatizados.
 - Sistemas externos.
 
-Estos clientes realizan solicitudes HTTP y reciben la información procesada por Pulso.
+Estos clientes realizan solicitudes HTTP y reciben la información procesada por ChuspaPulse.

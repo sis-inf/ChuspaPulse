@@ -1,17 +1,37 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
-namespace pulso {
-    class MetricsSnapshot;
-    class GestorAlertas;
+namespace chuspapulse {
+    struct MetricSnapshot;
+    namespace alertas { class GestorAlertas; }
 }
 
-namespace pulso::http {
+namespace chuspapulse::http {
 
 /**
- * @brief Genera una respuesta JSON para el endpoint GET /alerts con las alertas activas.
+ * @brief Datos de una alerta activa tal como se devuelven en GET /alerts.
  */
-std::string handleAlerts(const pulso::GestorAlertas& gestor, const pulso::MetricsSnapshot& snap);
+struct AlertaActiva {
+    int id;
+    std::string mensaje;
+    std::string timestamp;
+};
 
-} // namespace pulso::http
+/**
+ * @brief Serializa las alertas activas al JSON de GET /alerts.
+ *
+ * Los campos de texto se escapan con nlohmann::json, por lo que la salida
+ * es JSON válido aunque contengan comillas, barras invertidas o
+ * caracteres de control.
+ */
+std::string serializarAlertas(const std::vector<AlertaActiva>& alertas);
+
+/**
+ * @brief Genera el JSON de GET /alerts con las alertas activas para el snapshot dado.
+ */
+std::string handleAlerts(const chuspapulse::alertas::GestorAlertas& gestor,
+                         const chuspapulse::MetricSnapshot& snap);
+
+} // namespace chuspapulse::http

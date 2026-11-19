@@ -6,17 +6,17 @@
 
 using json = nlohmann::json;
 
-static pulso::core::Snapshot crearSnapshot(std::int64_t timestamp) {
-    pulso::core::Snapshot s;
+static chuspapulse::core::Snapshot crearSnapshot(std::int64_t timestamp) {
+    chuspapulse::core::Snapshot s;
     s.timestamp = timestamp;
 
-    pulso::core::Metrica m1;
+    chuspapulse::core::Metrica m1;
     m1.name = "cpu.usage";
     m1.unit = "percent";
     m1.value = 42.0;
     m1.timestamp = timestamp;
 
-    pulso::core::Metrica m2;
+    chuspapulse::core::Metrica m2;
     m2.name = "memory.used";
     m2.unit = "bytes";
     m2.value = 2048.0;
@@ -29,16 +29,16 @@ static pulso::core::Snapshot crearSnapshot(std::int64_t timestamp) {
 }
 
 TEST(TestFormatterJSON, Test_FormatoYContentType) {
-    pulso::formatters::FormatterJSON formatter;
+    chuspapulse::formatters::FormatterJSON formatter;
 
     EXPECT_EQ(formatter.formato(), "json");
     EXPECT_EQ(formatter.contentType(), "application/json");
 }
 
 TEST(TestFormatterJSON, Test_SnapshotVacio) {
-    pulso::formatters::FormatterJSON formatter;
+    chuspapulse::formatters::FormatterJSON formatter;
 
-    pulso::core::Snapshot snapshot;
+    chuspapulse::core::Snapshot snapshot;
     snapshot.timestamp = 1000;
 
     std::string output = formatter.formatear(snapshot);
@@ -52,7 +52,7 @@ TEST(TestFormatterJSON, Test_SnapshotVacio) {
 }
 
 TEST(TestFormatterJSON, Test_SnapshotConMetricas) {
-    pulso::formatters::FormatterJSON formatter;
+    chuspapulse::formatters::FormatterJSON formatter;
 
     auto snapshot = crearSnapshot(2000);
 
@@ -70,9 +70,9 @@ TEST(TestFormatterJSON, Test_SnapshotConMetricas) {
 }
 
 TEST(TestFormatterJSON, Test_HistorialVacio) {
-    pulso::formatters::FormatterJSON formatter;
+    chuspapulse::formatters::FormatterJSON formatter;
 
-    std::vector<pulso::core::Snapshot> historial;
+    std::vector<chuspapulse::core::Snapshot> historial;
 
     std::string output = formatter.formatearHistorial(historial);
 
@@ -84,9 +84,9 @@ TEST(TestFormatterJSON, Test_HistorialVacio) {
 }
 
 TEST(TestFormatterJSON, Test_HistorialConSnapshots) {
-    pulso::formatters::FormatterJSON formatter;
+    chuspapulse::formatters::FormatterJSON formatter;
 
-    std::vector<pulso::core::Snapshot> historial;
+    std::vector<chuspapulse::core::Snapshot> historial;
 
     historial.push_back(crearSnapshot(100));
     historial.push_back(crearSnapshot(200));
@@ -101,7 +101,7 @@ TEST(TestFormatterJSON, Test_HistorialConSnapshots) {
 }
 
 TEST(TestFormatterJSON, Test_OutputEsParseable) {
-    pulso::formatters::FormatterJSON formatter;
+    chuspapulse::formatters::FormatterJSON formatter;
 
     auto snapshot = crearSnapshot(5000);
 

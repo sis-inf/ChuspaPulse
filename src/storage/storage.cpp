@@ -2,10 +2,12 @@
 #include "schema.hpp"
 #include <ctime>
 #include <map>
+#include <filesystem>
 #include <fstream>
 #include <stdexcept>
+#include <system_error>
 
-namespace pulso::storage {
+namespace chuspapulse::storage {
 
 namespace {
 
@@ -46,7 +48,7 @@ Storage::Storage(const std::string& dbPath)
     db_.exec("PRAGMA journal_mode=WAL;");
 
     // Inicializar esquema (idempotente)
-    pulso::storage::inicializarEsquema(db_);
+    chuspapulse::storage::inicializarEsquema(db_);
 }
 
 void Storage::setMaxEntries(std::size_t max) {
@@ -55,63 +57,90 @@ void Storage::setMaxEntries(std::size_t max) {
 }
 
 void Storage::exportToCSV(const std::string& ruta_archivo) const {
-    std::ofstream archivo(ruta_archivo);
+    // Se escribe en un archivo temporal y solo se mueve al destino si toda la
+    // exportación terminó bien: un fallo nunca deja un CSV parcial como válido.
+    const std::string ruta_temporal = ruta_archivo + ".tmp";
 
-    if (!archivo.is_open()) {
+    try {
+        std::ofstream archivo(ruta_temporal);
+
+        if (!archivo.is_open()) {
+            throw std::runtime_error(
+                "no se pudo crear el archivo temporal " + ruta_temporal
+            );
+        }
+
+        // Cabecera CSV
+        archivo
+            << "timestamp,"
+            << "cpu_usage,"
+            << "cpu_cores,"
+            << "memory_total,"
+            << "memory_used,"
+            << "memory_available,"
+            << "disk_total,"
+            << "disk_used,"
+            << "disk_free,"
+            << "network_rx_bytes,"
+            << "network_tx_bytes"
+            << '\n';
+
+        SQLite::Statement query(
+            db_,
+            "SELECT "
+            "timestamp, "
+            "cpu_usage, cpu_cores, "
+            "memory_total, memory_used, memory_available, "
+            "disk_total, disk_used, disk_free, "
+            "network_rx_bytes, network_tx_bytes "
+            "FROM snapshots "
+            "ORDER BY timestamp ASC;"
+        );
+
+        while (query.executeStep()) {
+            archivo
+                << query.getColumn(0).getInt64() << ","
+                << query.getColumn(1).getDouble() << ","
+                << query.getColumn(2).getInt() << ","
+                << query.getColumn(3).getInt64() << ","
+                << query.getColumn(4).getInt64() << ","
+                << query.getColumn(5).getInt64() << ","
+                << query.getColumn(6).getInt64() << ","
+                << query.getColumn(7).getInt64() << ","
+                << query.getColumn(8).getInt64() << ","
+                << query.getColumn(9).getInt64() << ","
+                << query.getColumn(10).getInt64()
+                << '\n';
+        }
+
+        archivo.close();
+        if (archivo.fail()) {
+            throw std::runtime_error("error de escritura en " + ruta_temporal);
+        }
+    } catch (const std::exception& e) {
+        std::error_code ignorado;
+        std::filesystem::remove(ruta_temporal, ignorado);
         throw std::runtime_error(
-            "No se pudo crear el archivo CSV: " + ruta_archivo
+            "Fallo la exportación CSV a " + ruta_archivo + ": " + e.what()
         );
     }
 
-    // Cabecera CSV
-    archivo
-        << "timestamp,"
-        << "cpu_usage,"
-        << "cpu_cores,"
-        << "memory_total,"
-        << "memory_used,"
-        << "memory_available,"
-        << "disk_total,"
-        << "disk_used,"
-        << "disk_free,"
-        << "network_rx_bytes,"
-        << "network_tx_bytes"
-        << '\n';
-
-    SQLite::Statement query(
-        db_,
-        "SELECT "
-        "timestamp, "
-        "cpu_usage, cpu_cores, "
-        "memory_total, memory_used, memory_available, "
-        "disk_total, disk_used, disk_free, "
-        "network_rx_bytes, network_tx_bytes "
-        "FROM snapshots "
-        "ORDER BY timestamp ASC;"
-    );
-
-    while (query.executeStep()) {
-        archivo
-            << query.getColumn(0).getInt64() << ","
-            << query.getColumn(1).getDouble() << ","
-            << query.getColumn(2).getInt() << ","
-            << query.getColumn(3).getInt64() << ","
-            << query.getColumn(4).getInt64() << ","
-            << query.getColumn(5).getInt64() << ","
-            << query.getColumn(6).getInt64() << ","
-            << query.getColumn(7).getInt64() << ","
-            << query.getColumn(8).getInt64() << ","
-            << query.getColumn(9).getInt64() << ","
-            << query.getColumn(10).getInt64()
-            << '\n';
+    std::error_code error;
+    std::filesystem::rename(ruta_temporal, ruta_archivo, error);
+    if (error) {
+        std::error_code ignorado;
+        std::filesystem::remove(ruta_temporal, ignorado);
+        throw std::runtime_error(
+            "Fallo la exportación CSV a " + ruta_archivo + ": " + error.message()
+        );
     }
 }
 
-void Storage::save(const pulso::core::Snapshot& snapshot) {
+void Storage::save(const chuspapulse::core::Snapshot& snapshot) {
     // Extraer métricas del snapshot por nombre
     auto getMetricValue = [&](const std::string& name) -> double {
-        for (const auto& m : snapshot.metrics) {
-            if (m.name == name) return m.value;
+        for (const auto& m : snapshot.metricas) {
+            if (m.nombre == name) return m.valor;
         }
         return 0.0;
     };
@@ -141,18 +170,18 @@ void Storage::save(const pulso::core::Snapshot& snapshot) {
 }
 
 // Convierte una fila de la query en un Snapshot
-static pulso::core::Snapshot rowToSnapshot(SQLite::Statement& query) {
-    pulso::core::Snapshot snapshot;
+static chuspapulse::core::Snapshot rowToSnapshot(SQLite::Statement& query) {
+    chuspapulse::core::Snapshot snapshot;
     snapshot.timestamp = query.getColumn(0).getInt64();
 
     // Mapeo de columnas a métricas
     auto addMetric = [&](const std::string& name, const std::string& unit, double value) {
-        pulso::core::Metrica m;
-        m.name      = name;
-        m.value     = value;
-        m.unit      = unit;
+        chuspapulse::core::Metrica m;
+        m.nombre    = name;
+        m.valor     = value;
+        m.unidad    = unit;
         m.timestamp = snapshot.timestamp;
-        snapshot.metrics.push_back(m);
+        snapshot.metricas.push_back(m);
     };
 
     addMetric("cpu.usage",          "percent",  query.getColumn(1).getDouble());
@@ -169,7 +198,7 @@ static pulso::core::Snapshot rowToSnapshot(SQLite::Statement& query) {
     return snapshot;
 }
 
-std::optional<pulso::core::Snapshot> Storage::last() const {
+std::optional<chuspapulse::core::Snapshot> Storage::last() const {
     SQLite::Statement query(db_,
         "SELECT timestamp, cpu_usage, cpu_cores, memory_total, memory_used, memory_available, "
         "disk_total, disk_used, disk_free, network_rx_bytes, network_tx_bytes "
@@ -183,7 +212,7 @@ std::optional<pulso::core::Snapshot> Storage::last() const {
     return rowToSnapshot(query);
 }
 
-std::vector<pulso::core::Snapshot> Storage::history(
+std::vector<chuspapulse::core::Snapshot> Storage::history(
     std::int64_t from,
     std::int64_t until,
     std::size_t  limit) const
@@ -208,7 +237,7 @@ std::vector<pulso::core::Snapshot> Storage::history(
     }
     query.bind(bindIndex, static_cast<int64_t>(limit));
 
-    std::vector<pulso::core::Snapshot> results;
+    std::vector<chuspapulse::core::Snapshot> results;
     while (query.executeStep()) {
         results.push_back(rowToSnapshot(query));
     }
@@ -222,7 +251,7 @@ std::size_t Storage::total() const {
     return static_cast<std::size_t>(query.getColumn(0).getInt64());
 }
 
-pulso::core::Snapshot Storage::getPromedio(uint32_t ventana_segundos) const {
+chuspapulse::core::Snapshot Storage::getPromedio(uint32_t ventana_segundos) const {
     // Calcular el timestamp de inicio de la ventana
     std::int64_t ahora = static_cast<std::int64_t>(std::time(nullptr));
     std::int64_t desde = ahora - static_cast<std::int64_t>(ventana_segundos);
@@ -232,19 +261,19 @@ pulso::core::Snapshot Storage::getPromedio(uint32_t ventana_segundos) const {
 
     // Si no hay snapshots en la ventana, retornar snapshot vacío
     if (snapshots.empty()) {
-        pulso::core::Snapshot vacio;
+        chuspapulse::core::Snapshot vacio;
         vacio.timestamp = ahora;
         for (const auto& nombre : {
             "cpu.usage", "cpu.cores",
             "memory.total", "memory.used", "memory.available",
             "disk.total", "disk.used", "disk.free",
             "network.rx_bytes", "network.tx_bytes"}) {
-            pulso::core::Metrica m;
-            m.name      = nombre;
-            m.value     = 0.0;
-            m.unit      = "";
+            chuspapulse::core::Metrica m;
+            m.nombre    = nombre;
+            m.valor     = 0.0;
+            m.unidad    = "";
             m.timestamp = ahora;
-            vacio.metrics.push_back(m);
+            vacio.metricas.push_back(m);
         }
         return vacio;
     }
@@ -254,26 +283,26 @@ pulso::core::Snapshot Storage::getPromedio(uint32_t ventana_segundos) const {
     std::map<std::string, std::string> unidades;
 
     for (const auto& snap : snapshots) {
-        for (const auto& m : snap.metrics) {
-            acumulado[m.name] += m.value;
-            unidades[m.name]   = m.unit;
+        for (const auto& m : snap.metricas) {
+            acumulado[m.nombre] += m.valor;
+            unidades[m.nombre]   = m.unidad;
         }
     }
 
     // Calcular promedio
-    pulso::core::Snapshot promedio;
+    chuspapulse::core::Snapshot promedio;
     promedio.timestamp = ahora;
 
     for (auto& [nombre, total] : acumulado) {
-        pulso::core::Metrica m;
-        m.name      = nombre;
-        m.value     = total / static_cast<double>(snapshots.size());
-        m.unit      = unidades[nombre];
+        chuspapulse::core::Metrica m;
+        m.nombre    = nombre;
+        m.valor     = total / static_cast<double>(snapshots.size());
+        m.unidad    = unidades[nombre];
         m.timestamp = ahora;
-        promedio.metrics.push_back(m);
+        promedio.metricas.push_back(m);
     }
 
     return promedio;
 }
 
-} // namespace pulso::storage
+} // namespace chuspapulse::storage

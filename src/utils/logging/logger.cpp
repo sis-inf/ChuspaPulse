@@ -4,9 +4,11 @@
 #include <ctime>
 #include <iomanip>
 #include <iostream>
+#include <mutex>
 #include <sstream>
+#include <string>
 
-namespace pulso::utils::logging {
+namespace chuspapulse::utils::logging {
 
 namespace {
 
@@ -34,9 +36,9 @@ std::string nivelATexto(LogLevel nivel) {
     }
 }
 
-void imprimir(const std::mutex& mutex_, LogLevel nivel, LogLevel minimo, const std::string& mensaje) {
+void imprimir(std::mutex& mutex_, LogLevel nivel, LogLevel minimo, const std::string& mensaje) {
     if (nivel < minimo) return;
-    std::lock_guard<std::mutex> lock(const_cast<std::mutex&>(mutex_));
+    std::lock_guard<std::mutex> lock(mutex_);
     std::cerr << "[" << obtenerTimestamp() << "] "
               << "[" << nivelATexto(nivel) << "] "
               << mensaje << '\n';
@@ -69,4 +71,4 @@ void Logger::error(const std::string& mensaje) {
     imprimir(mutex_, LogLevel::ERROR, nivelMinimo_, mensaje);
 }
 
-} // namespace pulso::utils::logging
+} // namespace chuspapulse::utils::logging

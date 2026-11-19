@@ -6,7 +6,7 @@
 #include "iformatter.hpp"
 #include "core/types.hpp"
 
-namespace pulso::formatters {
+namespace chuspapulse::formatters {
 
 /**
  * @brief Formateador JSON para snapshots de métricas.
@@ -27,14 +27,14 @@ public:
      * @brief Serializa un snapshot individual.
      */
     std::string formatear(
-        const pulso::core::Snapshot& snapshot
+        const chuspapulse::core::Snapshot& snapshot
     ) const override;
 
     /**
      * @brief Serializa un historial de snapshots.
      */
     std::string formatearHistorial(
-        const std::vector<pulso::core::Snapshot>& snapshots
+        const std::vector<chuspapulse::core::Snapshot>& snapshots
     ) const override;
 };
 

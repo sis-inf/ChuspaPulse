@@ -1,18 +1,18 @@
 # Preguntas frecuentes
  
-Respuestas a las dudas más comunes sobre Pulso.
+Respuestas a las dudas más comunes sobre ChuspaPulse.
  
 ---
  
-## ¿Qué es Pulso?
+## ¿Qué es ChuspaPulse?
 
-Pulso es una herramienta de línea de comandos desarrollada en C++ que permite recolectar y visualizar métricas del sistema en tiempo real. Monitorea recursos como CPU, memoria RAM, disco y red, y está diseñada para ofrecer alto rendimiento con bajo consumo de recursos.
+ChuspaPulse es una herramienta de línea de comandos desarrollada en C++ que permite recolectar y visualizar métricas del sistema en tiempo real. Monitorea recursos como CPU, memoria RAM, disco y red, y está diseñada para ofrecer alto rendimiento con bajo consumo de recursos.
 
 ---
  
-## ¿En qué plataformas funciona Pulso?
+## ¿En qué plataformas funciona ChuspaPulse?
 
-Pulso es compatible con los siguientes sistemas operativos:
+ChuspaPulse es compatible con los siguientes sistemas operativos:
  
 - **Linux** — Kernel 5.4 o superior
 - **Windows** — Windows 10 u 11
@@ -20,9 +20,9 @@ Pulso es compatible con los siguientes sistemas operativos:
 
 ---
  
-## ¿Qué métricas puede monitorear Pulso?
+## ¿Qué métricas puede monitorear ChuspaPulse?
 
-Pulso monitorea las siguientes métricas del sistema:
+ChuspaPulse monitorea las siguientes métricas del sistema:
  
 | Métrica | Unidad | Frecuencia |
 |---|---|---|
@@ -37,14 +37,14 @@ Las frecuencias de muestreo pueden ajustarse según el entorno de ejecución.
 
 ---
  
-## ¿Cómo se instala Pulso?
+## ¿Cómo se instala ChuspaPulse?
 
-Para instalar Pulso se necesita un compilador C++ (GCC, Clang o MSVC), CMake 3.16 o superior y Git. Los pasos básicos son:
+Para instalar ChuspaPulse se necesita un compilador C++ (GCC, Clang o MSVC), CMake 3.16 o superior y Git. Los pasos básicos son:
  
 ```bash
 # Clonar el repositorio
-git clone https://github.com/sis-inf/pulso.git
-cd pulso
+git clone https://github.com/sis-inf/ChuspaPulse.git
+cd ChuspaPulse
  
 # Compilar
 cmake -B build
@@ -55,18 +55,18 @@ Para instrucciones detalladas por plataforma, consulte [instalacion.md](instalac
 
 ---
  
-## ¿Cómo se ejecuta Pulso?
+## ¿Cómo se ejecuta ChuspaPulse?
 
 Una vez compilado, el binario se encuentra en `build/bin/`. Para ejecutarlo:
  
 **Linux y macOS:**
 ```bash
-./build/bin/pulso
+./build/bin/chuspapulse
 ```
  
 **Windows:**
 ```bash
-build\bin\Release\pulso.exe
+build\bin\Release\chuspapulse.exe
 ```
 
 ---
@@ -86,9 +86,9 @@ Para más detalles, consulte [CONTRIBUTING.md](../CONTRIBUTING.md).
 
 ---
  
-## ¿Qué compilador necesito para usar Pulso?
+## ¿Qué compilador necesito para usar ChuspaPulse?
 
-Pulso requiere un compilador compatible con el estándar **C++17**. Las opciones soportadas según el sistema operativo son:
+ChuspaPulse requiere un compilador compatible con el estándar **C++17**. Las opciones soportadas según el sistema operativo son:
  
 - **Linux** — GCC 11 o superior
 - **macOS** — Clang 13 o superior (incluido con las herramientas de Xcode)
@@ -103,15 +103,15 @@ CMake funciona en Windows, Linux y macOS, genera archivos de compilación autom�
 
 ```cmake
 cmake_minimum_required(VERSION 3.16)
-project(pulso LANGUAGES CXX)
+project(chuspapulse LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-add_executable(pulso main.cpp)
+add_executable(chuspapulse main.cpp)
 ```
 ¿Cómo agrego un nuevo archivo .cpp al proyecto?
 Edita el archivo CMakeLists.txt:
 ```cmake
-add_executable(pulso
+add_executable(chuspapulse
     main.cpp
     monitoreo.cpp
     nuevo_archivo.cpp
@@ -140,12 +140,12 @@ clang-format -i archivo.cpp
 ```bash
 cd build && ctest -R "NombreDeLaPrueba" -V
 # O directamente:
-./build/tests/pulso-tests --gtest_filter=NombreClase.NombrePrueba
+./build/bin/test_types --gtest_filter=NombreClase.NombrePrueba
 ```
 ¿Qué es una fuga de memoria y cómo revisarla?
 Ocurre si reservas memoria y no la liberas:
 ```bash
-valgrind --leak-check=full ./build/bin/pulso
+valgrind --leak-check=full ./build/bin/chuspapulse
 ```
 ¿Cómo limpiar y recompilar todo desde cero?
 ```bash
@@ -154,4 +154,4 @@ rm -rf build && mkdir build && cd build && cmake .. && cmake --build .
 ¿Cómo agregar advertencias al compilador?
 En CMakeLists.txt:
 ```cmake
-target_compile_options(pulso PRIVATE -Wall -Wextra -pedantic -O2)
+target_compile_options(chuspapulse PRIVATE -Wall -Wextra -pedantic -O2)

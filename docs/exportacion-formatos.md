@@ -2,7 +2,7 @@
 
 ## Resumen
 
-Pulso permite exportar las métricas recolectadas en diferentes formatos para adaptarse a distintos casos de uso, desde la integración con sistemas de monitoreo hasta la generación de reportes o el análisis de datos.
+ChuspaPulse permite exportar las métricas recolectadas en diferentes formatos para adaptarse a distintos casos de uso, desde la integración con sistemas de monitoreo hasta la generación de reportes o el análisis de datos.
 
 Este documento compara los formatos soportados y ofrece ejemplos prácticos de cada uno.
 
@@ -58,8 +58,8 @@ Memoria: 61.2 %
 ## Prometheus
 
 ```text
-pulso_cpu_pct 23.4
-pulso_memory_pct 61.2
+ChuspaPulse_cpu_pct 23.4
+ChuspaPulse_memory_pct 61.2
 ```
 
 ---
@@ -67,11 +67,11 @@ pulso_memory_pct 61.2
 ## OpenMetrics
 
 ```text
-# TYPE pulso_cpu_pct gauge
-pulso_cpu_pct 23.4
+# TYPE ChuspaPulse_cpu_pct gauge
+ChuspaPulse_cpu_pct 23.4
 
-# TYPE pulso_memory_pct gauge
-pulso_memory_pct 61.2
+# TYPE ChuspaPulse_memory_pct gauge
+ChuspaPulse_memory_pct 61.2
 
 # EOF
 ```
@@ -81,7 +81,7 @@ pulso_memory_pct 61.2
 ## Influx
 
 ```text
-pulso cpu=23.4,memory=61.2
+ChuspaPulse cpu=23.4,memory=61.2
 ```
 
 ---
@@ -128,6 +128,14 @@ Recomendado para:
 - Google Sheets.
 - Herramientas de análisis de datos.
 
+### Errores al exportar a CSV
+
+`Storage::exportToCSV(ruta)` escribe primero en un archivo temporal (`ruta.tmp`) y solo al terminar sin errores lo mueve a `ruta`. Si algo falla (no se puede crear el archivo, falla la consulta a la base de datos, falla la escritura o no se puede mover el temporal):
+
+- lanza `std::runtime_error` con el mensaje `Fallo la exportación CSV a <ruta>: <causa>`;
+- borra el archivo temporal, así que nunca queda un CSV parcial que parezca válido;
+- no modifica el archivo de destino si ya existía.
+
 ---
 
 ## Texto
@@ -142,7 +150,7 @@ Recomendado para:
 
 ## Prometheus
 
-Recomendado cuando Pulso será consultado directamente por Prometheus mediante scraping.
+Recomendado cuando ChuspaPulse será consultado directamente por Prometheus mediante scraping.
 
 ---
 
@@ -182,6 +190,6 @@ Especialmente útil para:
 
 # Conclusiones
 
-Pulso ofrece múltiples formatos de exportación para adaptarse a distintos escenarios de uso.
+ChuspaPulse ofrece múltiples formatos de exportación para adaptarse a distintos escenarios de uso.
 
 La elección del formato depende del destino de las métricas: JSON para automatización, CSV para análisis, Prometheus y OpenMetrics para monitoreo, Influx para plataformas de series temporales, YAML para intercambio de información, Markdown para documentación y texto para inspecciones rápidas.

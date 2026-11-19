@@ -1,6 +1,6 @@
-add_executable(pulso main.cpp)
+add_executable(chuspapulse main.cpp)
 
-target_sources(pulso PRIVATE
+target_sources(chuspapulse PRIVATE
     cli/arg_parser.cpp
     collectors/bateria/bateria_collector.cpp
     collectors/cpu/cpu_usage.cpp
@@ -8,6 +8,7 @@ target_sources(pulso PRIVATE
     collectors/memory/ram_usage.cpp
     collectors/network/network_io.cpp
     collectors/network/net_usage.cpp
+    collectors/uptime/uptime_collector.cpp
     collectors/loadavg/loadavg_collector.cpp
     collectors/procesos/proc_collector.cpp
     collectors/procesos/top_procesos.cpp
@@ -20,6 +21,7 @@ target_sources(pulso PRIVATE
     formatters/formatter_prometheus.cpp
     http/handler_health.cpp
     http/handler_history.cpp
+    http/handler_alerts_history.cpp
     http/handler_metrics.cpp
     platform/linux/collector_cpu.cpp
     storage/schema.cpp
@@ -28,9 +30,10 @@ target_sources(pulso PRIVATE
     utils/formato_bytes.cpp
     utils/logging/logger.cpp
     utils/signal_handler.cpp
-    src/core/version.hpp
-    src/http/handler_version.hpp
-    src/http/handler_version.cpp
+    core/version.hpp
+    http/handler_version.hpp
+    http/handler_version.cpp
+    http/handler_alerts.cpp
     alertas/alerta_umbral.cpp
     alertas/gestor_alertas.cpp
 )
@@ -38,19 +41,19 @@ target_sources(pulso PRIVATE
 # Collector de CPU para Windows: solo se compila en plataforma WIN32.
 # En Linux/macOS este archivo queda completamente excluido del build.
 if(WIN32)
-    target_sources(pulso PRIVATE
+    target_sources(chuspapulse PRIVATE
         platform/windows/collector_cpu.cpp
         platform/windows/uptime_collector.cpp
     )
 endif()
 
-target_compile_features(pulso PRIVATE cxx_std_17)
+target_compile_features(chuspapulse PRIVATE cxx_std_17)
 
-target_include_directories(pulso PRIVATE
+target_include_directories(chuspapulse PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_link_libraries(pulso PRIVATE
+target_link_libraries(chuspapulse PRIVATE
     httplib
     nlohmann_json
     tomlplusplus
@@ -58,4 +61,4 @@ target_link_libraries(pulso PRIVATE
     sqlite3
 )
 
-target_compile_options(pulso PRIVATE -Wall -Wextra -Wpedantic -O2)
+target_compile_options(chuspapulse PRIVATE -Wall -Wextra -Wpedantic -O2)

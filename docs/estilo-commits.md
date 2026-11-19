@@ -1,8 +1,8 @@
-# Estilo de Commits para Pulso
+# Estilo de Commits para ChuspaPulse
 
 ## Introducción
 
-El proyecto Pulso utiliza Conventional Commits para mantener un historial claro y consistente.
+El proyecto ChuspaPulse utiliza Conventional Commits para mantener un historial claro y consistente.
 
 ## Formato
 
@@ -35,7 +35,7 @@ feat(collectors): agregar colector de métricas de CPU
 
 ---
 
-## Ámbitos recomendados para Pulso
+## Ámbitos recomendados para ChuspaPulse
 
 | Ámbito     | Uso                           |
 | ---------- | ----------------------------- |

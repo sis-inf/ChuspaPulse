@@ -2,7 +2,7 @@
 
 ## Descripción
 
-Pulso usa SQLite como base de datos local (`pulso.db`). Al actualizar a una nueva versión, el esquema puede haber cambiado — por ejemplo, se agregaron nuevas columnas o tablas. Este documento explica cómo funciona la inicialización del esquema y cómo migrar bases de datos existentes de versiones anteriores.
+ChuspaPulse usa SQLite como base de datos local (`chuspapulse.db`). Al actualizar a una nueva versión, el esquema puede haber cambiado — por ejemplo, se agregaron nuevas columnas o tablas. Este documento explica cómo funciona la inicialización del esquema y cómo migrar bases de datos existentes de versiones anteriores.
 
 ---
 
@@ -18,7 +18,7 @@ Esto significa que es **idempotente**: se puede ejecutar múltiples veces sobre 
 
 ### Ejemplo
 
-Si en una versión anterior `snapshots` no tenía la columna `hostname`, y actualizas Pulso a una versión que sí la incluye, `inicializarEsquema` **no** agregará esa columna a tu base de datos existente. La tabla ya existe, por lo que el `CREATE TABLE IF NOT EXISTS` no hace nada.
+Si en una versión anterior `snapshots` no tenía la columna `hostname`, y actualizas ChuspaPulse a una versión que sí la incluye, `inicializarEsquema` **no** agregará esa columna a tu base de datos existente. La tabla ya existe, por lo que el `CREATE TABLE IF NOT EXISTS` no hace nada.
 
 ---
 
@@ -46,12 +46,14 @@ ON snapshots(timestamp);
 
 ## Haz un backup antes de actualizar
 
-> **Antes de actualizar Pulso a una nueva versión, siempre haz un backup de tu base de datos.**
+> **Antes de actualizar ChuspaPulse a una nueva versión, siempre haz un backup de tu base de datos.**
 
-Puedes exportar tus datos con el subcomando `storage export`:
+> **Nota:** el subcomando `storage export` todavía no existe en la CLI de ChuspaPulse (`src/cli/arg_parser.cpp` no lo reconoce). Mientras no se implemente, usa el cliente `sqlite3`.
+
+Puedes exportar tus datos a CSV con el cliente `sqlite3`:
 
 ```bash
-pulso storage export --output backup.csv
+sqlite3 -header -csv chuspapulse.db "SELECT * FROM snapshots;" > backup.csv
 ```
 
 Esto genera un archivo CSV con todos los snapshots almacenados que puedes conservar como respaldo.
@@ -60,7 +62,7 @@ Esto genera un archivo CSV con todos los snapshots almacenados que puedes conser
 
 ## Cómo migrar una base de datos existente
 
-Si ya tienes una `pulso.db` de una versión anterior y quieres agregar columnas nuevas sin perder datos, ejecuta las migraciones manualmente con cualquier cliente SQLite.
+Si ya tienes una `chuspapulse.db` de una versión anterior y quieres agregar columnas nuevas sin perder datos, ejecuta las migraciones manualmente con cualquier cliente SQLite.
 
 ### Agregar la columna `hostname` a `snapshots`
 
@@ -79,37 +81,37 @@ UPDATE snapshots SET hostname = 'nombre-de-tu-host' WHERE hostname IS NULL;
 O usando la función de SQLite:
 
 ```bash
-sqlite3 pulso.db "UPDATE snapshots SET hostname = (SELECT value FROM pragma_compile_options WHERE value LIKE 'host%') WHERE hostname IS NULL;"
+sqlite3 chuspapulse.db "UPDATE snapshots SET hostname = (SELECT value FROM pragma_compile_options WHERE value LIKE 'host%') WHERE hostname IS NULL;"
 ```
 
-Si no necesitas datos históricos con hostname, puedes dejarlo como `NULL` — Pulso lo completará automáticamente en los nuevos snapshots.
+Si no necesitas datos históricos con hostname, puedes dejarlo como `NULL` — ChuspaPulse lo completará automáticamente en los nuevos snapshots.
 
 ---
 
-## Proceso recomendado al actualizar Pulso
+## Proceso recomendado al actualizar ChuspaPulse
 
 1. **Exportar datos actuales:**
 ```bash
-   pulso storage export --output backup-$(date +%Y%m%d).csv
+   sqlite3 -header -csv chuspapulse.db "SELECT * FROM snapshots;" > backup-$(date +%Y%m%d).csv
 ```
 
 2. **Hacer copia de la base de datos:**
 ```bash
-   cp pulso.db pulso.db.bak
+   cp chuspapulse.db chuspapulse.db.bak
 ```
 
-3. **Actualizar el binario de Pulso.**
+3. **Actualizar el binario de ChuspaPulse.**
 
 4. **Ejecutar las migraciones manuales** si el esquema cambió (ver sección anterior).
 
-5. **Verificar que Pulso inicia correctamente:**
+5. **Verificar que ChuspaPulse inicia correctamente:**
 ```bash
-   pulso --once
+   chuspapulse --once
 ```
 
 ---
 
 ## Notas
 
-- Si prefieres empezar desde cero, puedes borrar `pulso.db` y Pulso creará una base de datos nueva al iniciar.
+- Si prefieres empezar desde cero, puedes borrar `chuspapulse.db` y ChuspaPulse creará una base de datos nueva al iniciar.
 - Las migraciones automáticas están planificadas para versiones futuras del proyecto.

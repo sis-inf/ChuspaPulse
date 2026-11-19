@@ -1,6 +1,6 @@
 # Configuración HTTPS/TLS
 
-Este documento describe cómo generar un certificado autofirmado para pruebas locales, un ejemplo de configuración de HTTPS/TLS en `pulso.toml` y recomendaciones para el uso de certificados en entornos de producción.
+Este documento describe cómo generar un certificado autofirmado para pruebas locales, un ejemplo de configuración de HTTPS/TLS en `ChuspaPulse.toml` y recomendaciones para el uso de certificados en entornos de producción.
 
 ---
 
@@ -29,9 +29,9 @@ Este comando genera los siguientes archivos:
 
 ---
 
-## 2. Configurar HTTPS/TLS en `pulso.toml`
+## 2. Configurar HTTPS/TLS en `ChuspaPulse.toml`
 
-Una vez disponibles el certificado y la clave privada, configure las rutas correspondientes en el archivo `pulso.toml`.
+Una vez disponibles el certificado y la clave privada, configure las rutas correspondientes en el archivo `ChuspaPulse.toml`.
 
 Ejemplo de configuración:
 

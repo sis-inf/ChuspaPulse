@@ -1,28 +1,40 @@
 #pragma once
 
 #include <httplib.h>
-#include "../core/SystemMonitor.hpp"
-#include "../formatters/formatter_json.hpp"
+#include "../storage/storage.hpp"
 
-namespace pulso::http {
+namespace chuspapulse::http {
 
 /**
  * @brief Registra el handler del endpoint GET /metrics en el servidor HTTP.
  *
- * El handler retorna el snapshot más reciente obtenido directamente desde
- * SystemMonitor, serializado como JSON usando FormatterJSON.
+ * El handler expone el snapshot más reciente guardado en Storage por el
+ * sampler, en el formato de exposición de texto de Prometheus
+ * (`text/plain; version=0.0.4`), con el mismo contenido que
+ * /metrics/prometheus cuando hay datos.
  *
- * - Si hay datos: responde con HTTP 200 y el body en JSON.
- * - Si no hay datos: responde con HTTP 503 y un JSON de error.
+ * El endpoint no recibe parámetros: cualquier parámetro o query string
+ * se rechaza (ver el caso HTTP 400 más abajo).
+ *
+ * - Si la petición incluye parámetros o query string: responde con
+ *   HTTP 400 y el JSON `{"error":"parametros no soportados"}`
+ *   (application/json).
+ * - Si hay datos: responde con HTTP 200 y las métricas.
+ * - Si todavía no hay datos: responde con HTTP 503 y el JSON
+ *   `{"error":"no data available"}` (application/json). A diferencia de
+ *   /metrics/prometheus, que en ese caso responde 200 con cuerpo vacío.
+ * - Si falla la lectura del almacenamiento o la generación de las métricas:
+ *   responde con HTTP 500 y el JSON `{"error":"error interno"}`
+ *   (application/json).
  *
  * Cada request se registra en el log con nivel INFO incluyendo
  * método, ruta y código de respuesta.
  *
- * @param servidor       Referencia al servidor httplib donde se registra el handler.
- * @param system_monitor Referencia al monitor del sistema para obtener las métricas actuales.
+ * @param servidor Referencia al servidor httplib donde se registra el handler.
+ * @param storage  Almacenamiento del que se leen las métricas actuales.
  */
 void HandleMetrics(
-  httplib::Server& servidor,
-  SystemMonitor&   system_monitor);
+  httplib::Server&                     servidor,
+  const chuspapulse::storage::Storage& storage);
 
-} // namespace pulso::http
+} // namespace chuspapulse::http

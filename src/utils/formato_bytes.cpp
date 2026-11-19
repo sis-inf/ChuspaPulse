@@ -4,9 +4,10 @@
 #include <cmath>
 #include <cstddef>
 #include <sstream>
+#include <string>
 #include <iomanip>
 
-namespace pulso::utils {
+namespace chuspapulse::utils {
 
 namespace {
 
@@ -40,4 +41,4 @@ std::string formatearBytesHumanos(double bytes) {
     return oss.str();
 }
 
-} // namespace pulso::utils
+} // namespace chuspapulse::utils

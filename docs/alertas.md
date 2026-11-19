@@ -1,122 +1,153 @@
-# Guía de Configuración y Uso del Sistema de Alertas
+# Guía de alertas: reglas y umbrales
 
-## Introducción
+El módulo `GestorAlertas` evalúa las métricas del sistema en cada ciclo de muestreo. Cuando una alerta cambia de estado, se registra un mensaje de nivel `WARN` en los logs del agente.
 
-El sistema de alertas de Pulso permite detectar automáticamente situaciones anómalas en los recursos monitoreados. Su objetivo es notificar cuando una métrica supera un umbral configurado, permitiendo una respuesta rápida ante posibles problemas de rendimiento o disponibilidad.
+El sistema de alertas de ChuspaPulse notifica cuando una métrica del sistema cumple una condición definida mediante un umbral. Esta guía explica cómo se definen las reglas para CPU, memoria y disco, cómo se configuran los umbrales y cómo se comporta el sistema ante lecturas repetidas.
 
-Los componentes principales son:
+## Componentes principales
 
-* **AlertaUmbral**: representa una regla de alerta basada en un valor límite.
-* **GestorAlertas**: evalúa periódicamente las métricas y determina si una alerta debe activarse o resolverse.
+* **AlertaUmbral**: regla que compara una métrica contra un umbral, con el operador `>` o `<`. Guarda su propio estado (activa o normal).
+* **GestorAlertas**: registra varias reglas, las evalúa contra un `MetricSnapshot`, ejecuta un callback con el mensaje de cada cambio de estado y guarda en la tabla `alerts` las alertas que se activan.
 
----
+## Cómo funciona
 
-## Cómo funcionan las alertas
+1. El `Sampler` recolecta las métricas de todos los collectors.
+2. Guarda el snapshot en la base de datos.
+3. Convierte el snapshot a porcentajes de CPU, RAM y disco.
+4. `GestorAlertas` evalúa cada alerta contra esos valores.
+5. Por cada alerta que cambia de estado, escribe un mensaje de nivel `WARN` en el log. Si la alerta pasa de normal a activa, además guarda un registro en la tabla `alerts` (timestamp, métrica, umbral, valor y mensaje).
 
-El sistema sigue un ciclo continuo de evaluación:
+El ciclo se repite cada `intervalo_segundos` (sección `[sampler]`).
 
-1. Se recopilan las métricas del sistema.
-2. El GestorAlertas obtiene los valores actuales.
-3. Cada métrica se compara con su umbral configurado.
-4. Si el valor supera el umbral, se genera una alerta activa.
-5. Cuando el valor vuelve al rango normal, la alerta se marca como resuelta.
-6. Las alertas pueden consultarse mediante la API del sistema.
+## Regla de umbral (`AlertaUmbral`)
 
-Este proceso se ejecuta automáticamente durante el monitoreo.
+Cada regla se construye con tres parámetros:
 
----
+| Parámetro  | Descripción                                         | Ejemplo  |
+| ---------- | --------------------------------------------------- | -------- |
+| `metrica`  | Nombre de la métrica a evaluar en el snapshot.      | `"cpu"`  |
+| `umbral`   | Valor numérico de referencia.                       | `90.0f`  |
+| `operador` | Comparación: `'>'` (mayor que) o `'<'` (menor que). | `'>'`    |
 
-## Métricas alertables
+La regla está **activa** cuando la métrica cumple la condición.
 
-| Métrica            | Rango normal | Unidad |
-| ------------------ | ------------ | ------ |
-| Uso de CPU         | 0 - 80       | %      |
-| Uso de RAM         | 0 - 75       | %      |
-| Uso de Disco       | 0 - 85       | %      |
-| Temperatura de CPU | 30 - 70      | °C     |
-| Latencia promedio  | 0 - 200      | ms     |
+Errores posibles:
 
-Los valores anteriores son referenciales y pueden ajustarse según las necesidades del entorno.
+* Si el operador no es `>` ni `<`, el constructor lanza `std::invalid_argument`.
+* Si la métrica no es una de las válidas (`cpu`, `cpu.usage_pct`, `ram`, `disk`, `rx_bytes`, `tx_bytes`), `evaluar()` lanza `std::invalid_argument`.
 
----
+### Métricas disponibles
 
-## Configurar umbrales en pulso.toml
+Provienen de `MetricSnapshot`:
 
-Los umbrales de alerta se configuran mediante el archivo `pulso.toml`.
+| Métrica    | Descripción                  | Nombres aceptados          |
+| ---------- | ---------------------------- | -------------------------- |
+| CPU        | Uso de CPU.                  | `"cpu"`, `"cpu.usage_pct"` |
+| RAM        | Uso de memoria RAM.          | `"ram"`                    |
+| Disco      | Uso de disco.                | `"disk"`                   |
+| Red (rx)   | Bytes recibidos.             | `"rx_bytes"`               |
+| Red (tx)   | Bytes enviados.              | `"tx_bytes"`               |
 
-### Ejemplo de configuración
+## Registrar y evaluar reglas (`GestorAlertas`)
+
+```cpp
+chuspapulse::alertas::GestorAlertas gestor;
+
+gestor.addAlerta(AlertaUmbral("cpu", 90.0f, '>'));
+gestor.addAlerta(AlertaUmbral("ram", 85.0f, '>'));
+gestor.addAlerta(AlertaUmbral("disk", 95.0f, '>'));
+
+gestor.setCallback([](const std::string& msg) {
+    std::cout << "ALERTA: " << msg << std::endl;
+});
+
+gestor.evaluar(snapshot);
+```
+
+Comportamiento de `evaluar()`:
+
+* Cada alerta guarda su propio estado y solo emite eventos cuando ese estado cambia.
+* Cambio de normal a activa: llama al callback con el mensaje de la alerta y, si hay base de datos configurada, inserta el registro en la tabla `alerts`.
+* Cambio de activa a normal: llama al callback con el mensaje de recuperación (`Alerta resuelta: ...`). Este evento no se guarda en el historial.
+* Mientras una alerta sigue activa (o sigue normal) en ciclos consecutivos, no se emite nada.
+* No hace nada si no hay alertas registradas. Si no hay callback, solo se omite la notificación.
+* `cantidadAlertas()` devuelve cuántas reglas hay registradas.
+
+### Dónde se configuran los umbrales
+
+El agente toma los umbrales de CPU, RAM y disco del archivo de configuración. Son porcentajes (0 a 100) y se definen en la sección `[alertas]`:
 
 ```toml
-[alertas.cpu]
-umbral = 90
-
-[alertas.ram]
-umbral = 85
-
-[alertas.disco]
-umbral = 95
+[alertas]
+cpu_max = 80.0
+ram_max = 85.0
+disco_max = 90.0
 ```
 
-### Descripción de parámetros
+La sección `[umbrales]`, usada antes, sigue aceptándose por compatibilidad. Si una clave aparece en ambas secciones, prevalece el valor de `[alertas]`. Si el archivo o alguna clave no existe, se usan los valores por defecto anteriores (80, 85 y 90).
 
-| Parámetro | Descripción                                          |
-| --------- | ---------------------------------------------------- |
-| umbral    | Valor límite que activará la alerta.                 |
-| cpu       | Configuración de alertas para uso de CPU.            |
-| ram       | Configuración de alertas para uso de memoria RAM.    |
-| disco     | Configuración de alertas para uso de almacenamiento. |
+> Nota: el archivo de configuración por defecto es `chuspapulse.toml`. Si ese archivo no existe pero existe el nombre histórico `pulso.toml` (el archivo de ejemplo que trae el repositorio), se usa este último. Se puede indicar otro archivo con la opción `--config`.
 
----
+### Ejemplo de salida en el log
 
-## Consultar alertas activas
+Cuando el uso de CPU supera `cpu_max`, aparece una línea de nivel `WARN` con el mensaje de la alerta. Cuando vuelve por debajo del umbral, aparece el mensaje de recuperación:
 
-Las alertas activas pueden consultarse mediante el siguiente endpoint:
-
-```http
-GET /alerts
+```
+Alerta: cpu > 80.000000
+Alerta resuelta: cpu > 80.000000
 ```
 
-### Ejemplo de respuesta
+## Consulta por la API
+
+| Endpoint | Descripción |
+| -------- | ----------- |
+| `GET /alerts` | Alertas activas en este momento, evaluadas contra la última muestra almacenada. |
+| `GET /alerts/history` | Historial de alertas activadas, en formato JSON. |
+
+`GET /alerts` devuelve solo las alertas cuya condición se cumple, y cada una incluye `id` (posición de la regla), `message` y `timestamp` (fecha y hora UTC de la última muestra, en formato ISO 8601). Si ninguna se cumple, la lista llega vacía:
 
 ```json
-[
-  {
-    "metrica": "cpu",
-    "valor": 93,
-    "umbral": 90,
-    "estado": "ACTIVA"
-  }
-]
+{
+  "alerts": [
+    {
+      "id": 1,
+      "message": "Alerta: cpu > 90.000000",
+      "timestamp": "2026-11-17T14:30:00Z"
+    }
+  ]
+}
 ```
 
----
+`/alerts/history` acepta los parámetros opcionales `limite` (entre 1 y 1000, por defecto 100) y `offset` (0 o mayor, por defecto 0). Cada registro incluye `id`, `timestamp`, `metrica`, `umbral`, `valor` y `mensaje`. Con parámetros inválidos responde `400`.
 
-## Ejemplos de alertas comunes
+Ejemplo (usa el puerto de `[servidor]`, por defecto 8080):
 
-### CPU mayor al 90%
+```bash
+curl "http://localhost:8080/alerts/history?limite=10&offset=0"
+```
 
-Se activa cuando la utilización del procesador supera el 90%.
-
-### RAM mayor al 85%
-
-Se activa cuando el consumo de memoria supera el 85%.
-
-### Disco mayor al 95%
-
-Se activa cuando el uso del almacenamiento supera el 95%.
+Para más detalle sobre el historial, ver [historial de alertas](historial-alertas.md).
 
 ---
+
+## Alertas repetidas y falsos positivos
+
+Una alerta se notifica una sola vez al activarse y otra al resolverse. Mientras la métrica siga por encima del umbral, los ciclos siguientes no repiten el aviso ni el registro en el historial.
+
+El código actual no cuenta lecturas consecutivas: la alerta se activa en la primera lectura que cumple la condición. El caso de uso de monitoreo (ver [casos de uso](casos-de-uso.md)) describe como objetivo exigir 3 mediciones consecutivas, pero eso todavía no está implementado.
+
+> **Nota:** ChuspaPulse no aplica un margen de recuperación (histéresis). La alerta se resuelve en cuanto la condición deja de cumplirse.
+
+---
+
+## Comportamiento y limitaciones
+
+* Las alertas solo se evalúan en modo daemon, no con `--once`.
+* Los mensajes del log son de nivel `WARN`: no se ven si `nivel_log` es `"error"`. El historial en la base de datos se guarda igualmente.
 
 ## Buenas prácticas
 
-* Configurar umbrales acordes al comportamiento esperado del sistema.
-* Evitar valores demasiado bajos para reducir falsas alarmas.
-* Revisar periódicamente las alertas activas.
-* Analizar tendencias históricas antes de modificar umbrales.
-* Mantener un equilibrio entre sensibilidad y estabilidad de las alertas.
-
----
-
-## Resumen
-
-El sistema de alertas de Pulso permite supervisar métricas críticas mediante reglas configurables. Gracias a la evaluación automática de umbrales y la consulta de alertas activas, es posible detectar rápidamente situaciones que requieren atención.
+* Elegir umbrales acordes al comportamiento normal del sistema.
+* Evitar umbrales demasiado bajos para reducir falsas alarmas.
+* Considerar el intervalo de muestreo (`intervalo_segundos` en el archivo de configuración): con un intervalo de 10 s, una condición sostenida se detecta en el ciclo siguiente.
+* Revisar periódicamente las alertas activas y el historial.

@@ -1,15 +1,15 @@
-# Casos de Uso - Proyecto Pulso
+# Casos de Uso - Proyecto ChuspaPulse
 
-Este documento define los actores y las funcionalidades principales del agente de monitoreo **Pulso**.
+Este documento define los actores y las funcionalidades principales del agente de monitoreo **ChuspaPulse**.
 
 ## 1. Actores del Sistema
 - **Administrador de Sistemas (SysAdmin):** Responsable de configurar el agente y visualizar las métricas consolidadas.
-- **Agente Pulso:** Actor automatizado que recolecta y envía datos de rendimiento en segundo plano.
+- **Agente ChuspaPulse:** Actor automatizado que recolecta y envía datos de rendimiento en segundo plano.
 
 ## 2. Casos de Uso Principales
 
 ### CU-01: Registro de Métricas de CPU
-- **Actor:** Agente Pulso
+- **Actor:** Agente ChuspaPulse
 - **Descripción:** El agente captura el porcentaje de uso de la CPU en intervalos definidos.
 - **Flujo Principal:**
   1. El agente inicia el ciclo de captura.
@@ -18,31 +18,39 @@ Este documento define los actores y las funcionalidades principales del agente d
 
 ### CU-02: Consulta del Estado General del Sistema
 - **Actor:** Administrador de Sistemas
-- **Descripción:** Permite al administrador obtener un resumen completo del estado actual del sistema desde la terminal.
+- **Descripción:** Permite al administrador obtener una lectura puntual de las métricas del sistema (CPU, memoria, disco, red, entre otras) desde la terminal.
 - **Flujo Principal:**
-  1. El administrador ejecuta `./pulso --status` desde la terminal.
-  2. El Agente Pulso consulta las métricas actuales al sistema operativo.
-  3. Se muestra el estado general: procesos activos, uso de recursos y estado de la red.
+  1. El administrador ejecuta desde la terminal:
+     ```bash
+     ./build/bin/chuspapulse --once --metrics cpu,ram,disk
+     ```
+  2. El Agente ChuspaPulse consulta las métricas actuales al sistema operativo.
+  3. Se muestran los valores recolectados y el proceso finaliza.
 
 ### CU-03: Visualización de Estado de Red
 - **Actor:** Administrador de Sistemas
-- **Descripción:** Permite ver la velocidad de descarga, subida y el estado de la conexión de red del sistema.
+- **Descripción:** Permite consultar las métricas de red del sistema recolectadas por ChuspaPulse.
 - **Flujo Principal:**
-  1. El administrador solicita ver el estado del sistema vía menú o `--status`.
-  2. El Agente Pulso consulta las métricas de red al sistema operativo.
-  3. Se muestra la velocidad de descarga, subida en Mbps y el estado de conexión.
+  1. El administrador ejecuta la captura puntual:
+     ```bash
+     ./build/bin/chuspapulse --once
+     ```
+  2. El Agente ChuspaPulse consulta las métricas de red al sistema operativo.
+  3. Se muestran las métricas de red junto con el resto de la captura.
 
-### CU-04: Navegación por el Menú Interactivo
+### CU-04: Ejecución Continua con Intervalo y Métricas Seleccionadas
 - **Actor:** Administrador de Sistemas
-- **Descripción:** Permite al administrador interactuar con Pulso a través de un menú de opciones en la terminal.
+- **Descripción:** Permite al administrador ejecutar ChuspaPulse en la terminal de forma continua, eligiendo el intervalo de muestreo y las métricas a recolectar.
 - **Flujo Principal:**
-  1. El administrador ejecuta `./pulso` sin argumentos.
-  2. Pulso presenta el menú con las opciones: Ver estado, Actualizar datos, Salir.
-  3. El administrador selecciona una opción ingresando el número correspondiente.
-  4. Pulso ejecuta la acción y muestra el resultado.
+  1. El administrador ejecuta:
+     ```bash
+     ./build/bin/chuspapulse --interval 5000 --metrics cpu,ram
+     ```
+  2. ChuspaPulse recolecta las métricas indicadas (CPU y RAM) cada 5000 ms.
+  3. El administrador detiene la ejecución con `Ctrl+C` cuando lo desee.
 
 ### CU-05: Recolección de Métricas de Memoria RAM
-- **Actor:** Agente Pulso
+- **Actor:** Agente ChuspaPulse
 - **Descripción:** El agente captura el estado actual de la memoria RAM del sistema, incluyendo uso total y disponible.
 - **Flujo Principal:**
   1. El agente consulta la memoria RAM al sistema operativo.
@@ -62,23 +70,23 @@ Este documento define los actores y las funcionalidades principales del agente d
   5. Guarda el archivo de configuración.
   6. Reinicia el servicio para aplicar los cambios:
      ```bash
-     sudo systemctl restart pulso
+     sudo systemctl restart chuspapulse
      ```
 - **Postcondición:** El sistema generará una alerta cuando el uso de CPU supere el 90% durante 3 mediciones consecutivas.
 
 ---
 
-### CU-Export-01: Exportación de historial de métricas a CSV
+### CU-Export-01: Exportación de una captura de métricas a CSV
 - **Actor:** Administrador de Sistemas
-- **Descripción:** Permite extraer el historial de métricas almacenado y guardarlo en formato CSV para su análisis en herramientas externas.
+- **Descripción:** Permite guardar una captura puntual de métricas en formato CSV para su análisis en herramientas externas. La exportación de historial por rango de horas todavía no está disponible.
 - **Flujo Principal:**
   1. El administrador abre la terminal en el directorio raíz del proyecto.
-  2. Ejecuta el comando de exportación:
+  2. Ejecuta la captura única con formato CSV y redirige la salida a un archivo:
      ```bash
-     ./build/bin/pulso --export csv --output metricas.csv --last-hours 24
+     ./build/bin/chuspapulse --once --format csv > metricas.csv
      ```
-  3. El sistema procesa los datos y genera el archivo de salida con el historial completo.
-- **Postcondición:** Se crea el archivo `metricas.csv` con los valores de CPU, memoria, disco y red de las últimas 24 horas.
+  3. El agente obtiene los valores actuales y los escribe en el archivo.
+- **Postcondición:** Se crea el archivo `metricas.csv` con los valores de CPU, memoria y disco del momento de la captura.
 
 ---
 
@@ -89,7 +97,7 @@ Este documento define los actores y las funcionalidades principales del agente d
   1. El administrador abre la terminal en el directorio raíz del proyecto.
   2. Ejecuta el modo de captura única:
      ```bash
-     ./build/bin/pulso --once
+     ./build/bin/chuspapulse --once
      ```
-  3. El agente obtiene los valores actuales de todos los recursos y los muestra en pantalla.
+  3. El agente obtiene los valores actuales de las métricas habilitadas y los muestra en pantalla.
 - **Postcondición:** Se muestran las métricas del momento y el proceso finaliza automáticamente.

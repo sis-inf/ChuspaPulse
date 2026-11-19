@@ -1,16 +1,16 @@
-# Benchmark de Collectors (pulso bench)
+# Benchmark de Collectors (ChuspaPulse bench)
 
 Documentacion del subcomando bench para medir el overhead de los collectors.
 
 ## Comando
 
-    ./pulso bench --iteraciones N
+    ./ChuspaPulse bench --iteraciones N
 
 Donde N es el numero de iteraciones a ejecutar para calcular el promedio. Se recomienda usar al menos 100 iteraciones para obtener resultados estables.
 
 Ejemplo:
 
-    ./pulso bench --iteraciones 100
+    ./ChuspaPulse bench --iteraciones 100
 
 ## Ejemplo de salida
 
@@ -31,7 +31,7 @@ Ejemplo:
 
 ### Total
 
-El valor Total representa el tiempo que pulso necesita para ejecutar todos los collectors en un ciclo de muestreo. Este valor es el mas importante para configurar el intervalo.
+El valor Total representa el tiempo que ChuspaPulse necesita para ejecutar todos los collectors en un ciclo de muestreo. Este valor es el mas importante para configurar el intervalo.
 
 ### Intervalo minimo recomendado
 
@@ -43,7 +43,7 @@ En el ejemplo anterior: 5.58ms * 2 = ~12ms, lo que en la practica se redondea al
 
 ## Configurar el intervalo segun los resultados
 
-Una vez obtenidos los resultados del bench, ajustar intervalo_segundos en pulso.toml:
+Una vez obtenidos los resultados del bench, ajustar intervalo_segundos en ChuspaPulse.toml:
 
     [sampler]
     intervalo_segundos = 10
@@ -63,7 +63,7 @@ Guia de referencia:
 
 En maquinas con poco CPU o disco lento, los collectors de disk y network pueden tardar mas. Ejecutar el bench en la maquina objetivo:
 
-    ./pulso bench --iteraciones 200
+    ./ChuspaPulse bench --iteraciones 200
 
 Si el total supera los 500ms, usar un intervalo de al menos 15 segundos:
 
@@ -79,4 +79,4 @@ En servidores donde se necesita mayor frecuencia de muestreo, verificar que el b
 
 ### Identificar collectors lentos
 
-Si el bench muestra que un collector especifico es lento (por ejemplo disk con mas de 5ms), se puede desactivar ese collector en pulso.toml para reducir el overhead total.
+Si el bench muestra que un collector especifico es lento (por ejemplo disk con mas de 5ms), se puede desactivar ese collector en ChuspaPulse.toml para reducir el overhead total.

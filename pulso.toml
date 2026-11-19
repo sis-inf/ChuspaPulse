@@ -1,11 +1,16 @@
-﻿# Archivo de configuración del agente pulso
+﻿# Archivo de configuración del agente chuspapulse
 # Todas las opciones tienen valores por defecto; este archivo muestra los valores
 # explícitos para fines de documentación.
+#
+# También se aceptan las claves generales en la raíz y las secciones
+# [servidor] y [umbrales]. Si ambas formas definen la misma clave,
+# prevalece el valor de la sección que se muestra en este ejemplo.
 
+[general]
 # Nivel de log: debug, info, warn, error
 nivel_log = "info"
 
-[servidor]
+[http]
 # Dirección IP en la que escucha el servidor HTTP.
 # 0.0.0.0 acepta conexiones desde cualquier interfaz.
 host = "0.0.0.0"
@@ -21,4 +26,9 @@ intervalo_segundos = 10
 [storage]
 # Ruta del archivo de base de datos SQLite.
 # Puede ser relativa al directorio de ejecución o absoluta.
-ruta_db = "pulso.db"
+ruta_db = "chuspapulse.db"
+
+[alertas]
+cpu_max = 80.0
+ram_max = 85.0
+disco_max = 90.0

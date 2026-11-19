@@ -1,9 +1,10 @@
+
 #ifndef PULSO_UTILS_FORMATO_BYTES_HPP
 #define PULSO_UTILS_FORMATO_BYTES_HPP
 
 #include <string>
 
-namespace pulso::utils {
+namespace chuspapulse::utils {
 
 /**
  * @brief Formatea un valor en bytes a una representacion legible para
@@ -27,6 +28,6 @@ namespace pulso::utils {
  */
 std::string formatearBytesHumanos(double bytes);
 
-} // namespace pulso::utils
+} // namespace chuspapulse::utils
 
 #endif // PULSO_UTILS_FORMATO_BYTES_HPP

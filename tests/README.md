@@ -1,6 +1,6 @@
-# Guía de pruebas de Pulso
+# Guía de pruebas de ChuspaPulse
 
-Este documento describe cómo compilar, ejecutar y extender los tests del proyecto Pulso.
+Este documento describe cómo compilar, ejecutar y extender los tests del proyecto ChuspaPulse.
 
 ## Compilar los tests
 

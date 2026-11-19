@@ -11,8 +11,8 @@
 
 #include "collectors/memory/ram_usage.hpp"
 
-using pulso::collectors::memory::getRamUsage;
-using pulso::collectors::memory::RamInfo;
+using chuspapulse::collectors::memory::getRamUsage;
+using chuspapulse::collectors::memory::RamInfo;
 
 namespace {
 
@@ -84,4 +84,42 @@ TEST_F(RamUsageTest, LanzaRuntimeErrorParaRutaInexistente) {
   const std::string ruta_inexistente = std::string(::testing::TempDir()) + "/no_existe.txt";
 
   EXPECT_THROW(getRamUsage(ruta_inexistente), std::runtime_error);
+}
+TEST_F(RamUsageTest, MemoriaTotalEnCeroLanzaError) {
+  writeMockMeminfo(mock_path_, 0, 1024, 512);
+
+  EXPECT_THROW(getRamUsage(mock_path_), std::runtime_error);
+}
+
+TEST_F(RamUsageTest, MemoriaDisponibleEnCeroLanzaError) {
+  writeMockMeminfo(mock_path_, 4096, 0, 512);
+
+  EXPECT_THROW(getRamUsage(mock_path_), std::runtime_error);
+}
+
+TEST_F(RamUsageTest, ArchivoVacioLanzaError) {
+  std::ofstream archivo(mock_path_);
+  ASSERT_TRUE(archivo.is_open());
+  archivo.close();
+
+  EXPECT_THROW(getRamUsage(mock_path_), std::runtime_error);
+}
+
+TEST_F(RamUsageTest, FaltaMemAvailableLanzaError) {
+  std::ofstream archivo(mock_path_);
+  ASSERT_TRUE(archivo.is_open());
+  archivo << "MemTotal: 4096 kB\n";
+  archivo.close();
+
+  EXPECT_THROW(getRamUsage(mock_path_), std::runtime_error);
+}
+
+TEST_F(RamUsageTest, MemoriaTotalIgualDisponible) {
+  writeMockMeminfo(mock_path_, 4096, 4096, 1024);
+
+  RamInfo info = getRamUsage(mock_path_);
+
+  EXPECT_EQ(info.total, 4096ULL * 1024);
+  EXPECT_EQ(info.available, 4096ULL * 1024);
+  EXPECT_EQ(info.used, 0ULL);
 }
