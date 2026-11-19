@@ -1,6 +1,6 @@
 #include "loadavg_collector.h"
 #include <fstream>
-#include <stdexcept>
+#include "../error_recoleccion.hpp"
 #include <cmath>
 
 // Función auxiliar para asegurar precisión de dos decimales
@@ -11,26 +11,45 @@ static float redondearDosDecimales(float val) {
 LoadAvgInfo getLoadAverage() {
     // Abrir el archivo virtual del sistema operativo Linux
     std::ifstream file("/proc/loadavg");
-    
-    // Criterio de aceptación: Lanzar std::runtime_error si no existe o no se puede abrir
+
+    // Controlar errores de apertura
     if (!file.is_open()) {
-        throw std::runtime_error("Error: No se pudo abrir o no existe el archivo /proc/loadavg");
+        throw chuspapulse::collectors::ErrorRecoleccion(
+            "No se pudo abrir el archivo /proc/loadavg");
     }
-    
+
     LoadAvgInfo info{0.0f, 0.0f, 0.0f};
-    
+
     // Leer y parsear los primeros 3 valores float separados por espacios en blanco
     if (!(file >> info.load1 >> info.load5 >> info.load15)) {
-        throw std::runtime_error("Error: El formato de /proc/loadavg es invalido");
+        if (file.bad()) {
+            throw chuspapulse::collectors::ErrorRecoleccion(
+                "Error de lectura en el archivo /proc/loadavg");
+        }
+
+        throw chuspapulse::collectors::ErrorRecoleccion(
+            "Formato invalido o datos incompletos en /proc/loadavg");
     }
-    
+
+    // Validar los valores obtenidos
+    if (!std::isfinite(info.load1) ||
+        !std::isfinite(info.load5) ||
+        !std::isfinite(info.load15) ||
+        info.load1 < 0.0f ||
+        info.load5 < 0.0f ||
+        info.load15 < 0.0f) {
+        throw chuspapulse::collectors::ErrorRecoleccion(
+            "Valores de carga invalidos en /proc/loadavg");
+    }
+
     // Normalizar asegurando precisión de dos decimales
     info.load1 = redondearDosDecimales(info.load1);
     info.load5 = redondearDosDecimales(info.load5);
     info.load15 = redondearDosDecimales(info.load15);
-    
+
     return info;
 }
+
 
 namespace chuspapulse::collectors {
 
