@@ -13,6 +13,7 @@
 
 // Config
 #include "config/config.hpp"
+#include "core/version.hpp"
 
 // Logger
 #include "utils/logging/logger.hpp"
@@ -57,21 +58,18 @@
 #include "core/types.hpp"
 #include "core/version.hpp"
 
-// Alias temporal de compatibilidad para los componentes que aún usan pulso::.
-namespace pulso = chuspapulse;
-
 // Signal handler
 extern std::atomic<bool> isRunning;
 void setupSignalHandler();
 bool consume_reload_request();
-class CollectorProcesos : public pulso::collectors::ICollector {
+class CollectorProcesos : public chuspapulse::collectors::ICollector {
 public:
     std::string nombre() const override {
         return "procesos";
     }
 
-    std::vector<pulso::core::Metrica> recolectar() override {
-        pulso::collectors::ProcInfo info = pulso::collectors::getProcInfo();
+    std::vector<chuspapulse::core::Metrica> recolectar() override {
+        chuspapulse::collectors::ProcInfo info = chuspapulse::collectors::getProcInfo();
         auto ts = std::time(nullptr);
 
         return {
@@ -82,13 +80,13 @@ public:
     }
 };
 
-class CollectorLoadAvg : public pulso::collectors::ICollector {
+class CollectorLoadAvg : public chuspapulse::collectors::ICollector {
 public:
     std::string nombre() const override {
         return "loadavg";
     }
 
-    std::vector<pulso::core::Metrica> recolectar() override {
+    std::vector<chuspapulse::core::Metrica> recolectar() override {
         LoadAvgInfo info = getLoadAverage();
         auto ts = std::time(nullptr);
 
@@ -100,13 +98,13 @@ public:
     }
 };
 
-class CollectorUptime : public pulso::collectors::ICollector {
+class CollectorUptime : public chuspapulse::collectors::ICollector {
 public:
     std::string nombre() const override {
         return "uptime";
     }
 
-    std::vector<pulso::core::Metrica> recolectar() override {
+    std::vector<chuspapulse::core::Metrica> recolectar() override {
         UptimeInfo info = getUptime();
         auto ts = std::time(nullptr);
 
@@ -116,13 +114,13 @@ public:
     }
 };
 
-class CollectorTemperatura : public pulso::collectors::ICollector {
+class CollectorTemperatura : public chuspapulse::collectors::ICollector {
 public:
     std::string nombre() const override {
         return "temperatura";
     }
 
-    std::vector<pulso::core::Metrica> recolectar() override {
+    std::vector<chuspapulse::core::Metrica> recolectar() override {
         ::collectors::TempInfo info = ::collectors::getTempInfo();
 
         if (!info.disponible) {
@@ -147,16 +145,16 @@ public:
  * Usa los formatters OFICIALES del proyecto (JSON, CSV, Prometheus).
  */
 static int run_once_mode(
-    const std::vector<std::shared_ptr<pulso::collectors::ICollector>>& collectors,
+    const std::vector<std::shared_ptr<chuspapulse::collectors::ICollector>>& collectors,
     const std::string& format)
 {
-    using pulso::utils::logging::Logger;
+    using chuspapulse::utils::logging::Logger;
     auto& log = Logger::instancia();
 
     log.info("Modo once: ejecutando coleccion unica...");
 
     // 1. COLECCIONAR: ejecutar cada collector una sola vez
-    std::vector<std::vector<pulso::core::Metrica>> all_metrics;
+    std::vector<std::vector<chuspapulse::core::Metrica>> all_metrics;
     for (const auto& collector : collectors)
     {
         auto metrics = collector->recolectar();
@@ -164,7 +162,7 @@ static int run_once_mode(
     }
 
     // 2. CONSTRUIR SNAPSHOT
-    pulso::core::Snapshot snapshot;
+    chuspapulse::core::Snapshot snapshot;
     snapshot.timestamp = std::time(nullptr);
     for (const auto& metrics : all_metrics)
     {
@@ -175,29 +173,29 @@ static int run_once_mode(
     }
 
     // 3. FORMATEAR con los formatters OFICIALES
-std::unique_ptr<pulso::formatters::IFormatter> formatter;
+std::unique_ptr<chuspapulse::formatters::IFormatter> formatter;
 
 if (format == "json")
 {
-    formatter = std::make_unique<pulso::formatters::FormatterJSON>();
+    formatter = std::make_unique<chuspapulse::formatters::FormatterJSON>();
 }
 else if (format == "csv")
 {
-    formatter = std::make_unique<pulso::formatters::FormatterCSV>();
+    formatter = std::make_unique<chuspapulse::formatters::FormatterCSV>();
 }
 else if (format == "prometheus")
 {
-    formatter = std::make_unique<pulso::formatters::FormatterPrometheus>();
+    formatter = std::make_unique<chuspapulse::formatters::FormatterPrometheus>();
 }
 else if (format == "text")
 {
-    formatter = std::make_unique<pulso::formatters::FormatterText>();
+    formatter = std::make_unique<chuspapulse::formatters::FormatterText>();
 }
 
 // Validación explícita del formato recibido por CLI
 if (!formatter)
 {
-    std::cerr << "[pulso] Formato no soportado: "
+    std::cerr << "[chuspapulse] Formato no soportado: "
               << format
               << "\n";
 
@@ -224,10 +222,10 @@ std::string output = formatter->formatear(snapshot);
  * CPU llega en porcentaje. Disco y RAM llegan en bytes, así que se
  * convierten a porcentaje para poder compararlos con los umbrales.
  */
-static pulso::MetricSnapshot construirMetricSnapshot(
-    const pulso::core::Snapshot& snap)
+static chuspapulse::MetricSnapshot construirMetricSnapshot(
+    const chuspapulse::core::Snapshot& snap)
 {
-    pulso::MetricSnapshot ms;
+    chuspapulse::MetricSnapshot ms;
 
     double discoUsado = 0.0;
     double discoTotal = 0.0;
@@ -248,7 +246,7 @@ static pulso::MetricSnapshot construirMetricSnapshot(
 
     // La métrica "memory.used" no trae el total, así que se consulta aparte.
     try {
-        const auto ram = pulso::collectors::memory::getRamUsage();
+        const auto ram = chuspapulse::collectors::memory::getRamUsage();
         if (ram.total > 0) {
             ms.ram = static_cast<double>(ram.used) /
                      static_cast<double>(ram.total) * 100.0;
@@ -268,8 +266,8 @@ int main(int argc, char* argv[]) {
     // -------------------------------------------------------------------------
     // 1. Parsear argumentos CLI
     // -------------------------------------------------------------------------
-    pulso::cli::CliOptions cli_opts;
-    if (!pulso::cli::parse_arguments(argc, argv, cli_opts)) {
+    chuspapulse::cli::CliOptions cli_opts;
+    if (!chuspapulse::cli::parse_arguments(argc, argv, cli_opts)) {
         return 1;
     }
 
@@ -279,19 +277,19 @@ int main(int argc, char* argv[]) {
     // -------------------------------------------------------------------------
     // 2. Cargar configuracion
     // -------------------------------------------------------------------------
-    pulso::config::Config cfg;
+    chuspapulse::config::Config cfg;
     try {
-        cfg = pulso::config::cargar(config_path);
-    } catch (const pulso::config::ErrorConfig& e) {
-        std::cerr << "[pulso] Error al cargar configuracion: " << e.what() << "\n";
+        cfg = chuspapulse::config::cargar(config_path);
+    } catch (const chuspapulse::config::ErrorConfig& e) {
+        std::cerr << "[chuspapulse] Error al cargar configuracion: " << e.what() << "\n";
         return 1;
     }
 
     // -------------------------------------------------------------------------
     // 3. Configurar logger
     // -------------------------------------------------------------------------
-    using pulso::utils::logging::LogLevel;
-    using pulso::utils::logging::Logger;
+    using chuspapulse::utils::logging::LogLevel;
+    using chuspapulse::utils::logging::Logger;
 
     auto& log = Logger::instancia();
     if      (cfg.nivel_log == "debug") log.setMinLevel(LogLevel::DEBUG);
@@ -299,12 +297,12 @@ int main(int argc, char* argv[]) {
     else if (cfg.nivel_log == "error") log.setMinLevel(LogLevel::ERROR);
     else                               log.setMinLevel(LogLevel::INFO);
 
-    log.info("pulso v" + pulso::APP_VERSION + " iniciando");
+    log.info("chuspapulse v" + chuspapulse::APP_VERSION + " iniciando");
 
     // -------------------------------------------------------------------------
     // 4. Collectors (comun para modo once Y modo daemon)
     // -------------------------------------------------------------------------
-    std::vector<std::shared_ptr<pulso::collectors::ICollector>> collectors;
+    std::vector<std::shared_ptr<chuspapulse::collectors::ICollector>> collectors;
 
     // Si no se pasa --metrics mantiene comportamiento actual:
     // todos los collectors activos por defecto
@@ -315,32 +313,32 @@ int main(int argc, char* argv[]) {
     if (cli_opts.monitor.cpu || usar_todos)
     {
        collectors.push_back(
-          std::make_shared<pulso::collectors::CollectorCPU>()
+          std::make_shared<chuspapulse::collectors::CollectorCPU>()
        );
     }
 
     if (cli_opts.monitor.ram || usar_todos)
     {
        collectors.push_back(
-          std::make_shared<pulso::collectors::memory::CollectorMemory>()
+          std::make_shared<chuspapulse::collectors::memory::CollectorMemory>()
        );
     }
 
     // CollectorBateria se mantiene activo porque todavía no existe flag dedicado
      collectors.push_back(
-        std::make_shared<pulso::collectors::bateria::CollectorBateria>()
+        std::make_shared<chuspapulse::collectors::bateria::CollectorBateria>()
      );
 
     if (cli_opts.monitor.disk || usar_todos)
     {
         collectors.push_back(
-            std::make_shared<pulso::collectors::disk::DiskCollector>()
+            std::make_shared<chuspapulse::collectors::disk::DiskCollector>()
         );
     }
 
     // La CLI todavía no tiene un flag dedicado para red, por eso se mantiene activa.
     collectors.push_back(
-        std::make_shared<pulso::collectors::network::NetworkCollector>()
+        std::make_shared<chuspapulse::collectors::network::NetworkCollector>()
     );
     collectors.push_back(
         std::make_shared<CollectorProcesos>()
@@ -374,8 +372,8 @@ int main(int argc, char* argv[]) {
     log.info("Puerto: "        + std::to_string(cfg.servidor.puerto));
     log.info("Base de datos: " + cfg.storage.ruta_db);
 
-    // Abrir base de datos e inicializar esquema
-    pulso::storage::Storage storage(cfg.storage.ruta_db);
+    // Abrir el almacenamiento (el constructor inicializa el esquema)
+    chuspapulse::storage::Storage storage(cfg.storage.ruta_db);
 
 
     // Gestor de alertas con umbrales leídos desde pulso.toml
@@ -384,18 +382,18 @@ int main(int argc, char* argv[]) {
         cfg.storage.ruta_db,
         SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE,
         5000);  // espera hasta 5 s si el sampler está escribiendo
-    pulso::storage::inicializarEsquema(alertasDb);
-    pulso::alertas::GestorAlertas gestorAlertas(alertasDb);
-    gestorAlertas.addAlerta(pulso::alertas::AlertaUmbral(
+    chuspapulse::storage::inicializarEsquema(alertasDb);
+    chuspapulse::alertas::GestorAlertas gestorAlertas(alertasDb);
+    gestorAlertas.addAlerta(chuspapulse::alertas::AlertaUmbral(
         "cpu", static_cast<float>(cfg.umbrales.cpu_max), '>'));
-    gestorAlertas.addAlerta(pulso::alertas::AlertaUmbral(
+    gestorAlertas.addAlerta(chuspapulse::alertas::AlertaUmbral(
         "ram", static_cast<float>(cfg.umbrales.ram_max), '>'));
-    gestorAlertas.addAlerta(pulso::alertas::AlertaUmbral(
+    gestorAlertas.addAlerta(chuspapulse::alertas::AlertaUmbral(
         "disk", static_cast<float>(cfg.umbrales.disco_max), '>'));
 
     // Cuando una alerta se dispara, queda registrada en el log
     gestorAlertas.setCallback([](const std::string& mensaje) {
-        pulso::utils::logging::Logger::instancia().warn(mensaje);
+        chuspapulse::utils::logging::Logger::instancia().warn(mensaje);
     });
 
     log.info("GestorAlertas activo -> Umbrales: CPU=" +
@@ -405,14 +403,14 @@ int main(int argc, char* argv[]) {
 
     // Sampler (bucle de colección); en cada ciclo evalúa las alertas.
     // --interval prevalece sobre sampler.intervalo_segundos.
-    const int intervalo_ms = pulso::cli::resolver_intervalo_ms(cli_opts, cfg);
+    const int intervalo_ms = chuspapulse::cli::resolver_intervalo_ms(cli_opts, cfg);
     log.info("Intervalo de muestreo: " + std::to_string(intervalo_ms) + " ms");
 
-    pulso::sampler::Sampler sampler(
+    chuspapulse::sampler::Sampler sampler(
         collectors,
         storage,
         intervalo_ms,
-        [&gestorAlertas](const pulso::core::Snapshot& snap) {
+        [&gestorAlertas](const chuspapulse::core::Snapshot& snap) {
             gestorAlertas.evaluar(construirMetricSnapshot(snap));
         }
     );
@@ -424,7 +422,7 @@ int main(int argc, char* argv[]) {
 
     // Servidor HTTP + handlers
     httplib::Server server;
-    pulso::formatters::FormatterJSON formatterJson;
+    chuspapulse::formatters::FormatterJSON formatterJson;
 
     auto start_time = std::chrono::steady_clock::now();
 
@@ -434,7 +432,7 @@ int main(int argc, char* argv[]) {
         httplib::Response& res)
     {
         res.set_content(
-            pulso::http::handleHealth(start_time),
+            chuspapulse::http::handleHealth(start_time),
             "application/json"
         );
     });
@@ -444,7 +442,7 @@ int main(int argc, char* argv[]) {
         const httplib::Request&,
         httplib::Response& res)
     {
-        const auto resultado = pulso::http::handleReadiness({
+        const auto resultado = chuspapulse::http::handleReadiness({
             {"storage", [&storage]() { storage.total(); return true; }},
             {"sampler", [&sampler]() { return sampler.corriendo(); }},
         });
@@ -473,7 +471,7 @@ server.Get("/version", [](
 
     try {
         res.set_content(
-            pulso::http::handleVersion(),
+            chuspapulse::http::handleVersion(),
             "application/json"
         );
     } catch (...) {
@@ -485,7 +483,7 @@ server.Get("/version", [](
     }
 });
 server.Get("/config", [&cfg](const httplib::Request&, httplib::Response& res) {
-    res.set_content(pulso::http::handleConfig(cfg), "application/json");
+    res.set_content(chuspapulse::http::handleConfig(cfg), "application/json");
 });
 
     // GET /alerts
@@ -493,29 +491,29 @@ server.Get("/config", [&cfg](const httplib::Request&, httplib::Response& res) {
         const httplib::Request&,
         httplib::Response& res)
     {
-        pulso::MetricSnapshot snap;  // en ceros si todavía no hay datos
+        chuspapulse::MetricSnapshot snap;  // en ceros si todavía no hay datos
         if (auto ultimo = storage.last()) {
             snap = construirMetricSnapshot(*ultimo);
         }
 
         res.status = 200;
         res.set_content(
-            pulso::http::handleAlerts(gestorAlertas, snap),
+            chuspapulse::http::handleAlerts(gestorAlertas, snap),
             "application/json"
         );
     });
 
 
     // GET /metrics — último snapshot de Storage en formato Prometheus
-    pulso::http::HandleMetrics(server, storage);
+    chuspapulse::http::HandleMetrics(server, storage);
 
     // GET /history
-    pulso::http::registrarHistory(server, storage, formatterJson);
+    chuspapulse::http::registrarHistory(server, storage, formatterJson);
 
     // GET /metrics/prometheus
-    pulso::http::registrarPrometheus(server, storage);
+    chuspapulse::http::registrarPrometheus(server, storage);
     // GET /alerts/history
-    pulso::http::registrarAlertsHistory(server, gestorAlertas);
+    chuspapulse::http::registrarAlertsHistory(server, gestorAlertas);
 
 
     // Arrancar servidor HTTP en thread separado.
@@ -539,11 +537,11 @@ server.Get("/config", [&cfg](const httplib::Request&, httplib::Response& res) {
         if (consume_reload_request()) {
             log.info("SIGHUP recibido: recargando configuracion desde " + config_path);
 
-            pulso::config::Config recargada = cfg;
+            chuspapulse::config::Config recargada = cfg;
             std::string error;
 
-            if (pulso::config::recargar(config_path, recargada, error)) {
-                const auto campos = pulso::config::camposModificados(cfg, recargada);
+            if (chuspapulse::config::recargar(config_path, recargada, error)) {
+                const auto campos = chuspapulse::config::camposModificados(cfg, recargada);
 
                 if (campos.empty()) {
                     log.info("Configuracion recargada y valida: sin cambios.");
@@ -572,7 +570,7 @@ server.Get("/config", [&cfg](const httplib::Request&, httplib::Response& res) {
     server.stop();
     if (http_thread.joinable()) http_thread.join();
     sampler.detener();
-    log.info("pulso detenido correctamente.");
+    log.info("chuspapulse detenido correctamente.");
 
     return 0;
 }
