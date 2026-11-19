@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CHUSPAPULSE_CORE_TYPES_HPP
+#define CHUSPAPULSE_CORE_TYPES_HPP
 
 #include <string>
 #include <vector>
@@ -40,3 +41,4 @@ struct Snapshot {
     std::vector<Metrica> metricas;
 };
 } // namespace chuspapulse::core
+#endif // CHUSPAPULSE_CORE_TYPES_HPP
