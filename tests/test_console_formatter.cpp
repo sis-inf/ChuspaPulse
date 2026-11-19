@@ -124,3 +124,56 @@ TEST(ConsoleFormatterTest, AliasDeMetricasConservanLaTabla) {
 
   EXPECT_EQ(formatAsTable(alias), formatAsTable(original));
 }
+
+TEST(ConsoleFormatterTest, PrintMetricsOmiteValoresNegativos) {
+  const std::map<std::string, double> data = {
+      {"CPU", -15.0},
+      {"RAM", 40.0},
+      {"DISCO", 0.0}
+  };
+
+  std::ostringstream output;
+  auto *oldCout = std::cout.rdbuf(output.rdbuf());
+
+  printMetrics(data);
+
+  std::cout.rdbuf(oldCout);
+
+  const std::string result = output.str();
+
+  EXPECT_EQ(result.find("CPU:"), std::string::npos);
+  EXPECT_NE(result.find("RAM:"), std::string::npos);
+  EXPECT_NE(result.find("DISCO:"), std::string::npos);
+}
+
+TEST(ConsoleFormatterTest, PrintMetricsConMapaVacioNoGeneraSalida) {
+  const std::map<std::string, double> data;
+
+  std::ostringstream output;
+  auto *oldCout = std::cout.rdbuf(output.rdbuf());
+
+  printMetrics(data);
+
+  std::cout.rdbuf(oldCout);
+
+  EXPECT_TRUE(output.str().empty());
+}
+
+TEST(ConsoleFormatterTest, MetricaDesconocidaNoAlteraLaTabla) {
+  const auto original = crearSnapshotConMetricas();
+  auto conMetricaDesconocida = original;
+
+  conMetricaDesconocida.metricas.push_back({
+      "metrica.desconocida",
+      -100.0,
+      "bytes",
+      1700000000
+  });
+
+  const std::string tablaOriginal = formatAsTable(original);
+  const std::string tablaModificada = formatAsTable(conMetricaDesconocida);
+
+  EXPECT_EQ(tablaModificada, tablaOriginal);
+  EXPECT_EQ(tablaModificada.find("metrica.desconocida"),
+            std::string::npos);
+}
