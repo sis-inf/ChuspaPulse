@@ -1,6 +1,6 @@
 #include "disk_usage.h"
 #include <sys/statvfs.h>
-#include <stdexcept>
+#include "../error_recoleccion.hpp"
 #include <cerrno>
 #include <cstring>
 #include <cstdint>
@@ -21,13 +21,18 @@ struct DiskUsage {
 ///          used  = total - free.
 /// @param ruta Ruta del punto de montaje a consultar (por defecto "/").
 /// @return Estructura DiskUsage con total, usado y libre en bytes.
-/// @throws std::runtime_error si statvfs falla, con el errno correspondiente.
+/// @throws chuspapulse::collectors::ErrorRecoleccion si statvfs falla,
+/// incluyendo la ruta consultada y el código errno correspondiente.
 DiskUsage getDiskUsage(const std::string& ruta = "/") {
-    struct statvfs buf;
+    struct statvfs buf{};
 
     if (statvfs(ruta.c_str(), &buf) != 0) {
-        throw std::runtime_error(
-            std::string("Error al leer métricas de disco: ") + std::strerror(errno)
+        const int codigo_errno = errno;
+
+        throw chuspapulse::collectors::ErrorRecoleccion(
+            "Error al leer métricas de disco en la ruta '" + ruta +
+            "': " + std::strerror(codigo_errno) +
+            " (errno: " + std::to_string(codigo_errno) + ")"
         );
     }
 
@@ -38,7 +43,6 @@ DiskUsage getDiskUsage(const std::string& ruta = "/") {
 
     return uso;
 }
-
 namespace chuspapulse::collectors::disk {
 
 std::string DiskCollector::nombre() const {
