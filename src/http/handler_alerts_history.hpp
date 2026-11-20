@@ -12,11 +12,14 @@ namespace chuspapulse::http {
  * Devuelve el historial de alertas persistido, ordenado por timestamp
  * descendente, con paginación básica mediante los parámetros opcionales
  * `limite` (1 a 1000, por defecto 100) y `offset` (0 o más, por defecto 0).
+ * Cualquier otro parámetro o query string se rechaza.
  *
- * Respuestas:
+ * Todas las respuestas usan `application/json`:
  * - 200 con el arreglo JSON de alertas.
- * - 400 `{"error":"parametro invalido: ..."}` si algún parámetro no es un
- *   entero o está fuera de rango.
+ * - 400 `{"error":"parametro invalido: ..."}` si `limite` u `offset` no son
+ *   enteros o están fuera de rango.
+ * - 400 `{"error":"parametro no soportado: ..."}` si la petición incluye un
+ *   parámetro distinto de `limite` y `offset`.
  * - 500 `{"error":"error interno"}` si falla la obtención o la serialización.
  */
 void registrarAlertsHistory(
