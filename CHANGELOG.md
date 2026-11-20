@@ -8,6 +8,7 @@ y este proyecto sigue el versionado [SemVer](https://semver.org/lang/es/).
 ## [v0.1.0] - 2026-08-30
 
 ### Añadido
+- chore(platform): normalizar tipos y guardas de inclusion en `collector_cpu` (#1659)
 - feat(collectors): normalizar metricas de carga promedio de 1 5 y 15 minutos en loadavg_collector (#1435)
 - fix(http): activar endpoint GET /config (#833)
 - fix(collectors): instanciar collectors de procesos, loadavg, uptime y temperatura (#825)
