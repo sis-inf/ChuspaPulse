@@ -28,7 +28,7 @@ std::string FormatterCSV::cabecera() {
 //   prevalece la última.
 // - Todas las columnas son numéricas (no hay texto libre), por lo que no hay
 //   caracteres especiales que escapar.
-// - Los valores no se validan: se emiten con 2 decimales tal como llegan.
+// - Los valores no se validan: se convierten de unidad y se emiten con 2 decimales.
 std::string FormatterCSV::filaDeSnapshot(const chuspapulse::core::Snapshot& snapshot) {
     double cpu_pct      = 0.0;
     double ram_used_mb  = 0.0;
