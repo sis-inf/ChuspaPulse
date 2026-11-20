@@ -1,19 +1,31 @@
 #include "ram_usage.hpp"
 
+#include "../error_recoleccion.hpp"
+
 #include <fstream>
+#include <iostream>
 #include <sstream>
 #include <string>
-#include <stdexcept>
+#include <limits>
 #include <chrono>
 
 namespace chuspapulse::collectors::memory {
+
+namespace {
+
+[[noreturn]] void registrarError(const std::string& mensaje) {
+    std::cerr << mensaje << '\n';
+    throw ErrorRecoleccion(mensaje);
+}
+
+} // namespace
 
 RamInfo getRamUsage(const std::string& path) {
     std::ifstream file(path);
 
     if (!file.is_open()) {
-        throw std::runtime_error(
-            "No se pudo abrir el archivo " + path + ": "
+        registrarError(
+            "ram_usage: No se pudo abrir el archivo " + path + ": "
             "verifique permisos y disponibilidad del sistema"
         );
     }
@@ -25,9 +37,21 @@ RamInfo getRamUsage(const std::string& path) {
     while (std::getline(file, line)) {
         std::istringstream iss(line);
         std::string key;
-        long long value;
+        long long value = 0;
 
-        iss >> key >> value;
+        if (!(iss >> key)) {
+            continue;
+        }
+
+        if (key != "MemTotal:" && key != "MemAvailable:") {
+            continue;
+        }
+
+        if (!(iss >> value)) {
+            registrarError(
+                "ram_usage: Valor invalido para " + key + " en " + path
+            );
+        }
 
         if (key == "MemTotal:") {
             memTotal = value;
@@ -38,9 +62,31 @@ RamInfo getRamUsage(const std::string& path) {
         }
     }
 
-    if (memTotal == 0 || memAvailable == 0) {
-        throw std::runtime_error(
-            "No se encontraron las claves MemTotal o MemAvailable en " + path
+    if (file.bad() || !file.eof()) {
+        registrarError(
+            "ram_usage: Error durante la lectura del archivo " + path
+        );
+    }
+
+    if (memTotal <= 0 || memAvailable <= 0) {
+        registrarError(
+            "ram_usage: Claves MemTotal o MemAvailable ausentes "
+            "o con valores invalidos en " + path
+        );
+    }
+
+    if (memAvailable > memTotal) {
+        registrarError(
+            "ram_usage: MemAvailable supera MemTotal en " + path
+        );
+    }
+
+    const long long maxKb =
+        std::numeric_limits<long long>::max() / 1024;
+
+    if (memTotal > maxKb || memAvailable > maxKb) {
+        registrarError(
+            "ram_usage: Desbordamiento al convertir memoria a bytes en " + path
         );
     }
 
