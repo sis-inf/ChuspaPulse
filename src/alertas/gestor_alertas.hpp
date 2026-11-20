@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
 #include <SQLiteCpp/SQLiteCpp.h>
 #include <vector>
