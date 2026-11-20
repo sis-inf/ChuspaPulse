@@ -21,6 +21,14 @@ std::string FormatterCSV::cabecera() {
     return CABECERA + "\n";
 }
 
+// Construye la fila CSV de un snapshot.
+// - Las columnas sin métrica quedan en 0.00, por lo que un snapshot vacío
+//   produce una fila de ceros con su timestamp.
+// - Las métricas con nombre desconocido se ignoran; si una métrica se repite,
+//   prevalece la última.
+// - Todas las columnas son numéricas (no hay texto libre), por lo que no hay
+//   caracteres especiales que escapar.
+// - Los valores no se validan: se emiten con 2 decimales tal como llegan.
 std::string FormatterCSV::filaDeSnapshot(const chuspapulse::core::Snapshot& snapshot) {
     double cpu_pct      = 0.0;
     double ram_used_mb  = 0.0;
@@ -54,6 +62,8 @@ std::string FormatterCSV::filaDeSnapshot(const chuspapulse::core::Snapshot& snap
     return oss.str();
 }
 
+// La cabecera se emite solo en la primera llamada; las siguientes solo emiten
+// la fila del snapshot.
 std::string FormatterCSV::formatear(const chuspapulse::core::Snapshot& snapshot) const {
     std::string resultado;
 
@@ -66,6 +76,8 @@ std::string FormatterCSV::formatear(const chuspapulse::core::Snapshot& snapshot)
     return resultado;
 }
 
+// Siempre emite la cabecera, incluso con un historial vacío, y no modifica el
+// estado que usa formatear().
 std::string FormatterCSV::formatearHistorial(
     const std::vector<chuspapulse::core::Snapshot>& snapshots) const {
 
