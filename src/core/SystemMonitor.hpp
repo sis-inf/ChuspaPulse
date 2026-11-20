@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CHUSPAPULSE_CORE_SYSTEM_MONITOR_HPP
+#define CHUSPAPULSE_CORE_SYSTEM_MONITOR_HPP
 
 #include <map>
 #include <memory>
@@ -129,3 +130,5 @@ private:
     /** @brief Mapa de métricas de la API legacy (usado por getMetrics()). */
     std::map<std::string, double> metrics_;
 };
+
+#endif // CHUSPAPULSE_CORE_SYSTEM_MONITOR_HPP
