@@ -1,4 +1,5 @@
 #include "temp_collector.h"
+#include "utils/logging/logger.hpp"
 
 #include <fstream>
 #include <string>
@@ -18,6 +19,20 @@ constexpr float kMilliCelsiusDivisor = 1000.0f;
 constexpr float kMinCelsiusPlausible = 0.0f;
 constexpr float kMaxCelsiusPlausible = 150.0f;
 
+TempInfo temperaturaNoDisponible(const std::string& motivo)
+{
+    chuspapulse::utils::logging::Logger::instancia().warn(
+        std::string("temp_collector: ") + motivo +
+        " [" + kThermalZonePath + "]"
+    );
+
+    return TempInfo{
+        /* cpu_celsius */ 0.0f,
+        /* zona        */ kZoneName,
+        /* disponible  */ false
+    };
+}
+
 } // namespace
 
 TempInfo getTempInfo()
@@ -25,20 +40,16 @@ TempInfo getTempInfo()
     std::ifstream file(kThermalZonePath);
 
     if (!file.is_open()) {
-        return TempInfo{
-            /* cpu_celsius */ 0.0f,
-            /* zona        */ kZoneName,
-            /* disponible  */ false
-        };
+        return temperaturaNoDisponible(
+            "No se pudo abrir el archivo de temperatura"
+        );
     }
 
     long raw_millicelsius = 0;
     if (!(file >> raw_millicelsius)) {
-        return TempInfo{
-            /* cpu_celsius */ 0.0f,
-            /* zona        */ kZoneName,
-            /* disponible  */ false
-        };
+        return temperaturaNoDisponible(
+            "Error al leer el valor de temperatura"
+        );
     }
 
     const float celsius =
@@ -46,11 +57,10 @@ TempInfo getTempInfo()
 
     // Descartar lecturas fuera del rango fisico plausible.
     if (celsius < kMinCelsiusPlausible || celsius > kMaxCelsiusPlausible) {
-        return TempInfo{
-            /* cpu_celsius */ 0.0f,
-            /* zona        */ kZoneName,
-            /* disponible  */ false
-        };
+        return temperaturaNoDisponible(
+            "Temperatura fuera del rango plausible: " +
+            std::to_string(celsius) + " C"
+        );
     }
 
     return TempInfo{
