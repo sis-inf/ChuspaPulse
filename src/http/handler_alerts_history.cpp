@@ -40,6 +40,14 @@ void registrarAlertsHistory(
         std::int64_t limite = 100;
         std::int64_t offset = 0;
 
+        for (const auto& parametro : req.params) {
+            if (parametro.first != "limite" && parametro.first != "offset") {
+                responderError(res, 400,
+                    "parametro no soportado: solo se admiten limite y offset");
+                return;
+            }
+        }
+
         if (req.has_param("limite") &&
             (!leerEntero(req.get_param_value("limite"), limite) ||
              limite < 1 || limite > 1000)) {
@@ -73,6 +81,9 @@ void registrarAlertsHistory(
             res.set_content(json.dump(), "application/json");
         }
         catch (const std::exception&) {
+            responderError(res, 500, "error interno");
+        }
+        catch (...) {
             responderError(res, 500, "error interno");
         }
     });
