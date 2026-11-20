@@ -1,9 +1,12 @@
 #include "top_procesos.hpp"
 
 #include "../memory/ram_usage.hpp"
+#include "utils/logging/logger.hpp"
 
 #include <algorithm>
 #include <cctype>
+#include <cerrno>
+#include <cstring>
 #include <chrono>
 #include <cstdint>
 #include <dirent.h>
@@ -17,6 +20,8 @@
 namespace chuspapulse::collectors::procesos {
 
 namespace {
+
+using chuspapulse::utils::logging::Logger;
 
 /// @brief Ticks de CPU por segundo configurados en el kernel (HZ).
 /// sysconf(_SC_CLK_TCK) es la forma portable de obtenerlo en lugar de
@@ -55,11 +60,15 @@ bool leerStatProceso(int32_t pid, StatProceso& out) {
     // El proceso pudo haber terminado entre el listado del directorio y
     // esta lectura: no es un error, simplemente se omite.
     if (!archivo.is_open()) {
+        Logger::instancia().debug(
+            "top_procesos: No se pudo abrir " + ruta);
         return false;
     }
 
     std::string linea;
     if (!std::getline(archivo, linea)) {
+        Logger::instancia().warn(
+            "top_procesos: Error de lectura en " + ruta);
         return false;
     }
 
@@ -69,6 +78,8 @@ bool leerStatProceso(int32_t pid, StatProceso& out) {
     if (inicio_nombre == std::string::npos ||
         fin_nombre == std::string::npos ||
         fin_nombre <= inicio_nombre) {
+        Logger::instancia().warn(
+            "top_procesos: Formato de nombre invalido en " + ruta);
         return false;
     }
 
@@ -82,17 +93,33 @@ bool leerStatProceso(int32_t pid, StatProceso& out) {
 
     std::string campo;
     // Campo 3: state
-    if (!(resto >> campo)) return false;
+    if (!(resto >> campo)) {
+        Logger::instancia().warn(
+            "top_procesos: Campos incompletos en " + ruta);
+        return false;
+    }
 
     // Campos 4 a 13 (10 campos) se descartan: ppid, pgrp, session, tty_nr,
     // tpgid, flags, minflt, cminflt, majflt, cmajflt.
     for (int i = 0; i < 10; ++i) {
-        if (!(resto >> campo)) return false;
+        if (!(resto >> campo)) {
+            Logger::instancia().warn(
+                "top_procesos: Campos incompletos en " + ruta);
+            return false;
+        }
     }
 
     // Campo 14: utime, campo 15: stime
-    if (!(resto >> out.utime)) return false;
-    if (!(resto >> out.stime)) return false;
+    if (!(resto >> out.utime)) {
+        Logger::instancia().warn(
+            "top_procesos: Valor utime invalido en " + ruta);
+        return false;
+    }
+    if (!(resto >> out.stime)) {
+        Logger::instancia().warn(
+            "top_procesos: Valor stime invalido en " + ruta);
+        return false;
+    }
 
     return true;
 }
@@ -108,6 +135,8 @@ bool leerMemoriaProceso(int32_t pid, uint64_t& out_rss_bytes) {
     std::ifstream archivo(ruta);
 
     if (!archivo.is_open()) {
+        Logger::instancia().debug(
+            "top_procesos: No se pudo abrir " + ruta);
         return false;
     }
 
@@ -117,11 +146,19 @@ bool leerMemoriaProceso(int32_t pid, uint64_t& out_rss_bytes) {
             std::istringstream iss(linea.substr(6));
             uint64_t valor_kb = 0;
             if (!(iss >> valor_kb)) {
+                Logger::instancia().warn(
+                    "top_procesos: Valor VmRSS invalido en " + ruta);
                 return false;
             }
             out_rss_bytes = valor_kb * 1024ULL;
             return true;
         }
+    }
+
+    if (archivo.bad() || !archivo.eof()) {
+        Logger::instancia().warn(
+            "top_procesos: Error de lectura en " + ruta);
+        return false;
     }
 
     // Algunos procesos (p. ej. kernel threads o procesos a punto de morir)
@@ -141,11 +178,26 @@ std::vector<int32_t> listarPids() {
 
     DIR* dir = opendir("/proc");
     if (dir == nullptr) {
+        const int error = errno;
+        Logger::instancia().warn(
+            std::string("top_procesos: No se pudo abrir /proc: ") +
+            std::strerror(error));
         return pids;
     }
 
     struct dirent* entrada;
-    while ((entrada = readdir(dir)) != nullptr) {
+    while (true) {
+        errno = 0;
+        entrada = readdir(dir);
+        if (entrada == nullptr) {
+            const int error = errno;
+            if (error != 0) {
+                Logger::instancia().warn(
+                    std::string("top_procesos: Error al leer /proc: ") +
+                    std::strerror(error));
+            }
+            break;
+        }
         const std::string nombre = entrada->d_name;
 
         if (nombre.empty() ||
@@ -213,9 +265,14 @@ std::vector<ProcesoInfo> getTopProcesos(int n, int intervalo_ms) {
     try {
         memoria_total_bytes = chuspapulse::collectors::memory::getRamUsage().total;
         if (memoria_total_bytes == 0) {
+            Logger::instancia().warn(
+                "top_procesos: Memoria total del sistema no disponible");
             memoria_total_bytes = 1;
         }
-    } catch (const std::exception&) {
+    } catch (const std::exception& error) {
+        Logger::instancia().warn(
+            std::string("top_procesos: Error al obtener memoria total: ") +
+            error.what());
         memoria_total_bytes = 1;
     }
 
