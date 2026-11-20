@@ -1,5 +1,7 @@
-#pragma once
+#ifndef CHUSPAPULSE_CONFIG_CONFIG_HPP
+#define CHUSPAPULSE_CONFIG_CONFIG_HPP
 
+#include <cstdint>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -51,7 +53,7 @@ struct ConfigServidor {
 };
 
 struct ConfigSampler {
-    int intervalo_segundos = 10;
+    std::int64_t intervalo_segundos = 10;
 };
 
 struct ConfigStorage {
@@ -99,3 +101,5 @@ std::vector<std::string> camposModificados(const Config& antes,
                                            const Config& despues);
 
 } // namespace chuspapulse::config
+
+#endif // CHUSPAPULSE_CONFIG_CONFIG_HPP
