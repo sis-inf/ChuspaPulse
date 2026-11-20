@@ -12,6 +12,23 @@ namespace chuspapulse::formatters {
  * La primera llamada a formatear() emite la línea de cabecera.
  * Las llamadas siguientes emiten filas de datos separadas por comas.
  * Los valores flotantes se presentan con 2 decimales.
+ *
+ * Columnas: timestamp, cpu_pct, ram_used_mb, ram_total_mb, disk_used_gb,
+ * disk_total_gb, net_rx_kb y net_tx_kb. Las métricas de memoria, disco y red
+ * se reciben en bytes y se dividen entre 1024 (KB), 1024² (MB) y 1024³ (GB).
+ *
+ * Snapshots vacíos o con métricas faltantes:
+ * - Las columnas sin métrica quedan en 0.00; un snapshot vacío produce una
+ *   fila de ceros con su timestamp.
+ * - Las métricas con nombre desconocido se ignoran; si una métrica se repite,
+ *   prevalece la última.
+ * - Los valores no se validan: se emiten con 2 decimales tal como llegan.
+ *
+ * Todas las columnas son numéricas (no hay texto libre), por lo que no hay
+ * caracteres especiales que escapar.
+ *
+ * formatearHistorial() siempre emite la cabecera (también con un historial
+ * vacío) y no modifica el estado que usa formatear().
  */
 class FormatterCSV : public IFormatter {
 public:
