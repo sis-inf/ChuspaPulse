@@ -16,10 +16,16 @@ std::string FormatterText::contentType() const {
     return "text/plain";
 }
 
-// Convierte timestamp Unix (segundos) a string ISO 8601
+// Convierte timestamp Unix (segundos) a string ISO 8601 (UTC).
+// std::gmtime devuelve nullptr si el timestamp no es representable (por ejemplo,
+// negativo o fuera de rango en Windows). En ese caso se usa la epoca Unix para
+// conservar siempre el formato ISO 8601 y no pasar un puntero nulo a put_time.
 static std::string formatearTimestamp(std::int64_t ts) {
     std::time_t tiempo = static_cast<std::time_t>(ts);
     std::tm* tm = std::gmtime(&tiempo);
+    if (tm == nullptr) {
+        return "1970-01-01T00:00:00Z";
+    }
 
     std::ostringstream oss;
     oss << std::put_time(tm, "%Y-%m-%dT%H:%M:%SZ");
@@ -29,7 +35,11 @@ static std::string formatearTimestamp(std::int64_t ts) {
 std::string FormatterText::formatear(
     const chuspapulse::core::Snapshot& snapshot
 ) const {
-    // Extraer métricas del snapshot (valores crudos en bytes / bytes-por-segundo)
+    // Extraer métricas del snapshot (valores crudos en bytes / bytes-por-segundo).
+    // Si el snapshot está vacío o falta una métrica, su valor queda en 0.0 y la
+    // salida conserva siempre las mismas cuatro líneas (CPU, RAM, Disco, Red).
+    // La salida solo tiene etiquetas fijas y números, nunca texto libre del
+    // snapshot, así que no hay caracteres especiales que escapar.
     double cpu_pct = 0.0;
     double ram_usado_bytes = 0.0;
     double ram_total_bytes = 0.0;
