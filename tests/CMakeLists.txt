@@ -303,3 +303,14 @@ target_link_libraries(test_ram_usage_unit PRIVATE
     GTest::gtest_main
 )
 gtest_discover_tests(test_ram_usage_unit TEST_PREFIX "unit_")
+add_executable(test_net_usage
+    automatizados/unit/test_net_usage.cpp
+)
+target_include_directories(test_net_usage PRIVATE
+    ${PROJECT_SOURCE_DIR}/src
+)
+target_link_libraries(test_net_usage PRIVATE
+    GTest::gtest
+    GTest::gtest_main
+)
+gtest_discover_tests(test_net_usage)
