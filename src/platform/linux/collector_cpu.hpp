@@ -1,8 +1,10 @@
 #pragma once
 
-#include "../../collectors/icollector.hpp"
-#include <vector>
 #include <string>
+#include <vector>
+
+#include "../../collectors/icollector.hpp"
+#include "../../core/types.hpp"
 
 namespace chuspapulse::collectors {
 
