@@ -1,5 +1,6 @@
 #include "storage.hpp"
 #include "schema.hpp"
+#include <cstdint>
 #include <ctime>
 #include <map>
 #include <filesystem>
@@ -155,14 +156,14 @@ void Storage::save(const chuspapulse::core::Snapshot& snapshot) {
     query.bind(1,  snapshot.timestamp);
     query.bind(2,  getMetricValue("cpu.usage"));
     query.bind(3,  static_cast<int>(getMetricValue("cpu.cores")));
-    query.bind(4,  static_cast<int64_t>(getMetricValue("memory.total")));
-    query.bind(5,  static_cast<int64_t>(getMetricValue("memory.used")));
-    query.bind(6,  static_cast<int64_t>(getMetricValue("memory.available")));
-    query.bind(7,  static_cast<int64_t>(getMetricValue("disk.total")));
-    query.bind(8,  static_cast<int64_t>(getMetricValue("disk.used")));
-    query.bind(9,  static_cast<int64_t>(getMetricValue("disk.free")));
-    query.bind(10, static_cast<int64_t>(getMetricValue("network.rx_bytes")));
-    query.bind(11, static_cast<int64_t>(getMetricValue("network.tx_bytes")));
+    query.bind(4,  static_cast<std::int64_t>(getMetricValue("memory.total")));
+    query.bind(5,  static_cast<std::int64_t>(getMetricValue("memory.used")));
+    query.bind(6,  static_cast<std::int64_t>(getMetricValue("memory.available")));
+    query.bind(7,  static_cast<std::int64_t>(getMetricValue("disk.total")));
+    query.bind(8,  static_cast<std::int64_t>(getMetricValue("disk.used")));
+    query.bind(9,  static_cast<std::int64_t>(getMetricValue("disk.free")));
+    query.bind(10, static_cast<std::int64_t>(getMetricValue("network.rx_bytes")));
+    query.bind(11, static_cast<std::int64_t>(getMetricValue("network.tx_bytes")));
 
     query.exec();
 
@@ -235,7 +236,7 @@ std::vector<chuspapulse::core::Snapshot> Storage::history(
     if (until != 0) {
         query.bind(bindIndex++, until);
     }
-    query.bind(bindIndex, static_cast<int64_t>(limit));
+    query.bind(bindIndex, static_cast<std::int64_t>(limit));
 
     std::vector<chuspapulse::core::Snapshot> results;
     while (query.executeStep()) {
@@ -251,7 +252,7 @@ std::size_t Storage::total() const {
     return static_cast<std::size_t>(query.getColumn(0).getInt64());
 }
 
-chuspapulse::core::Snapshot Storage::getPromedio(uint32_t ventana_segundos) const {
+chuspapulse::core::Snapshot Storage::getPromedio(std::uint32_t ventana_segundos) const {
     // Calcular el timestamp de inicio de la ventana
     std::int64_t ahora = static_cast<std::int64_t>(std::time(nullptr));
     std::int64_t desde = ahora - static_cast<std::int64_t>(ventana_segundos);
