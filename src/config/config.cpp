@@ -1,7 +1,9 @@
 #include "config.hpp"
 
 // toml++ = header-only, incluir una sola vez en la TU que lo necesite.
+#ifndef TOML_EXCEPTIONS
 #define TOML_EXCEPTIONS 1
+#endif
 #include <toml++/toml.hpp>
 
 #include <filesystem>
@@ -9,6 +11,7 @@
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
+#include <cstdint>
 #include <cstdlib>
 
 namespace chuspapulse::config {
@@ -87,7 +90,7 @@ Config mapear(const toml::table& doc)
     // El puerto se valida sobre el valor original del TOML, antes de
     // convertirlo a int (así 4294975376 no se trunca a 8080).
     if (auto nodo = preferir(http["puerto"], servidor["puerto"])) {
-        auto valor = nodo.value_exact<int64_t>();
+        auto valor = nodo.value_exact<std::int64_t>();
         if (!valor) {
             throw std::invalid_argument(
                 "Valor inválido para puerto: debe ser un entero entre 1 y 65535"
@@ -105,7 +108,7 @@ Config mapear(const toml::table& doc)
 
     // [sampler]
     cfg.sampler.intervalo_segundos =
-        leer<int64_t>(doc["sampler"]["intervalo_segundos"],
+        leer<std::int64_t>(doc["sampler"]["intervalo_segundos"],
                       cfg.sampler.intervalo_segundos);
 
 
