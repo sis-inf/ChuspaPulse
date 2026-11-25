@@ -99,7 +99,7 @@ void print_help()
     std::cout << "  --version         Mostrar version\n";
 }
 
-bool parse_arguments(int argc, char* argv[], chuspapulse::cli::CliOptions& options)
+chuspapulse::cli::ResultadoParseo analizar_argumentos(int argc, char* argv[], chuspapulse::cli::CliOptions& options)
 {
     for (int i = 1; i < argc; ++i)
     {
@@ -108,7 +108,7 @@ bool parse_arguments(int argc, char* argv[], chuspapulse::cli::CliOptions& optio
         if (arg == "-h" || arg == "--help")
         {
             print_help();
-            return false;
+            return chuspapulse::cli::ResultadoParseo::AyudaMostrada;
         }
         else if (arg == "--version")
         {
@@ -123,7 +123,7 @@ bool parse_arguments(int argc, char* argv[], chuspapulse::cli::CliOptions& optio
             if (i + 1 >= argc)
             {
                 std::cerr << "Error: falta valor para --interval\n";
-                return false;
+                return chuspapulse::cli::ResultadoParseo::Error;
             }
 
             const std::string valor = argv[++i];
@@ -138,7 +138,7 @@ bool parse_arguments(int argc, char* argv[], chuspapulse::cli::CliOptions& optio
             {
                 std::cerr << "Error: --interval debe ser un entero positivo en "
                              "milisegundos (recibido: '" << valor << "')\n";
-                return false;
+                return chuspapulse::cli::ResultadoParseo::Error;
             }
 
             // Mas de 10 digitos ya esta fuera de rango; se descarta antes de
@@ -151,7 +151,7 @@ bool parse_arguments(int argc, char* argv[], chuspapulse::cli::CliOptions& optio
                 std::cerr << "Error: --interval fuera de rango: " << valor
                           << " ms (permitido: " << INTERVALO_MIN_MS << " a "
                           << INTERVALO_MAX_MS << " ms)\n";
-                return false;
+                return chuspapulse::cli::ResultadoParseo::Error;
             }
 
             options.monitor.interval_ms = static_cast<int>(interval);
@@ -162,12 +162,12 @@ bool parse_arguments(int argc, char* argv[], chuspapulse::cli::CliOptions& optio
             if (i + 1 >= argc)
             {
                 std::cerr << "Error: falta valor para --metrics\n";
-                return false;
+                return chuspapulse::cli::ResultadoParseo::Error;
             }
 
             if (!parse_metrics(argv[++i], options.monitor))
             {
-                return false;
+                return chuspapulse::cli::ResultadoParseo::Error;
             }
         }
         else if (arg == "--once")
@@ -179,14 +179,14 @@ bool parse_arguments(int argc, char* argv[], chuspapulse::cli::CliOptions& optio
             if (i + 1 >= argc)
             {
                 std::cerr << "Error: falta valor para --format\n";
-                return false;
+                return chuspapulse::cli::ResultadoParseo::Error;
             }
             std::string fmt = argv[++i];
             if (fmt != "json" && fmt != "csv" && fmt != "prometheus" && fmt != "text")
             {
                 std::cerr << "Error: formato no soportado: " << fmt << "\n";
                 std::cerr << "Formatos validos: json, csv, prometheus, text\n";
-                return false;
+                return chuspapulse::cli::ResultadoParseo::Error;
             }
             options.format = fmt;
         }
@@ -196,7 +196,7 @@ bool parse_arguments(int argc, char* argv[], chuspapulse::cli::CliOptions& optio
             {
                 std::cerr << "Error: falta ruta para --config\n";
                 std::cerr << "Uso: --config <ruta>\n";
-                return false;
+                return chuspapulse::cli::ResultadoParseo::Error;
             }
 
             std::string ruta = argv[++i];
@@ -205,7 +205,7 @@ bool parse_arguments(int argc, char* argv[], chuspapulse::cli::CliOptions& optio
             {
                 std::cerr << "Error: el archivo de configuracion no existe: "
                           << ruta << "\n";
-                return false;
+                return chuspapulse::cli::ResultadoParseo::Error;
             }
 
             std::ifstream archivo(ruta);
@@ -213,7 +213,7 @@ bool parse_arguments(int argc, char* argv[], chuspapulse::cli::CliOptions& optio
             {
                 std::cerr << "Error: no se puede leer el archivo de configuracion: "
                           << ruta << "\n";
-                return false;
+                return chuspapulse::cli::ResultadoParseo::Error;
             }
 
             options.config_path = ruta;
@@ -223,11 +223,17 @@ bool parse_arguments(int argc, char* argv[], chuspapulse::cli::CliOptions& optio
             std::cerr << "Error: argumento desconocido -> "
                       << arg << "\n";
 
-            return false;
+            return chuspapulse::cli::ResultadoParseo::Error;
         }
     }
 
-    return true;
+    return chuspapulse::cli::ResultadoParseo::Ok;
+}
+
+bool parse_arguments(int argc, char* argv[], chuspapulse::cli::CliOptions& options)
+{
+    return analizar_argumentos(argc, argv, options) ==
+           chuspapulse::cli::ResultadoParseo::Ok;
 }
 
 int resolver_intervalo_ms(const CliOptions& options,

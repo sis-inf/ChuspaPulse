@@ -52,6 +52,16 @@ struct CliOptions {
 };
 
 /**
+ * @brief Resultado de analizar los argumentos de la linea de comandos.
+ */
+enum class ResultadoParseo
+{
+    Ok,             ///< Argumentos validos, el programa continua.
+    AyudaMostrada,  ///< Se pidio --help y ya se imprimio; salir con codigo 0.
+    Error           ///< Argumento invalido; salir con codigo 1.
+};
+
+/**
  * @brief Procesa argumentos de linea de comandos.
  *
  * Argumentos soportados:
@@ -67,10 +77,20 @@ struct CliOptions {
  * @param argv Vector de argumentos.
  * @param options Configuracion extendida a modificar.
  *
- * @return true si la ejecucion puede continuar.
- * @return false si ocurrio un error o se mostro ayuda. Esto incluye
+ * @return ResultadoParseo::Ok si la ejecucion puede continuar.
+ * @return ResultadoParseo::AyudaMostrada si se pidio --help y se imprimio
+ *         la ayuda (la ejecucion termina con codigo 0).
+ * @return ResultadoParseo::Error si hubo un argumento invalido. Esto incluye
  *         una lista de --metrics vacia o con nombres desconocidos y un
  *         --interval que no sea un entero dentro del rango permitido.
+ */
+ResultadoParseo analizar_argumentos(int argc, char* argv[], CliOptions& options);
+
+/**
+ * @brief Version simplificada de analizar_argumentos().
+ *
+ * @return true si la ejecucion puede continuar.
+ * @return false si hubo un error o se mostro la ayuda.
  */
 bool parse_arguments(int argc, char* argv[], CliOptions& options);
 

@@ -42,6 +42,21 @@ protected:
             static_cast<int>(argv.size()), argv.data(), opciones);
     }
 
+    chuspapulse::cli::ResultadoParseo analizar(
+        std::vector<std::string> args,
+        chuspapulse::cli::CliOptions& opciones)
+    {
+        args.insert(args.begin(), "chuspapulse");
+
+        std::vector<char*> argv;
+        for (auto& a : args) {
+            argv.push_back(a.data());
+        }
+
+        return chuspapulse::cli::analizar_argumentos(
+            static_cast<int>(argv.size()), argv.data(), opciones);
+    }
+
     void crearArchivo()
     {
         std::ofstream out(archivo_);
@@ -258,4 +273,30 @@ TEST_F(ArgParserTest, IntervalSinValorFalla)
     std::string salida = testing::internal::GetCapturedStderr();
 
     EXPECT_NE(salida.find("falta valor para --interval"), std::string::npos);
+}
+
+// --- Codigo de salida de --help (issue #1826) ---
+
+TEST_F(ArgParserTest, HelpMuestraAyudaYNoEsError)
+{
+    chuspapulse::cli::CliOptions opciones;
+
+    testing::internal::CaptureStdout();
+    const auto resultado = analizar({"--help"}, opciones);
+    std::string salida = testing::internal::GetCapturedStdout();
+
+    EXPECT_EQ(resultado, chuspapulse::cli::ResultadoParseo::AyudaMostrada);
+    EXPECT_FALSE(salida.empty());
+}
+
+TEST_F(ArgParserTest, ArgumentoInvalidoDevuelveError)
+{
+    chuspapulse::cli::CliOptions opciones;
+
+    testing::internal::CaptureStderr();
+    const auto resultado = analizar({"--opcion-invalida"}, opciones);
+    std::string salida = testing::internal::GetCapturedStderr();
+
+    EXPECT_EQ(resultado, chuspapulse::cli::ResultadoParseo::Error);
+    EXPECT_NE(salida.find("argumento desconocido"), std::string::npos);
 }
