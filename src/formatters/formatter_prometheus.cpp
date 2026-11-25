@@ -1,5 +1,6 @@
 #include "formatter_prometheus.hpp"
 
+#include <cmath>
 #include <cstdint>
 #include <iomanip>
 #include <set>
@@ -47,6 +48,38 @@ std::string escaparHelp(const std::string& texto) {
     return resultado;
 }
 
+/// Escapa los saltos de línea de las etiquetas ("{...}") como "\n". El formato
+/// Prometheus es orientado a líneas: un salto de línea sin escapar partiría la
+/// muestra en dos líneas y dejaría la salida inválida.
+std::string escaparSaltosEtiquetas(const std::string& etiquetas) {
+    std::string resultado;
+    resultado.reserve(etiquetas.size());
+    for (const char c : etiquetas) {
+        if (c == '\n') {
+            resultado += "\\n";
+        } else {
+            resultado.push_back(c);
+        }
+    }
+    return resultado;
+}
+
+/// Convierte un valor al texto que exige el formato de exposición de
+/// Prometheus: "NaN", "+Inf" y "-Inf" para valores no finitos (el texto que
+/// produce un ostream para ellos depende de la plataforma). El resto se escribe
+/// con 15 dígitos significativos.
+std::string formatearValor(double valor) {
+    if (std::isnan(valor)) {
+        return "NaN";
+    }
+    if (std::isinf(valor)) {
+        return valor > 0 ? "+Inf" : "-Inf";
+    }
+    std::ostringstream out;
+    out << std::setprecision(15) << valor;
+    return out.str();
+}
+
 /// Separa "cpu.usage{core=\"0\"}" en nombre base y etiquetas.
 std::pair<std::string, std::string> separarEtiquetas(const std::string& nombre) {
     const std::size_t inicio = nombre.find('{');
@@ -82,6 +115,7 @@ std::string FormatterPrometheus::contentType() const {
 std::string FormatterPrometheus::formatear(
     const chuspapulse::core::Snapshot& snapshot) const {
 
+    // Un snapshot sin métricas produce una exposición vacía, que es válida.
     if (snapshot.metricas.empty()) {
         return "";
     }
@@ -108,8 +142,8 @@ std::string FormatterPrometheus::formatear(
         }
 
         std::ostringstream muestra;
-        muestra << std::setprecision(15)
-                << nombre << etiquetas << " " << metrica.valor;
+        muestra << nombre << escaparSaltosEtiquetas(etiquetas) << " "
+                << formatearValor(metrica.valor);
 
         auto [it, nueva] = indices.try_emplace(nombre, familias.size());
         if (nueva) {
@@ -142,6 +176,8 @@ std::string FormatterPrometheus::formatear(
     return output.str();
 }
 
+// Prometheus expone solo el estado actual, por lo que se serializa el último
+// snapshot del historial; un historial vacío produce una exposición vacía.
 std::string FormatterPrometheus::formatearHistorial(
     const std::vector<chuspapulse::core::Snapshot>& snapshots) const {
 
