@@ -24,7 +24,6 @@ target_sources(chuspapulse PRIVATE
     http/handler_config.cpp
     http/handler_prometheus.cpp
     http/handler_metrics.cpp
-    platform/linux/collector_cpu.cpp
     sampler/sampler.cpp
     storage/schema.cpp
     storage/storage.cpp
@@ -39,6 +38,14 @@ target_sources(chuspapulse PRIVATE
     alertas/alerta_umbral.cpp
     alertas/gestor_alertas.cpp
 )
+
+# Collector de CPU para Linux: no se compila en plataforma WIN32.
+# Lee /proc/stat y define los mismos simbolos que platform/windows/collector_cpu.cpp.
+if(NOT WIN32)
+    target_sources(chuspapulse PRIVATE
+        platform/linux/collector_cpu.cpp
+    )
+endif()
 
 # Collector de CPU para Windows: solo se compila en plataforma WIN32.
 # En Linux/macOS este archivo queda completamente excluido del build.
