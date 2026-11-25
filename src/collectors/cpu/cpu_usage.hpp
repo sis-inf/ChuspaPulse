@@ -23,7 +23,11 @@ struct ContadoresCPU {
 /// @brief Lee y parsea la primera línea del archivo /proc/stat.
 /// @param ruta Ruta al archivo (por defecto "/proc/stat").
 /// @return Estructura ContadoresCPU con los valores leídos.
-/// @note En caso de error, retorna todos los valores en cero.
+/// @throws chuspapulse::collectors::ErrorRecoleccion si la ruta está vacía, el
+///         archivo no se puede abrir, no tiene líneas legibles, la etiqueta no
+///         es "cpu" o los campos numéricos están incompletos o corruptos.
+/// @note Ante un fallo no aborta el proceso: registra un mensaje descriptivo en
+///       std::cerr y lanza la excepción para que el llamador la maneje.
 ContadoresCPU LeerEstadisticasCPU(const std::string& ruta = "/proc/stat");
 
 /// @brief Calcula la suma total de ticks de CPU.
@@ -37,9 +41,11 @@ uint64_t CalcularTicksTotales(const ContadoresCPU& c);
 uint64_t CalcularTicksOciosos(const ContadoresCPU& c);
 
 /// @brief Calcula el uso de CPU en porcentaje (0.0 - 100.0).
-/// Realiza dos lecturas de /proc/stat con un intervalo de 1 segundo.
+/// Realiza dos lecturas de /proc/stat separadas por 100 milisegundos.
 /// @return Porcentaje de uso de CPU.
-/// @note Si ocurre un error o los datos no son válidos, retorna 0.0.
+/// @note No propaga excepciones: si falla la lectura o los contadores son
+///       inconsistentes entre lecturas, registra un mensaje descriptivo en
+///       std::cerr y retorna 0.0 como estado de error controlado.
 double ObtenerUsoCPU();
 namespace chuspapulse::collectors {
 
