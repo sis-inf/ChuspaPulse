@@ -6,22 +6,23 @@
 
 #include "../icollector.hpp"
 
-/// @brief Bytes recibidos y transmitidos por las interfaces de red del sistema.
-typedef struct {
-    uint64_t rx_bytes;  ///< Bytes recibidos
-    uint64_t tx_bytes;  ///< Bytes transmitidos
-} NetInfo;
+/// @brief Totales de bytes recibidos y transmitidos por las interfaces de red
+/// (rx_bytes_total y tx_bytes_total), excluyendo la interfaz de loopback "lo".
+/// La estructura se define en net_usage.cpp, junto con getNetUsage.
+struct NetUsage;
 
-/// @brief Obtiene el uso de red del sistema.
-/// @return Estructura NetInfo con los bytes recibidos y transmitidos.
-/// @note La lectura real se implementa en net_usage.cpp (getNetUsage), que suma
-///       las interfaces de /proc/net/dev excluyendo "lo". Un fallo de lectura no
-///       devuelve valores inventados: se registra un mensaje descriptivo con el
-///       logger (nivel warn) y se reporta con chuspapulse::collectors::ErrorRecoleccion
-///       (archivo no accesible, encabezado incompleto, separador o nombre de
-///       interfaz ausente, campos incompletos o inválidos, desbordamiento de
-///       bytes RX/TX o error durante la lectura).
-NetInfo getNetUsage();
+/// @brief Obtiene el uso de red del sistema leyendo /proc/net/dev.
+/// Suma los bytes recibidos y transmitidos de todas las interfaces excepto "lo".
+/// @param ruta Ruta al archivo de estadísticas de red. net_usage.cpp define su
+///        valor por defecto ("/proc/net/dev").
+/// @return NetUsage con los totales de bytes recibidos y transmitidos.
+/// @throws chuspapulse::collectors::ErrorRecoleccion si falla la recolección:
+///         archivo no accesible, encabezado incompleto, separador o nombre de
+///         interfaz ausente, campos incompletos o inválidos, desbordamiento de
+///         bytes RX/TX o error durante la lectura.
+/// @note Un fallo no devuelve valores inventados: antes de lanzar la excepción
+///       se registra un mensaje descriptivo con el logger (nivel warn).
+NetUsage getNetUsage(const std::string& ruta);
 
 namespace chuspapulse::collectors::network {
 
@@ -33,11 +34,12 @@ public:
     std::string nombre() const override;
 
     /// @brief Recolecta las métricas net.rx y net.tx (en bytes) leídas de
-    /// /proc/net/dev.
+    /// /proc/net/dev mediante getNetUsage.
     /// @return Vector con las dos métricas.
     /// @throws chuspapulse::collectors::ErrorRecoleccion si falla la lectura de
-    ///         las estadísticas de red; el mensaje ya se registró en el logger.
-    ///         El llamador debe capturarla para que el fallo no aborte el proceso.
+    ///         las estadísticas de red. El recolector no captura la excepción,
+    ///         por lo que el llamador debe capturarla para que el fallo no
+    ///         termine el proceso.
     std::vector<chuspapulse::core::Metrica> recolectar() override;
 };
 
