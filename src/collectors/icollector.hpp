@@ -1,4 +1,6 @@
 #pragma once
+#include <exception>
+#include <iostream>
 #include <string>
 #include <vector>
 #include "core/types.hpp"
@@ -28,6 +30,28 @@ class ICollector {
    * @throws chuspapulse::core::ErrorRecoleccion si la medición falla.
    */
   virtual std::vector<chuspapulse::core::Metrica> recolectar() = 0;
+
+std::vector<chuspapulse::core::Metrica> recolectarSeguro() noexcept {
+    try {
+      return recolectar();
+    } catch (const std::exception& ex) {
+      try {
+        std::cerr << "[icollector] Fallo controlado en el colector '" << nombre()
+                  << "': " << ex.what() << "\n";
+      } catch (...) {
+        std::cerr << "[icollector] Fallo controlado en colector: " << ex.what() << "\n";
+      }
+      return {};
+    } catch (...) {
+      try {
+        std::cerr << "[icollector] Error desconocido controlado en el colector '"
+                  << nombre() << "'.\n";
+      } catch (...) {
+        std::cerr << "[icollector] Error desconocido controlado en colector.\n";
+      }
+      return {};
+    }
+  }
 };
 
 }  // namespace chuspapulse::collectors
