@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstdint>
 #include <SQLiteCpp/Database.h>
 
 namespace chuspapulse::storage {
