@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CHUSPAPULSE_STORAGE_STORAGE_HPP
+#define CHUSPAPULSE_STORAGE_STORAGE_HPP
 
 #include <string>
 #include <vector>
@@ -95,7 +96,7 @@ public:
      * @param ventana_segundos Tamaño de la ventana en segundos.
      * @return Snapshot con los valores promediados.
      */
-    chuspapulse::core::Snapshot getPromedio(uint32_t ventana_segundos) const;
+    chuspapulse::core::Snapshot getPromedio(std::uint32_t ventana_segundos) const;
 
 private:
     SQLite::Database db_;
@@ -103,3 +104,5 @@ private:
 };
 
 } // namespace chuspapulse::storage
+
+#endif  // CHUSPAPULSE_STORAGE_STORAGE_HPP
