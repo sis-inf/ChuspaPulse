@@ -40,14 +40,23 @@ long long parsearIntervaloEnv(const std::string& texto)
         !texto.empty() &&
         texto.find_first_not_of("0123456789") == std::string::npos;
 
-    if (!soloDigitos || texto.size() > 9) {
+    if (!soloDigitos) {
         throw std::invalid_argument(
             "Valor inválido para CHUSPAPULSE_SAMPLER_INTERVALO_SEGUNDOS: '" +
             texto + "' (debe ser un entero positivo de segundos)"
         );
     }
 
-    const long long valor = std::stoll(texto);
+    long long valor = 0;
+    try {
+        valor = std::stoll(texto);
+    }
+    catch (const std::out_of_range&) {
+        throw std::invalid_argument(
+            "Valor inválido para CHUSPAPULSE_SAMPLER_INTERVALO_SEGUNDOS: '" +
+            texto + "' (fuera de rango)"
+        );
+    }
 
     if (valor < 1) {
         throw std::invalid_argument(

@@ -234,7 +234,7 @@ TEST_F(ConfigCompletoTest, PuertoTomlInvalidoLanzaExcepcion)
             out << "[servidor]\npuerto = " << valor << "\n";
         }
         EXPECT_THROW(chuspapulse::config::cargar(archivo_),
-                     chuspapulse::config::ErrorConfig
+                     chuspapulse::config::ErrorConfig)
             << "puerto = " << valor;
     }
 }
@@ -243,7 +243,7 @@ TEST_F(ConfigCompletoTest, PuertoEnvInvalidoLanzaExcepcion)
 {
     setenv("CHUSPAPULSE_SERVIDOR_PUERTO", "70000", 1);
     EXPECT_THROW(chuspapulse::config::cargar("no_existe_1524.toml"),
-                 chuspapulse::config::ErrorConfig
+                 chuspapulse::config::ErrorConfig);
 
     setenv("CHUSPAPULSE_SERVIDOR_PUERTO", "9091", 1);
     EXPECT_EQ(chuspapulse::config::cargar("no_existe_1524.toml").servidor.puerto,
@@ -286,17 +286,6 @@ TEST_F(ConfigCompletoTest, IntervaloEnvInvalidoConArchivoValidoLanzaErrorConfig)
                  chuspapulse::config::ErrorConfig);
 
     unsetenv("CHUSPAPULSE_SAMPLER_INTERVALO_SEGUNDOS");
-}
-
-TEST_F(ConfigCompletoTest, ArchivoTomlInvalidoLanzaErrorConfig)
-{
-    {
-        std::ofstream out(archivo_);
-        out << "[servidor\npuerto = no_valido ===\n";
-    }
-
-    EXPECT_THROW(chuspapulse::config::cargar(archivo_),
-                 chuspapulse::config::ErrorConfig);
 }
 
 TEST_F(ConfigCompletoTest, OutputFormatTextSeAcepta)
@@ -466,5 +455,5 @@ TEST_F(ConfigCompletoTest, ArchivoTomlInvalidoLanzaExcepcion)
     out.close();
 
     EXPECT_THROW(chuspapulse::config::cargar(archivo_),
-                 std::exception);
+                 chuspapulse::config::ErrorConfig);
 }
