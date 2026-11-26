@@ -3,6 +3,8 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <cstdlib>
+#include <sys/wait.h>
 
 #include "cli/arg_parser.h"
 
@@ -299,4 +301,55 @@ TEST_F(ArgParserTest, ArgumentoInvalidoDevuelveError)
 
     EXPECT_EQ(resultado, chuspapulse::cli::ResultadoParseo::Error);
     EXPECT_NE(salida.find("argumento desconocido"), std::string::npos);
+}
+
+// --- Codigo de salida real del ejecutable (issue #1826) ---
+
+namespace {
+
+// Busca el ejecutable chuspapulse junto al binario de prueba (build/bin)
+// o, si las pruebas estan en build/tests, en build/bin.
+fs::path buscarEjecutable()
+{
+    const fs::path carpeta =
+        fs::read_symlink("/proc/self/exe").parent_path();
+
+    for (const fs::path& candidato :
+         {carpeta / "chuspapulse",
+          carpeta.parent_path() / "bin" / "chuspapulse"}) {
+        if (fs::exists(candidato)) {
+            return candidato;
+        }
+    }
+    return {};
+}
+
+// Ejecuta el programa con los argumentos dados y devuelve su codigo de
+// salida (-1 si no termino normalmente).
+int ejecutarCodigoSalida(const fs::path& exe, const std::string& argumentos)
+{
+    const std::string comando =
+        "\"" + exe.string() + "\" " + argumentos + " > /dev/null 2>&1";
+    const int estado = std::system(comando.c_str());
+    return WIFEXITED(estado) ? WEXITSTATUS(estado) : -1;
+}
+
+}  // namespace
+
+TEST_F(ArgParserTest, HelpTerminaConCodigoDeSalida0)
+{
+    const fs::path exe = buscarEjecutable();
+    ASSERT_FALSE(exe.empty())
+        << "No se encontro el ejecutable chuspapulse junto al test";
+
+    EXPECT_EQ(ejecutarCodigoSalida(exe, "--help"), 0);
+}
+
+TEST_F(ArgParserTest, ArgumentoInvalidoTerminaConCodigoDeSalida1)
+{
+    const fs::path exe = buscarEjecutable();
+    ASSERT_FALSE(exe.empty())
+        << "No se encontro el ejecutable chuspapulse junto al test";
+
+    EXPECT_EQ(ejecutarCodigoSalida(exe, "--opcion-invalida"), 1);
 }
