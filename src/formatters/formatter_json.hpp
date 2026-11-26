@@ -14,7 +14,8 @@ namespace chuspapulse::formatters {
  * La serialización se hace con nlohmann::json y se emite en formato compacto
  * (sin indentación) y codificación UTF-8, conforme a RFC 8259. Los caracteres
  * especiales de los textos (comillas dobles, barras invertidas y caracteres de
- * control) se escapan automáticamente.
+ * control) se escapan automáticamente. nlohmann::json ordena las claves de cada
+ * objeto alfabéticamente, y ese es el orden en que aparecen en la salida.
  */
 class FormatterJSON : public IFormatter {
 public:
@@ -33,11 +34,14 @@ public:
     /**
      * @brief Serializa un snapshot individual.
      *
-     * Produce un objeto con el campo "timestamp" y el arreglo "metricas", cuyos
-     * elementos tienen los campos "nombre", "valor", "unidad" y "timestamp".
-     * Un snapshot sin métricas produce "metricas": [] y sigue siendo un JSON
-     * válido. Si el valor de una métrica no es finito (NaN o infinito) se
-     * serializa como null, porque JSON no admite esos valores.
+     * Produce un objeto con los campos "metricas" y "timestamp". "metricas" es
+     * un arreglo cuyos elementos tienen los campos "nombre", "timestamp",
+     * "unidad" y "valor". Solo se serializan las métricas presentes en el
+     * snapshot: si contiene únicamente algunas, se emiten esas y no se generan
+     * valores para las que faltan. Un snapshot sin métricas produce
+     * {"metricas":[],"timestamp":<timestamp>}, que es un JSON válido. Si el
+     * valor de una métrica no es finito (NaN o infinito) se serializa como
+     * null, porque JSON no admite esos valores.
      *
      * @param snapshot Snapshot a serializar.
      * @return Cadena JSON con el snapshot.
@@ -51,10 +55,11 @@ public:
     /**
      * @brief Serializa un historial de snapshots.
      *
-     * Produce un objeto con el campo "total" (cantidad de snapshots) y el
-     * arreglo "snapshots", cuyos elementos tienen la misma estructura que el
-     * resultado de formatear(). Un historial vacío produce
-     * {"total":0,"snapshots":[]}.
+     * Produce un objeto con los campos "snapshots" y "total" (cantidad de
+     * snapshots). Cada elemento de "snapshots" tiene la misma estructura que
+     * el resultado de formatear(), con las mismas reglas para métricas
+     * parciales o ausentes. Un historial vacío produce
+     * {"snapshots":[],"total":0}.
      *
      * @param snapshots Snapshots a serializar, en el orden recibido.
      * @return Cadena JSON con el historial.
