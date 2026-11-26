@@ -43,6 +43,13 @@ struct MonitorConfig
     /// Habilita la lectura de métricas de disco.
     bool disk = true;
 
+
+    bool bateria = true;
+    bool red = true;
+    bool procesos = true;
+    bool loadavg = true;
+    bool uptime = true;
+    bool temperatura = true;
     /// Constructor con valores por defecto.
     MonitorConfig() = default;
     

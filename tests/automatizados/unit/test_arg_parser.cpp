@@ -259,3 +259,56 @@ TEST_F(ArgParserTest, IntervalSinValorFalla)
 
     EXPECT_NE(salida.find("falta valor para --interval"), std::string::npos);
 }
+TEST_F(ArgParserTest, MetricsCpuSoloActivaCpu)
+{
+    chuspapulse::cli::CliOptions opciones;
+
+    EXPECT_TRUE(parsear({"--metrics", "cpu"}, opciones));
+
+    EXPECT_TRUE(opciones.monitor.cpu);
+    EXPECT_FALSE(opciones.monitor.ram);
+    EXPECT_FALSE(opciones.monitor.disk);
+    EXPECT_FALSE(opciones.monitor.bateria);
+    EXPECT_FALSE(opciones.monitor.red);
+    EXPECT_FALSE(opciones.monitor.procesos);
+    EXPECT_FALSE(opciones.monitor.loadavg);
+    EXPECT_FALSE(opciones.monitor.uptime);
+    EXPECT_FALSE(opciones.monitor.temperatura);
+}
+
+TEST_F(ArgParserTest, MetricsAdicionalesSeAplican)
+{
+    chuspapulse::cli::CliOptions opciones;
+
+    EXPECT_TRUE(parsear(
+        {"--metrics", "red,procesos,uptime,temperatura"},
+        opciones
+    ));
+
+    EXPECT_FALSE(opciones.monitor.cpu);
+    EXPECT_FALSE(opciones.monitor.ram);
+    EXPECT_FALSE(opciones.monitor.disk);
+    EXPECT_TRUE(opciones.monitor.red);
+    EXPECT_TRUE(opciones.monitor.procesos);
+    EXPECT_TRUE(opciones.monitor.uptime);
+    EXPECT_TRUE(opciones.monitor.temperatura);
+    EXPECT_FALSE(opciones.monitor.bateria);
+    EXPECT_FALSE(opciones.monitor.loadavg);
+}
+
+TEST_F(ArgParserTest, SinMetricsMantieneTodosLosColectores)
+{
+    chuspapulse::cli::CliOptions opciones;
+
+    EXPECT_TRUE(parsear({"--once"}, opciones));
+
+    EXPECT_TRUE(opciones.monitor.cpu);
+    EXPECT_TRUE(opciones.monitor.ram);
+    EXPECT_TRUE(opciones.monitor.disk);
+    EXPECT_TRUE(opciones.monitor.bateria);
+    EXPECT_TRUE(opciones.monitor.red);
+    EXPECT_TRUE(opciones.monitor.procesos);
+    EXPECT_TRUE(opciones.monitor.loadavg);
+    EXPECT_TRUE(opciones.monitor.uptime);
+    EXPECT_TRUE(opciones.monitor.temperatura);
+}

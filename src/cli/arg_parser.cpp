@@ -21,6 +21,7 @@ namespace chuspapulse::cli {
  *         En ese caso la configuracion no se modifica.
  */
 static bool parse_metrics(const std::string& metrics, chuspapulse::config::MonitorConfig& config)
+
 {
     if (metrics.empty())
     {
@@ -32,6 +33,13 @@ static bool parse_metrics(const std::string& metrics, chuspapulse::config::Monit
     bool cpu = false;
     bool ram = false;
     bool disk = false;
+    bool bateria = false;
+    bool red = false;
+    bool procesos = false;
+    bool loadavg = false;
+    bool uptime = false;
+    bool temperatura = false;
+
     std::string desconocidas;
 
     std::stringstream ss(metrics);
@@ -92,7 +100,9 @@ void print_help()
 
     std::cout << "  --interval <ms>   Intervalo de muestreo en milisegundos ("
               << INTERVALO_MIN_MS << " a " << INTERVALO_MAX_MS << ")\n";
-    std::cout << "  --metrics <list>  Metricas a recolectar: cpu,ram,disk\n";
+   std::cout << "  --metrics <list>  Metricas a recolectar:\n";
+std::cout << "                    cpu,ram,disk,bateria,red,procesos,loadavg,uptime,temperatura\n";
+
     std::cout << "  --once            Ejecutar una sola lectura y salir\n";
     std::cout << "  --format <fmt>    Formato de salida con --once: json|csv|prometheus|text\n";
     std::cout << "  -h, --help        Mostrar ayuda\n";
