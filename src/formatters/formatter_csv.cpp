@@ -44,8 +44,8 @@ std::string FormatterCSV::filaDeSnapshot(const chuspapulse::core::Snapshot& snap
         else if (m.nombre == "memory.total")   ram_total_mb = m.valor / (1024.0 * 1024.0);
         else if (m.nombre == "disk.used")   disk_used_gb = m.valor / (1024.0 * 1024.0 * 1024.0);
         else if (m.nombre == "disk.total")  disk_total_gb= m.valor / (1024.0 * 1024.0 * 1024.0);
-        else if (m.nombre == "network.rx_bytes")   net_rx_kb    = m.valor / 1024.0;
-        else if (m.nombre == "network.tx_bytes")   net_tx_kb    = m.valor / 1024.0;
+        else if (m.nombre == "network.rx_bytes" || m.nombre == "net.rx")   net_rx_kb    = m.valor / 1024.0;
+        else if (m.nombre == "network.tx_bytes" || m.nombre == "net.tx")   net_tx_kb    = m.valor / 1024.0;
     }
 
     std::ostringstream oss;

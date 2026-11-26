@@ -59,9 +59,9 @@ std::string FormatterText::formatear(
             disco_usado_bytes = metrica.valor;
         } else if (metrica.nombre == "disk.total" || metrica.nombre == "disco.total") {
             disco_total_bytes = metrica.valor;
-        } else if (metrica.nombre == "network.rx_bytes") {
+        } else if (metrica.nombre == "network.rx_bytes" || metrica.nombre == "net.rx") {
             net_rx_bytes = metrica.valor;
-        } else if (metrica.nombre == "network.tx_bytes") {
+        } else if (metrica.nombre == "network.tx_bytes" || metrica.nombre == "net.tx") {
             net_tx_bytes = metrica.valor;
         }
     }

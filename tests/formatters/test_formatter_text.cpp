@@ -79,8 +79,8 @@ TEST(TestFormatterText, Test_AliasNetRxNetTx) {
     chuspapulse::core::Snapshot snapshot;
     snapshot.timestamp = 0;
     snapshot.metricas = {
-        crearMetrica("network.rx_bytes", 800.0, "bytes", 0),
-        crearMetrica("network.tx_bytes", 1536.0, "bytes", 0),
+        crearMetrica("net.rx", 800.0, "bytes", 0),
+        crearMetrica("net.tx", 1536.0, "bytes", 0),
     };
 
     EXPECT_EQ(
