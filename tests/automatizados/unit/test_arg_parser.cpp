@@ -148,9 +148,10 @@ TEST_F(ArgParserTest, MetricsConNombreDesconocidoFalla)
     EXPECT_FALSE(parsear({"--metrics", "gpu"}, opciones));
     std::string salida = testing::internal::GetCapturedStderr();
 
-    EXPECT_NE(salida.find("metricas desconocidas: gpu"), std::string::npos);
-    EXPECT_NE(salida.find("Metricas validas: cpu, ram, disk"),
-              std::string::npos);
+    EXPECT_NE(
+    salida.find("Metricas validas: cpu, ram, disk, bateria, red, procesos, loadavg, uptime, temperatura"),
+    std::string::npos
+);
 }
 
 TEST_F(ArgParserTest, MetricsMezcladasReportaDesconocidasSinModificarConfig)
@@ -158,11 +159,11 @@ TEST_F(ArgParserTest, MetricsMezcladasReportaDesconocidasSinModificarConfig)
     chuspapulse::cli::CliOptions opciones;
 
     testing::internal::CaptureStderr();
-    EXPECT_FALSE(parsear({"--metrics", "cpu,gpu,red"}, opciones));
+    EXPECT_FALSE(parsear({"--metrics", "cpu,gpu,bateria"}, opciones));
     std::string salida = testing::internal::GetCapturedStderr();
 
-    EXPECT_NE(salida.find("metricas desconocidas: gpu, red"),
-              std::string::npos);
+    EXPECT_NE(salida.find("metricas desconocidas: gpu"),
+          std::string::npos);
     EXPECT_TRUE(opciones.monitor.cpu);
     EXPECT_TRUE(opciones.monitor.ram);
     EXPECT_TRUE(opciones.monitor.disk);
@@ -288,12 +289,12 @@ TEST_F(ArgParserTest, MetricsAdicionalesSeAplican)
     EXPECT_FALSE(opciones.monitor.cpu);
     EXPECT_FALSE(opciones.monitor.ram);
     EXPECT_FALSE(opciones.monitor.disk);
+    EXPECT_TRUE(opciones.monitor.bateria);
     EXPECT_TRUE(opciones.monitor.red);
     EXPECT_TRUE(opciones.monitor.procesos);
+    EXPECT_TRUE(opciones.monitor.loadavg);
     EXPECT_TRUE(opciones.monitor.uptime);
     EXPECT_TRUE(opciones.monitor.temperatura);
-    EXPECT_FALSE(opciones.monitor.bateria);
-    EXPECT_FALSE(opciones.monitor.loadavg);
 }
 
 TEST_F(ArgParserTest, SinMetricsMantieneTodosLosColectores)
