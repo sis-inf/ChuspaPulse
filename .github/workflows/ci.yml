@@ -50,7 +50,6 @@ jobs:
   build-and-test:
     needs: validar-pr
     runs-on: ${{ matrix.os }}
-    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
@@ -59,22 +58,6 @@ jobs:
       - name: Checkout código
         uses: actions/checkout@v4
 
-      - name: Crear archivo version.hpp
-        uses: actions/github-script@v9
-        with:
-          script: |
-            const fs = require('fs');
-            const path = require('path');
-            const dirPath = path.join(process.env.GITHUB_WORKSPACE, 'src', 'core');
-            const filePath = path.join(dirPath, 'version.hpp');
-            
-            if (!fs.existsSync(dirPath)) {
-              fs.mkdirSync(dirPath, { recursive: true });
-            }
-            
-            const headerContent = `#ifndef CHUSPAPULSE_VERSION_HPP\n#define CHUSPAPULSE_VERSION_HPP\n#define CHUSPAPULSE_VERSION "0.1.0"\n#endif\n`;
-            fs.writeFileSync(filePath, headerContent, 'utf8');
-
       - name: Instalar dependencias (Linux)
         if: runner.os == 'Linux'
         run: |
@@ -82,16 +65,13 @@ jobs:
           sudo apt-get install -y cmake g++ libgtest-dev libsqlite3-dev
 
       - name: Configurar CMake con tests
-        continue-on-error: true
         run: cmake -S . -B build -DBUILD_TESTS=ON -DCMAKE_CXX_FLAGS="-Wall -Wextra"
 
       - name: Compilar
-        continue-on-error: true
         run: cmake --build build
 
       - name: Install clang-tidy (Linux)
         if: runner.os == 'Linux'
-        continue-on-error: true
         run: |
           sudo apt update
           sudo apt install -y clang-tidy-14
@@ -99,13 +79,11 @@ jobs:
 
       - name: Run clang-tidy (Linux)
         if: runner.os == 'Linux'
-        continue-on-error: true
         run: |
           find src/ -type f \( -name "*.cpp" -o -name "*.cxx" -o -name "*.cc" \) | \
           xargs -r clang-tidy --config-file=.clang-tidy --warnings-as-errors='' -- -std=c++17
 
       - name: Ejecutar tests con ctest
-        continue-on-error: true
         run: cd build && ctest --output-on-failure
       - name: Ejecutar deteccion de memory leaks con Valgrind
         if: ${{ runner.os == 'Linux' }}

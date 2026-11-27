@@ -6,8 +6,7 @@
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
-
-#define CHUSPAPULSE_VERSION "0.1.0"
+#include "core/version.hpp"
 
 namespace chuspapulse::cli {
 
@@ -113,7 +112,7 @@ bool parse_arguments(int argc, char* argv[], chuspapulse::cli::CliOptions& optio
         else if (arg == "--version")
         {
             std::cout << "chuspapulse v"
-                      << CHUSPAPULSE_VERSION
+                      << chuspapulse::APP_VERSION
                       << " (C++17) - 2026\n";
 
             std::exit(0);
