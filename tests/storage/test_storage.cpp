@@ -339,3 +339,33 @@ TEST_F(StorageTest, Test_ExportarCSV_FalloAlMoverAlDestinoLanzaError) {
 
     fs::remove_all(ruta);
 }
+
+// 18. Exportar dos veces al mismo archivo funciona: la segunda exportación
+//     sobrescribe el destino y no deja el .tmp (caso de Windows)
+TEST_F(StorageTest, Test_ExportarCSV_DosVecesAlMismoArchivoSobrescribe) {
+    const std::string csvPath = dbPath_ + ".csv";
+    chuspapulse::storage::Storage storage(dbPath_);
+
+    storage.save(crearSnapshot(100));
+    EXPECT_NO_THROW(storage.exportToCSV(csvPath));
+
+    storage.save(crearSnapshot(200));
+    EXPECT_NO_THROW(storage.exportToCSV(csvPath));
+
+    EXPECT_FALSE(fs::exists(csvPath + ".tmp"));
+
+    std::ifstream archivo(csvPath);
+    ASSERT_TRUE(archivo.is_open());
+
+    std::string linea;
+    std::getline(archivo, linea); // cabecera
+
+    int filas = 0;
+    while (std::getline(archivo, linea)) {
+        if (!linea.empty()) ++filas;
+    }
+    EXPECT_EQ(filas, 2);
+
+    archivo.close();
+    fs::remove(csvPath);
+}

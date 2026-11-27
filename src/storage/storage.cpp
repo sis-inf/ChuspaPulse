@@ -128,6 +128,23 @@ void Storage::exportToCSV(const std::string& ruta_archivo) const {
 
     std::error_code error;
     std::filesystem::rename(ruta_temporal, ruta_archivo, error);
+
+    if (error) {
+        // En Windows rename falla si el destino ya existe: si es un archivo
+        // regular se elimina y se reintenta el movimiento.
+        std::error_code ec_estado;
+        if (std::filesystem::is_regular_file(ruta_archivo, ec_estado)) {
+            std::error_code ec_borrado;
+            std::filesystem::remove(ruta_archivo, ec_borrado);
+            if (ec_borrado) {
+                error = ec_borrado;
+            } else {
+                error.clear();
+                std::filesystem::rename(ruta_temporal, ruta_archivo, error);
+            }
+        }
+    }
+
     if (error) {
         std::error_code ignorado;
         std::filesystem::remove(ruta_temporal, ignorado);
