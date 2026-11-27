@@ -362,7 +362,22 @@ int main(int argc, char* argv[]) {
     // =========================================================================
     if (cli_opts.once)
     {
-        return run_once_mode(collectors, cli_opts.format);
+        // arg_parser deja format = "json" por defecto, así que se mira argv
+        // para saber si el usuario pasó --format de forma explícita.
+        bool format_explicito = false;
+        for (int i = 1; i < argc; ++i)
+        {
+            if (std::string(argv[i]) == "--format")
+            {
+                format_explicito = true;
+                break;
+            }
+        }
+
+        const std::string formato = chuspapulse::config::resolverFormatoOnce(
+            cfg, format_explicito, cli_opts.format);
+
+        return run_once_mode(collectors, formato);
     }
 
     // =========================================================================

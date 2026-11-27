@@ -182,4 +182,36 @@ TEST(MonitorConfigTest, FlagsCanBeDisabledIndependently) {
     EXPECT_TRUE(monitor.disk);
 }
 
+// ---------------------------------------------------------------------------
+// resolverFormatoOnce: output_format se aplica como formato por defecto de --once
+// ---------------------------------------------------------------------------
+
+TEST(ResolverFormatoOnceTest, SinFormatExplicitoUsaOutputFormatDeLaConfig) {
+    Config config;
+    config.output_format = "csv";
+
+    EXPECT_EQ(resolverFormatoOnce(config, false, "json"), "csv");
+}
+
+TEST(ResolverFormatoOnceTest, FormatExplicitoTienePrioridadSobreLaConfig) {
+    Config config;
+    config.output_format = "csv";
+
+    EXPECT_EQ(resolverFormatoOnce(config, true, "prometheus"), "prometheus");
+}
+
+TEST(ResolverFormatoOnceTest, FormatExplicitoJsonNoSeSustituyePorLaConfig) {
+    // --format json explícito debe respetarse aunque la config diga otra cosa.
+    Config config;
+    config.output_format = "csv";
+
+    EXPECT_EQ(resolverFormatoOnce(config, true, "json"), "json");
+}
+
+TEST(ResolverFormatoOnceTest, ConfigPorDefectoDevuelveJson) {
+    Config config;
+
+    EXPECT_EQ(resolverFormatoOnce(config, false, "json"), "json");
+}
+
 } // namespace chuspapulse::config

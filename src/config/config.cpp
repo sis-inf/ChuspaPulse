@@ -328,4 +328,12 @@ std::vector<std::string> camposModificados(const Config& antes,
     return campos;
 }
 
+std::string resolverFormatoOnce(const Config& cfg,
+                                bool format_explicito,
+                                const std::string& format_cli)
+{
+    // --format tiene prioridad; si no se pasó, se usa output_format de la config.
+    return format_explicito ? format_cli : cfg.output_format;
+}
+
 } // namespace chuspapulse::config

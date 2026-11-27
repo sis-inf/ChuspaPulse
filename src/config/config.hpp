@@ -100,6 +100,12 @@ bool recargar(const std::string& ruta, Config& destino, std::string& error);
 std::vector<std::string> camposModificados(const Config& antes,
                                            const Config& despues);
 
+/// Devuelve el formato que usa el modo --once: el de --format si se pasó de
+/// forma explícita; si no, el output_format de la configuración.
+std::string resolverFormatoOnce(const Config& cfg,
+                                bool format_explicito,
+                                const std::string& format_cli);
+
 } // namespace chuspapulse::config
 
 #endif // CHUSPAPULSE_CONFIG_CONFIG_HPP
