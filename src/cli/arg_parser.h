@@ -56,7 +56,9 @@ struct CliOptions {
  *
  * Argumentos soportados:
  * - --interval <ms>    (milisegundos, entero entre INTERVALO_MIN_MS e INTERVALO_MAX_MS)
- * - --metrics <lista>  (solo cpu, ram y disk, separados por coma)
+* - --metrics <lista> (cpu, ram, disk, bateria, red,
+*                      procesos, loadavg, uptime, temperatura)
+
  * - --once
  * - --format json|csv|prometheus|text
  * - --config <ruta>

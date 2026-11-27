@@ -19,18 +19,26 @@ namespace chuspapulse::cli {
  * @return false si la lista esta vacia o contiene nombres desconocidos.
  *         En ese caso la configuracion no se modifica.
  */
-static bool parse_metrics(const std::string& metrics, chuspapulse::config::MonitorConfig& config)
+static bool parse_metrics( const std::string& metrics,
+    chuspapulse::config::MonitorConfig& config)
 {
     if (metrics.empty())
     {
         std::cerr << "Error: la lista de --metrics esta vacia\n";
-        std::cerr << "Metricas validas: cpu, ram, disk\n";
+        std::cerr << "Metricas validas: cpu, ram, disk, bateria, red, procesos, loadavg, uptime, temperatura\n";
         return false;
     }
 
     bool cpu = false;
     bool ram = false;
     bool disk = false;
+    bool bateria = false;
+    bool red = false;
+    bool procesos = false;
+    bool loadavg = false;
+    bool uptime = false;
+    bool temperatura = false;
+
     std::string desconocidas;
 
     std::stringstream ss(metrics);
@@ -50,12 +58,37 @@ static bool parse_metrics(const std::string& metrics, chuspapulse::config::Monit
         {
             disk = true;
         }
+        else if (item == "bateria")
+        {
+            bateria = true;
+        }
+        else if (item == "red")
+        {
+            red = true;
+        }
+        else if (item == "procesos")
+        {
+            procesos = true;
+        }
+        else if (item == "loadavg")
+        {
+            loadavg = true;
+        }
+        else if (item == "uptime")
+        {
+            uptime = true;
+        }
+        else if (item == "temperatura")
+        {
+            temperatura = true;
+        }
         else
         {
             if (!desconocidas.empty())
             {
                 desconocidas += ", ";
             }
+
             desconocidas += item.empty() ? "\"\"" : item;
         }
     }
@@ -66,19 +99,30 @@ static bool parse_metrics(const std::string& metrics, chuspapulse::config::Monit
         {
             desconocidas += ", ";
         }
+
         desconocidas += "\"\"";
     }
 
     if (!desconocidas.empty())
     {
-        std::cerr << "Error: metricas desconocidas: " << desconocidas << "\n";
-        std::cerr << "Metricas validas: cpu, ram, disk\n";
+        std::cerr << "Error: metricas desconocidas: "
+                  << desconocidas << "\n";
+
+        std::cerr << "Metricas validas: cpu, ram, disk, bateria, red, procesos, loadavg, uptime, temperatura\n";
+
         return false;
     }
 
     config.cpu = cpu;
     config.ram = ram;
     config.disk = disk;
+    config.bateria = bateria;
+    config.red = red;
+    config.procesos = procesos;
+    config.loadavg = loadavg;
+    config.uptime = uptime;
+    config.temperatura = temperatura;
+
     return true;
 }
 
@@ -91,7 +135,9 @@ void print_help()
 
     std::cout << "  --interval <ms>   Intervalo de muestreo en milisegundos ("
               << INTERVALO_MIN_MS << " a " << INTERVALO_MAX_MS << ")\n";
-    std::cout << "  --metrics <list>  Metricas a recolectar: cpu,ram,disk\n";
+   std::cout << "  --metrics <list>  Metricas a recolectar:\n";
+   std::cout << "                    cpu,ram,disk,bateria,red,procesos,loadavg,uptime,temperatura\n";
+
     std::cout << "  --once            Ejecutar una sola lectura y salir\n";
     std::cout << "  --format <fmt>    Formato de salida con --once: json|csv|prometheus|text\n";
     std::cout << "  -h, --help        Mostrar ayuda\n";

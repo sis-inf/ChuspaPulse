@@ -323,38 +323,136 @@ int main(int argc, char* argv[]) {
           std::make_shared<chuspapulse::collectors::memory::CollectorMemory>()
        );
     }
+     // BATERIA
+    if (cli_opts.monitor.bateria)
+    {
+        collectors.push_back(
+            std::make_shared<chuspapulse::collectors::bateria::CollectorBateria>()
+        );
+    }
 
-    // CollectorBateria se mantiene activo porque todavía no existe flag dedicado
-     collectors.push_back(
-        std::make_shared<chuspapulse::collectors::bateria::CollectorBateria>()
-     );
-
-    if (cli_opts.monitor.disk || usar_todos)
+    // DISCO
+    if (cli_opts.monitor.disk)
     {
         collectors.push_back(
             std::make_shared<chuspapulse::collectors::disk::DiskCollector>()
         );
     }
 
-    // La CLI todavía no tiene un flag dedicado para red, por eso se mantiene activa.
+    // RED
+    if (cli_opts.monitor.red)
+    {
+        collectors.push_back(
+            std::make_shared<chuspapulse::collectors::network::NetworkCollector>()
+        );
+    }
+
+    // PROCESOS
+    if (cli_opts.monitor.procesos)
+    {
+        collectors.push_back(
+            std::make_shared<CollectorProcesos>()
+        );
+    }
+
+    // LOADAVG
+    if (cli_opts.monitor.loadavg)
+    {
+        collectors.push_back(
+            std::make_shared<CollectorLoadAvg>()
+        );
+    }
+
+    // UPTIME
+    if (cli_opts.monitor.uptime)
+    {
+        collectors.push_back(
+            std::make_shared<CollectorUptime>()
+        );
+    }
+
+    // TEMPERATURA
+    if (cli_opts.monitor.temperatura)
+    {
+        collectors.push_back(
+            std::make_shared<CollectorTemperatura>()
+        );
+    }
+
+    // CollectorBateria se mantiene activo porque todavía no existe flag dedicado
+    std::vector<std::shared_ptr<chuspapulse::collectors::ICollector>> collectors;
+
+// CPU
+if (cli_opts.monitor.cpu)
+{
+    collectors.push_back(
+        std::make_shared<chuspapulse::collectors::CollectorCPU>()
+    );
+}
+
+// RAM
+if (cli_opts.monitor.ram)
+{
+    collectors.push_back(
+        std::make_shared<chuspapulse::collectors::memory::CollectorMemory>()
+    );
+}
+
+// BATERIA
+if (cli_opts.monitor.bateria)
+{
+    collectors.push_back(
+        std::make_shared<chuspapulse::collectors::bateria::CollectorBateria>()
+    );
+}
+
+// DISCO
+if (cli_opts.monitor.disk)
+{
+    collectors.push_back(
+        std::make_shared<chuspapulse::collectors::disk::DiskCollector>()
+    );
+}
+
+// RED
+if (cli_opts.monitor.red)
+{
     collectors.push_back(
         std::make_shared<chuspapulse::collectors::network::NetworkCollector>()
     );
+}
+
+// PROCESOS
+if (cli_opts.monitor.procesos)
+{
     collectors.push_back(
         std::make_shared<CollectorProcesos>()
     );
+}
 
+// LOADAVG
+if (cli_opts.monitor.loadavg)
+{
     collectors.push_back(
         std::make_shared<CollectorLoadAvg>()
     );
+}
 
+// UPTIME
+if (cli_opts.monitor.uptime)
+{
     collectors.push_back(
         std::make_shared<CollectorUptime>()
     );
+}
 
+// TEMPERATURA
+if (cli_opts.monitor.temperatura)
+{
     collectors.push_back(
         std::make_shared<CollectorTemperatura>()
     );
+} 
 
 
     // =========================================================================
