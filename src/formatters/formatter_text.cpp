@@ -51,17 +51,17 @@ std::string FormatterText::formatear(
     for (const auto& metrica : snapshot.metricas) {
         if (metrica.nombre == "cpu.usage" || metrica.nombre == "cpu") {
             cpu_pct = metrica.valor;
-        } else if (metrica.nombre == "ram.used" || metrica.nombre == "ram.usado") {
+        } else if (metrica.nombre == "memory.used") {
             ram_usado_bytes = metrica.valor;
-        } else if (metrica.nombre == "ram.total" || metrica.nombre == "ram.total") {
+        } else if (metrica.nombre == "memory.total") {
             ram_total_bytes = metrica.valor;
         } else if (metrica.nombre == "disk.used" || metrica.nombre == "disco.usado") {
             disco_usado_bytes = metrica.valor;
         } else if (metrica.nombre == "disk.total" || metrica.nombre == "disco.total") {
             disco_total_bytes = metrica.valor;
-        } else if (metrica.nombre == "network.rx" || metrica.nombre == "net.rx") {
+        } else if (metrica.nombre == "network.rx_bytes" || metrica.nombre == "net.rx") {
             net_rx_bytes = metrica.valor;
-        } else if (metrica.nombre == "network.tx" || metrica.nombre == "net.tx") {
+        } else if (metrica.nombre == "network.tx_bytes" || metrica.nombre == "net.tx") {
             net_tx_bytes = metrica.valor;
         }
     }
@@ -71,8 +71,8 @@ std::string FormatterText::formatear(
                           chuspapulse::utils::formatearBytesHumanos(ram_total_bytes);
     std::string disco_str = chuspapulse::utils::formatearBytesHumanos(disco_usado_bytes) + "/" +
                             chuspapulse::utils::formatearBytesHumanos(disco_total_bytes);
-    std::string net_str = chuspapulse::utils::formatearBytesHumanos(net_rx_bytes) + "/s/" +
-                          chuspapulse::utils::formatearBytesHumanos(net_tx_bytes) + "/s";
+    std::string net_str = chuspapulse::utils::formatearBytesHumanos(net_rx_bytes) + "/" +
+                      chuspapulse::utils::formatearBytesHumanos(net_tx_bytes);
 
     std::ostringstream oss;
 

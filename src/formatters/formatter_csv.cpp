@@ -40,12 +40,12 @@ std::string FormatterCSV::filaDeSnapshot(const chuspapulse::core::Snapshot& snap
 
     for (const auto& m : snapshot.metricas) {
         if (m.nombre == "cpu.usage")        cpu_pct      = m.valor;
-        else if (m.nombre == "ram.used")    ram_used_mb  = m.valor / (1024.0 * 1024.0);
-        else if (m.nombre == "ram.total")   ram_total_mb = m.valor / (1024.0 * 1024.0);
+        else if (m.nombre == "memory.used")    ram_used_mb  = m.valor / (1024.0 * 1024.0);
+        else if (m.nombre == "memory.total")   ram_total_mb = m.valor / (1024.0 * 1024.0);
         else if (m.nombre == "disk.used")   disk_used_gb = m.valor / (1024.0 * 1024.0 * 1024.0);
         else if (m.nombre == "disk.total")  disk_total_gb= m.valor / (1024.0 * 1024.0 * 1024.0);
-        else if (m.nombre == "net.rx" || m.nombre == "network.rx")      net_rx_kb    = m.valor / 1024.0;
-        else if (m.nombre == "net.tx" || m.nombre == "network.tx")      net_tx_kb    = m.valor / 1024.0;
+        else if (m.nombre == "network.rx_bytes" || m.nombre == "net.rx")   net_rx_kb    = m.valor / 1024.0;
+        else if (m.nombre == "network.tx_bytes" || m.nombre == "net.tx")   net_tx_kb    = m.valor / 1024.0;
     }
 
     std::ostringstream oss;

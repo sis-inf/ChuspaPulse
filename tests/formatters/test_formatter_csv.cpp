@@ -35,12 +35,12 @@ chuspapulse::core::Snapshot crearSnapshotCompleto(std::int64_t timestamp) {
     snapshot.timestamp = timestamp;
     snapshot.metricas = {
         crearMetrica("cpu.usage", 45.5, "porcentaje", timestamp),
-        crearMetrica("ram.used", 2147483648.0, "bytes", timestamp),
-        crearMetrica("ram.total", 8589934592.0, "bytes", timestamp),
+        crearMetrica("memory.used", 2147483648.0, "bytes", timestamp),
+        crearMetrica("memory.total", 8589934592.0, "bytes", timestamp),
         crearMetrica("disk.used", 107374182400.0, "bytes", timestamp),
         crearMetrica("disk.total", 536870912000.0, "bytes", timestamp),
-        crearMetrica("network.rx", 2048.0, "bytes", timestamp),
-        crearMetrica("network.tx", 1024.0, "bytes", timestamp),
+        crearMetrica("network.rx_bytes", 2048.0, "bytes", timestamp),
+        crearMetrica("network.tx_bytes", 1024.0, "bytes", timestamp),
     };
     return snapshot;
 }
@@ -145,7 +145,7 @@ TEST(TestFormatterCSV, Test_ValoresNegativosNoSeValidan) {
     snapshot.timestamp = 4000;
     snapshot.metricas = {
         crearMetrica("cpu.usage", -5.0, "porcentaje", 4000),
-        crearMetrica("ram.used", -1048576.0, "bytes", 4000),
+        crearMetrica("memory.used", -1048576.0, "bytes", 4000),
     };
 
     EXPECT_EQ(
@@ -190,8 +190,8 @@ TEST(TestFormatterCSV, Test_RedondeoADosDecimales) {
     snapshot.timestamp = 7000;
     snapshot.metricas = {
         crearMetrica("cpu.usage", 12.346, "porcentaje", 7000),
-        crearMetrica("net.rx", 1.0, "bytes", 7000),
-        crearMetrica("net.tx", 6.0, "bytes", 7000),
+        crearMetrica("network.rx_bytes", 1.0, "bytes", 7000),
+        crearMetrica("network.tx_bytes", 6.0, "bytes", 7000),
     };
 
     EXPECT_EQ(
@@ -209,7 +209,7 @@ TEST(TestFormatterCSV, Test_ValoresNoFinitosGeneranFilaSinFallar) {
             "cpu.usage", std::numeric_limits<double>::quiet_NaN(),
             "porcentaje", 8000),
         crearMetrica(
-            "net.tx", std::numeric_limits<double>::infinity(),
+            "network.tx_bytes", std::numeric_limits<double>::infinity(),
             "bytes", 8000),
     };
 
