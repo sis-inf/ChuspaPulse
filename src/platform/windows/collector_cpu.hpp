@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CHUSPAPULSE_PLATFORM_WINDOWS_COLLECTOR_CPU_HPP
+#define CHUSPAPULSE_PLATFORM_WINDOWS_COLLECTOR_CPU_HPP
 
 #ifdef _WIN32
 
@@ -50,3 +51,4 @@ public:
 } // namespace chuspapulse::platform::windows_platform
 
 #endif // _WIN32
+#endif // CHUSPAPULSE_PLATFORM_WINDOWS_COLLECTOR_CPU_HPP
