@@ -32,6 +32,42 @@ toml::node_view<const toml::node> preferir(
 }
 
 
+/// Convierte el intervalo de entorno validando antes de convertir.
+/// Rechaza "30s", "abc", "0", negativos y valores que desbordan.
+long long parsearIntervaloEnv(const std::string& texto)
+{
+    const bool soloDigitos =
+        !texto.empty() &&
+        texto.find_first_not_of("0123456789") == std::string::npos;
+
+    if (!soloDigitos) {
+        throw std::invalid_argument(
+            "Valor inválido para CHUSPAPULSE_SAMPLER_INTERVALO_SEGUNDOS: '" +
+            texto + "' (debe ser un entero positivo de segundos)"
+        );
+    }
+
+    long long valor = 0;
+    try {
+        valor = std::stoll(texto);
+    }
+    catch (const std::out_of_range&) {
+        throw std::invalid_argument(
+            "Valor inválido para CHUSPAPULSE_SAMPLER_INTERVALO_SEGUNDOS: '" +
+            texto + "' (fuera de rango)"
+        );
+    }
+
+    if (valor < 1) {
+        throw std::invalid_argument(
+            "Valor inválido para CHUSPAPULSE_SAMPLER_INTERVALO_SEGUNDOS: '" +
+            texto + "' (debe ser mayor que 0)"
+        );
+    }
+
+    return valor;
+}
+
 /// Aplica variables de entorno con prioridad sobre TOML.
 void aplicarEnv(Config& cfg)
 {
@@ -44,7 +80,7 @@ void aplicarEnv(Config& cfg)
     }
 
     if (const char* v = std::getenv("CHUSPAPULSE_SAMPLER_INTERVALO_SEGUNDOS")) {
-        cfg.sampler.intervalo_segundos = std::stoll(v);
+        cfg.sampler.intervalo_segundos = parsearIntervaloEnv(v);
     }
 
     if (const char* v = std::getenv("CHUSPAPULSE_STORAGE_RUTA_DB")) {
@@ -151,10 +187,15 @@ Config cargar(const std::string& ruta)
     // Si el archivo no existe:
     // usar valores por defecto sin excepcion
     if (!std::filesystem::exists(ruta)) {
-        Config cfg = porDefecto();
-        aplicarEnv(cfg);
-        validarOutputFormat(cfg);
-        return cfg;
+        try {
+            Config cfg = porDefecto();
+            aplicarEnv(cfg);
+            validarOutputFormat(cfg);
+            return cfg;
+        }
+        catch (const std::invalid_argument& e) {
+            throw ErrorConfig(e.what());
+        }
     }
 
 
@@ -232,9 +273,9 @@ Config cargar(const std::string& ruta)
         );
 
     }
-    catch (const std::invalid_argument&) {
+    catch (const std::invalid_argument& e) {
 
-        throw;
+        throw ErrorConfig(e.what());
 
     }
     catch (const std::exception& e) {

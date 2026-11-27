@@ -283,6 +283,9 @@ int main(int argc, char* argv[]) {
     } catch (const chuspapulse::config::ErrorConfig& e) {
         std::cerr << "[chuspapulse] Error al cargar configuracion: " << e.what() << "\n";
         return 1;
+    } catch (const std::exception& e) {
+        std::cerr << "[chuspapulse] Error inesperado al cargar configuracion: " << e.what() << "\n";
+        return 1;
     }
 
     // -------------------------------------------------------------------------
