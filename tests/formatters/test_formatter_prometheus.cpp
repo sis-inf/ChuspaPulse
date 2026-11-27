@@ -6,6 +6,8 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <limits>
+#include <set>
 
 #include "core/types.hpp"
 #include "formatters/formatter_prometheus.hpp"
@@ -350,4 +352,335 @@ TEST(TestFormatterPrometheus, Test_ColisionEsDeterministaSinImportarElOrden) {
     EXPECT_EQ(nombreDe({a, b}, "1"), nombreDe({b, a}, "1"));
     EXPECT_EQ(nombreDe({a, b}, "2"), nombreDe({b, a}, "2"));
     EXPECT_FALSE(nombreDe({a, b}, "1").empty());
+}
+
+// ---------------------------------------------------------------------------
+// Casos borde adicionales
+// ---------------------------------------------------------------------------
+
+namespace {
+
+std::size_t contarPrefijo(const std::string& salida, const std::string& prefijo) {
+    std::size_t total = 0;
+    for (const std::string& linea : obtenerLineas(salida)) {
+        if (linea.rfind(prefijo, 0) == 0) {
+            ++total;
+        }
+    }
+    return total;
+}
+
+std::vector<std::string> nombresDeTipo(const std::string& salida) {
+    std::vector<std::string> nombres;
+    for (const std::string& linea : obtenerLineas(salida)) {
+        if (linea.rfind("# TYPE ", 0) == 0) {
+            nombres.push_back(linea.substr(7, linea.find(' ', 7) - 7));
+        }
+    }
+    return nombres;
+}
+
+} // namespace
+
+// --- normalizarNombre ---
+
+TEST(TestFormatterPrometheus, Test_Normalizar_NombreVacio) {
+    EXPECT_EQ(FormatterPrometheus::normalizarNombre(""), "chuspapulse_");
+}
+
+TEST(TestFormatterPrometheus, Test_Normalizar_BytesNoAscii_UnGuionBajoPorByte) {
+    // 'ñ' en UTF-8 ocupa 2 bytes (0xC3 0xB1): cada byte se reemplaza.
+    EXPECT_EQ(FormatterPrometheus::normalizarNombre("a\xC3\xB1" "b"),
+              "chuspapulse_a__b");
+}
+
+TEST(TestFormatterPrometheus, Test_Normalizar_EmpiezaConDigito_QuedaValido) {
+    const std::string nombre = FormatterPrometheus::normalizarNombre("9cpu.usage");
+    EXPECT_EQ(nombre, "chuspapulse_9cpu_usage");
+    EXPECT_TRUE(std::regex_match(nombre, kNombrePrometheus));
+}
+
+TEST(TestFormatterPrometheus, Test_Normalizar_SaltoDeLineaYTabulador) {
+    EXPECT_EQ(FormatterPrometheus::normalizarNombre("a\nb\tc"),
+              "chuspapulse_a_b_c");
+}
+
+TEST(TestFormatterPrometheus, Test_Normalizar_NombreMuyLargo) {
+    const std::string largo(5000, 'x');
+    const std::string nombre = FormatterPrometheus::normalizarNombre(largo);
+    EXPECT_EQ(nombre.size(), 12U + 5000U);
+    EXPECT_EQ(nombre.rfind("chuspapulse_", 0), 0U);
+}
+
+// --- formatear: estructura exacta ---
+
+TEST(TestFormatterPrometheus, Test_SnapshotVacio_DevuelveCadenaVacia) {
+    FormatterPrometheus formatter;
+    EXPECT_EQ(formatter.formatear(crearSnapshot(1000, {})), "");
+}
+
+TEST(TestFormatterPrometheus, Test_SalidaExacta_UnaMetrica) {
+    FormatterPrometheus formatter;
+
+    const auto snapshot = crearSnapshot(
+        1000, {{"cpu.usage", 42.0, "porcentaje", 1000}});
+
+    EXPECT_EQ(formatter.formatear(snapshot),
+              "# HELP chuspapulse_cpu_usage Metrica de chuspapulse\n"
+              "# TYPE chuspapulse_cpu_usage gauge\n"
+              "chuspapulse_cpu_usage 42\n");
+}
+
+TEST(TestFormatterPrometheus, Test_SalidaExacta_UnaLineaEnBlancoEntreFamilias) {
+    FormatterPrometheus formatter;
+
+    const auto snapshot = crearSnapshot(
+        1000,
+        {
+            {"cpu.usage", 42.0, "porcentaje", 1000},
+            {"memory.used", 2048.0, "bytes", 1000},
+        });
+
+    EXPECT_EQ(formatter.formatear(snapshot),
+              "# HELP chuspapulse_cpu_usage Metrica de chuspapulse\n"
+              "# TYPE chuspapulse_cpu_usage gauge\n"
+              "chuspapulse_cpu_usage 42\n"
+              "\n"
+              "# HELP chuspapulse_memory_used Metrica de chuspapulse\n"
+              "# TYPE chuspapulse_memory_used gauge\n"
+              "chuspapulse_memory_used 2048\n");
+}
+
+TEST(TestFormatterPrometheus, Test_NombreVacio_UsaSoloElPrefijo) {
+    FormatterPrometheus formatter;
+
+    const std::vector<std::string> esperado = {
+        "# HELP chuspapulse_ Metrica de chuspapulse",
+        "# TYPE chuspapulse_ gauge",
+        "chuspapulse_ 1",
+    };
+
+    EXPECT_EQ(obtenerLineas(formatter.formatear(
+                  crearSnapshot(1000, {{"", 1.0, "u", 1000}}))),
+              esperado);
+}
+
+TEST(TestFormatterPrometheus, Test_NombreConSaltoDeLinea_NoRompeLaSalida) {
+    FormatterPrometheus formatter;
+
+    const auto lineas = obtenerLineas(formatter.formatear(
+        crearSnapshot(1000, {{"cpu\nusage", 1.0, "u", 1000}})));
+
+    ASSERT_EQ(lineas.size(), 3U);
+    EXPECT_EQ(lineas[2], "chuspapulse_cpu_usage 1");
+}
+
+TEST(TestFormatterPrometheus, Test_Formatear_EsIdempotente) {
+    FormatterPrometheus formatter;
+
+    const auto snapshot = crearSnapshot(
+        1000,
+        {
+            {"cpu.usage{core=\"0\"}", 1.0, "porcentaje", 1000},
+            {"net.rx", 2.0, "bytes", 1000},
+        });
+
+    EXPECT_EQ(formatter.formatear(snapshot), formatter.formatear(snapshot));
+}
+
+TEST(TestFormatterPrometheus, Test_TimestampYUnidadNoAparecenEnLaSalida) {
+    FormatterPrometheus formatter;
+
+    const std::string salida = formatter.formatear(
+        crearSnapshot(555, {{"x", 7.0, "unidad_rara", 987654321}}));
+
+    EXPECT_EQ(salida.find("987654321"), std::string::npos);
+    EXPECT_EQ(salida.find("unidad_rara"), std::string::npos);
+    EXPECT_EQ(salida.find("555"), std::string::npos);
+}
+
+// --- formatear: valores ---
+
+TEST(TestFormatterPrometheus, Test_Valores_CeroNegativoYDecimal) {
+    FormatterPrometheus formatter;
+
+    const std::string salida = formatter.formatear(crearSnapshot(
+        1000,
+        {
+            {"m.zero", 0.0, "u", 1000},
+            {"m.neg", -5.5, "u", 1000},
+            {"m.dec", 0.25, "u", 1000},
+        }));
+
+    EXPECT_NE(salida.find("chuspapulse_m_zero 0\n"), std::string::npos);
+    EXPECT_NE(salida.find("chuspapulse_m_neg -5.5\n"), std::string::npos);
+    EXPECT_NE(salida.find("chuspapulse_m_dec 0.25\n"), std::string::npos);
+}
+
+TEST(TestFormatterPrometheus, Test_Valores_PrecisionDe15Digitos) {
+    FormatterPrometheus formatter;
+
+    const std::string salida = formatter.formatear(crearSnapshot(
+        1000,
+        {
+            {"p.suma", 0.1 + 0.2, "u", 1000},
+            {"p.grande", 1234567.891, "u", 1000},
+        }));
+
+    EXPECT_NE(salida.find("chuspapulse_p_suma 0.3\n"), std::string::npos);
+    EXPECT_NE(salida.find("chuspapulse_p_grande 1234567.891\n"),
+              std::string::npos);
+}
+
+TEST(TestFormatterPrometheus, Test_Valores_MuyGrandeUsaNotacionCientifica) {
+    FormatterPrometheus formatter;
+
+    const std::string salida = formatter.formatear(
+        crearSnapshot(1000, {{"m", 1e20, "u", 1000}}));
+
+    EXPECT_NE(salida.find("chuspapulse_m 1e+"), std::string::npos);
+}
+
+TEST(TestFormatterPrometheus, Test_Valores_NaNEInfinito_NoLanzanYConservanElNombre) {
+    FormatterPrometheus formatter;
+
+    const auto snapshot = crearSnapshot(
+        1000,
+        {
+            {"m.nan", std::numeric_limits<double>::quiet_NaN(), "u", 1000},
+            {"m.inf", std::numeric_limits<double>::infinity(), "u", 1000},
+            {"m.ninf", -std::numeric_limits<double>::infinity(), "u", 1000},
+        });
+
+    std::string salida;
+    EXPECT_NO_THROW(salida = formatter.formatear(snapshot));
+
+    EXPECT_NE(salida.find("chuspapulse_m_nan "), std::string::npos);
+    EXPECT_NE(salida.find("chuspapulse_m_inf "), std::string::npos);
+    EXPECT_NE(salida.find("chuspapulse_m_ninf "), std::string::npos);
+    EXPECT_EQ(contarPrefijo(salida, "# TYPE "), 3U);
+}
+
+TEST(TestFormatterPrometheus, Test_MuchasMetricas_UnaFamiliaPorNombre) {
+    FormatterPrometheus formatter;
+
+    std::vector<chuspapulse::core::Metrica> metricas;
+    for (int i = 0; i < 500; ++i) {
+        metricas.push_back({"m." + std::to_string(i),
+                            static_cast<double>(i), "u", 1000});
+    }
+
+    const std::string salida = formatter.formatear(crearSnapshot(1000, metricas));
+
+    EXPECT_EQ(contarPrefijo(salida, "# HELP "), 500U);
+    EXPECT_EQ(contarPrefijo(salida, "# TYPE "), 500U);
+    // 3 líneas por familia + 1 línea en blanco entre familias.
+    EXPECT_EQ(obtenerLineas(salida).size(), 500U * 3U + 499U);
+}
+
+// --- formatearHistorial ---
+
+TEST(TestFormatterPrometheus, Test_Historial_UnSoloSnapshot_IgualAFormatear) {
+    FormatterPrometheus formatter;
+
+    const auto s = crearSnapshot(
+        100, {{"cpu.usage", 10.0, "porcentaje", 100}});
+
+    EXPECT_EQ(formatter.formatearHistorial({s}), formatter.formatear(s));
+}
+
+TEST(TestFormatterPrometheus, Test_Historial_UltimoSnapshotVacio_DevuelveVacio) {
+    FormatterPrometheus formatter;
+
+    const auto conDatos = crearSnapshot(
+        100, {{"cpu.usage", 10.0, "porcentaje", 100}});
+    const auto vacio = crearSnapshot(200, {});
+
+    EXPECT_EQ(formatter.formatearHistorial({conDatos, vacio}), "");
+}
+
+// --- Colisiones de nombres ---
+
+TEST(TestFormatterPrometheus, Test_Colision_SufijoEsHashDe8DigitosHex) {
+    FormatterPrometheus formatter;
+
+    const auto tipos = nombresDeTipo(formatter.formatear(crearSnapshot(
+        1000,
+        {
+            {"net.rx", 1.0, "bytes", 1000},
+            {"net-rx", 2.0, "bytes", 1000},
+        })));
+
+    ASSERT_EQ(tipos.size(), 2U);
+    const std::regex patron("^chuspapulse_net_rx_[0-9a-f]{8}$");
+    EXPECT_TRUE(std::regex_match(tipos[0], patron)) << tipos[0];
+    EXPECT_TRUE(std::regex_match(tipos[1], patron)) << tipos[1];
+}
+
+TEST(TestFormatterPrometheus, Test_Colision_TresNombresGeneranTresFamilias) {
+    FormatterPrometheus formatter;
+
+    const auto tipos = nombresDeTipo(formatter.formatear(crearSnapshot(
+        1000,
+        {
+            {"a.b", 1.0, "u", 1000},
+            {"a-b", 2.0, "u", 1000},
+            {"a b", 3.0, "u", 1000},
+        })));
+
+    ASSERT_EQ(tipos.size(), 3U);
+    const std::set<std::string> distintos(tipos.begin(), tipos.end());
+    EXPECT_EQ(distintos.size(), 3U);
+    for (const std::string& tipo : tipos) {
+        EXPECT_EQ(tipo.rfind("chuspapulse_a_b_", 0), 0U) << tipo;
+    }
+}
+
+TEST(TestFormatterPrometheus, Test_Colision_ConservaLasEtiquetas) {
+    FormatterPrometheus formatter;
+
+    const std::string salida = formatter.formatear(crearSnapshot(
+        1000,
+        {
+            {"net.rx{if=\"a\"}", 1.0, "bytes", 1000},
+            {"net-rx{if=\"b\"}", 2.0, "bytes", 1000},
+        }));
+
+    EXPECT_EQ(contarPrefijo(salida, "# TYPE "), 2U);
+    EXPECT_NE(salida.find("{if=\"a\"} 1\n"), std::string::npos);
+    EXPECT_NE(salida.find("{if=\"b\"} 2\n"), std::string::npos);
+}
+
+TEST(TestFormatterPrometheus, Test_Colision_SaltoDeLineaEnNombreOriginalSeEscapa) {
+    FormatterPrometheus formatter;
+
+    const std::string salida = formatter.formatear(crearSnapshot(
+        1000,
+        {
+            {"a\nb", 1.0, "u", 1000},
+            {"a_b", 2.0, "u", 1000},
+        }));
+
+    // El salto de línea sale como "\n" literal y no parte la línea HELP.
+    EXPECT_NE(salida.find("(nombre original: a\\nb)"), std::string::npos);
+    EXPECT_EQ(obtenerLineas(salida).size(), 7U);
+}
+
+TEST(TestFormatterPrometheus, Test_NombreRepetido_NoEsColision) {
+    FormatterPrometheus formatter;
+
+    const std::string salida = formatter.formatear(crearSnapshot(
+        1000,
+        {
+            {"cpu.usage", 1.0, "porcentaje", 1000},
+            {"cpu.usage", 2.0, "porcentaje", 1000},
+        }));
+
+    EXPECT_EQ(salida.find("nombre original"), std::string::npos);
+
+    const auto tipos = nombresDeTipo(salida);
+    ASSERT_EQ(tipos.size(), 1U);
+    EXPECT_EQ(tipos[0], "chuspapulse_cpu_usage");
+    EXPECT_NE(salida.find("chuspapulse_cpu_usage 1\n"), std::string::npos);
+    EXPECT_NE(salida.find("chuspapulse_cpu_usage 2\n"), std::string::npos);
 }
