@@ -54,7 +54,7 @@ Datos que conviene tener en cuenta:
 | `CHUSPAPULSE_SAMPLER_INTERVALO_SEGUNDOS` | Intervalo entre muestreos, en segundos; debe ser mayor que 0 (por defecto `10`) | `30` |
 | `CHUSPAPULSE_STORAGE_RUTA_DB` | Ruta del archivo SQLite (por defecto `chuspapulse.db`) | `/data/chuspapulse.db` |
 | `CHUSPAPULSE_NIVEL_LOG` | Nivel de log: `debug`, `info`, `warn` o `error` (por defecto `info`) | `debug` |
-| `CHUSPAPULSE_OUTPUT_FORMAT` | Formato de salida de métricas: `json`, `csv` o `prometheus` (por defecto `json`) | `prometheus` |
+| `CHUSPAPULSE_OUTPUT_FORMAT` | Formato de salida por defecto del modo `--once`, cuando no se pasa `--format`: `json`, `csv` o `prometheus` (por defecto `json`). El modo daemon no genera salida de métricas, así que no lo usa | `prometheus` |
 
 ## Solución de problemas comunes
 
