@@ -267,7 +267,13 @@ int main(int argc, char* argv[]) {
     // 1. Parsear argumentos CLI
     // -------------------------------------------------------------------------
     chuspapulse::cli::CliOptions cli_opts;
-    if (!chuspapulse::cli::parse_arguments(argc, argv, cli_opts)) {
+    const auto resultado_cli =
+    chuspapulse::cli::analizar_argumentos(argc, argv, cli_opts);
+
+    if (resultado_cli == chuspapulse::cli::ResultadoParseo::AyudaMostrada) {
+        return 0;
+    }
+    if (resultado_cli == chuspapulse::cli::ResultadoParseo::Error) {
         return 1;
     }
 
