@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cstdint>
+#include <exception>
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -14,15 +16,18 @@ namespace chuspapulse::collectors::bateria {
  */
 struct BateriaInfo {
     /** @brief Porcentaje de carga actual de la bateria (0-100). */
-    int porcentaje;
+    int porcentaje = 0;
 
     /** @brief Estado de carga reportado por el kernel (p. ej. "Charging",
      *         "Discharging", "Full", "Not charging", "Unknown"). */
-    std::string estado;
+    std::string estado{};
 
     /** @brief Indica si se encontro informacion de bateria en el sistema.
      *         false en servidores o equipos sin bateria (BAT0 inexistente). */
-    bool disponible;
+    bool disponible = false;
+    bool esValida() const noexcept {
+        return disponible && porcentaje >= 0 && porcentaje <= 100 && !estado.empty();
+    }
 };
 
 /**
@@ -44,6 +49,29 @@ BateriaInfo getBateriaInfo(
     const std::string& base_path = "/sys/class/power_supply/BAT0"
 );
 
+inline BateriaInfo getBateriaInfoSeguro(
+    const std::string& base_path = "/sys/class/power_supply/BAT0"
+) noexcept {
+    try {
+        if (base_path.empty()) {
+            std::cerr << "[bateria_collector] Ruta base vacia al consultar informacion de bateria.\n";
+            return BateriaInfo{};
+        }
+        return getBateriaInfo(base_path);
+    } catch (const std::exception& ex) {
+        try {
+            std::cerr << "[bateria_collector] Fallo controlado al leer bateria en '"
+                      << base_path << "': " << ex.what() << "\n";
+        } catch (...) {
+            std::cerr << "[bateria_collector] Fallo controlado al leer bateria.\n";
+        }
+        return BateriaInfo{};
+    } catch (...) {
+        std::cerr << "[bateria_collector] Error desconocido controlado al leer bateria.\n";
+        return BateriaInfo{};
+    }
+}
+
 /**
  * @brief Collector de metricas de bateria.
  *
@@ -57,6 +85,22 @@ public:
     std::string nombre() const override;
 
     std::vector<chuspapulse::core::Metrica> recolectar() override;
+    std::vector<chuspapulse::core::Metrica> recolectarSinAbortar() noexcept {
+        try {
+            return recolectar();
+        } catch (const std::exception& ex) {
+            try {
+                std::cerr << "[bateria_collector] Fallo controlado durante recoleccion: "
+                          << ex.what() << "\n";
+            } catch (...) {
+                std::cerr << "[bateria_collector] Fallo controlado durante recoleccion.\n";
+            }
+            return {};
+        } catch (...) {
+            std::cerr << "[bateria_collector] Error desconocido controlado durante recoleccion.\n";
+            return {};
+        }
+    }
 };
 
 } // namespace chuspapulse::collectors::bateria
