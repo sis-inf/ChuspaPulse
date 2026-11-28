@@ -5,6 +5,7 @@
 #include <cstring>
 #include <exception>
 #include <iostream>
+#include <type_traits>
 #include <utility>
 
 namespace chuspapulse::collectors {
@@ -28,11 +29,12 @@ public:
     int codigoErrno() const noexcept {
         return codigo_errno_;
     }
-template <typename Func, typename Fallback>
+    template <typename Func, typename Fallback>
     static auto ejecutarConManejoControlado(
         const std::string& origen,
         Func&& operacion,
-        Fallback&& valor_respaldo) noexcept -> std::decay_t<Fallback> {
+        Fallback&& valor_respaldo) noexcept(std::is_nothrow_constructible_v<std::decay_t<Fallback>, Fallback&&>)
+        -> std::decay_t<Fallback> {
         try {
             return std::forward<Func>(operacion)();
         } catch (const ErrorRecoleccion& ex) {
@@ -44,6 +46,25 @@ template <typename Func, typename Fallback>
         } catch (...) {
             registrarMensajeSeguro(origen, "Error desconocido durante la recoleccion.");
             return std::forward<Fallback>(valor_respaldo);
+        }
+    }
+    template <typename Func, typename Resultado = std::decay_t<std::invoke_result_t<Func>>>
+    static auto ejecutarConManejoControlado(
+        const std::string& origen,
+        Func&& operacion)
+        noexcept(std::is_nothrow_default_constructible_v<Resultado>)
+        -> Resultado {
+        try {
+            return std::forward<Func>(operacion)();
+        } catch (const ErrorRecoleccion& ex) {
+            registrarMensajeSeguro(origen, ex.what());
+            return Resultado{};
+        } catch (const std::exception& ex) {
+            registrarMensajeSeguro(origen, ex.what());
+            return Resultado{};
+        } catch (...) {
+            registrarMensajeSeguro(origen, "Error desconocido durante la recoleccion.");
+            return Resultado{};
         }
     }
 
