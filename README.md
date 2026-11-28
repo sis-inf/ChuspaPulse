@@ -3,7 +3,8 @@
 [![CI](https://github.com/sis-inf/ChuspaPulse/actions/workflows/ci.yml/badge.svg)](https://github.com/sis-inf/ChuspaPulse/actions/workflows/ci.yml)
 [![Licencia MIT](https://img.shields.io/badge/licencia-MIT-blue.svg)](LICENSE)
 [![C++17](https://img.shields.io/badge/C%2B%2B-17-blue.svg)](https://en.cppreference.com/w/cpp/17)
-Plataforma en C++ para gestionar y monitorear información clave de forma eficiente.
+
+Agente en C++ para monitorear métricas del sistema (CPU, RAM, disco, red, procesos, carga y uptime) y exportarlas en JSON, CSV, Prometheus o texto.
 
 ## Inicio Rápido
 
@@ -11,18 +12,41 @@ Plataforma en C++ para gestionar y monitorear información clave de forma eficie
 sudo apt install git cmake g++
 git clone https://github.com/sis-inf/ChuspaPulse.git && cd ChuspaPulse
 cmake -S . -B build && cmake --build build
-./build/bin/chuspapulse --once
+./build/bin/chuspapulse --once --format json
 ```
 
-Salida esperada:
+`--once` hace una sola lectura, imprime el resultado y termina. La salida es un JSON con el `timestamp` del snapshot y una lista `metricas`; cada métrica tiene `nombre`, `valor`, `unidad` y `timestamp`. El comando imprime todo en una sola línea; aquí se indenta para leerlo mejor y los valores son de ejemplo:
 
-```text
-Estado del sistema: OK
+```json
+{
+  "timestamp": 1795800000,
+  "metricas": [
+    {"nombre": "cpu.usage", "valor": 12.5, "unidad": "porcentaje", "timestamp": 1795800000},
+    {"nombre": "cpu.cores", "valor": 4, "unidad": "cantidad", "timestamp": 1795800000},
+    {"nombre": "memory.used", "valor": 3221225472, "unidad": "bytes", "timestamp": 1795800000},
+    {"nombre": "disk.total", "valor": 256000000000, "unidad": "bytes", "timestamp": 1795800000},
+    {"nombre": "disk.used", "valor": 120000000000, "unidad": "bytes", "timestamp": 1795800000},
+    {"nombre": "disk.free", "valor": 136000000000, "unidad": "bytes", "timestamp": 1795800000},
+    {"nombre": "net.rx", "valor": 1048576, "unidad": "bytes", "timestamp": 1795800000},
+    {"nombre": "net.tx", "valor": 524288, "unidad": "bytes", "timestamp": 1795800000},
+    {"nombre": "procesos.running", "valor": 2, "unidad": "cantidad", "timestamp": 1795800000},
+    {"nombre": "procesos.blocked", "valor": 0, "unidad": "cantidad", "timestamp": 1795800000},
+    {"nombre": "procesos.total", "valor": 215, "unidad": "cantidad", "timestamp": 1795800000},
+    {"nombre": "loadavg.1", "valor": 0.42, "unidad": "carga", "timestamp": 1795800000},
+    {"nombre": "loadavg.5", "valor": 0.35, "unidad": "carga", "timestamp": 1795800000},
+    {"nombre": "loadavg.15", "valor": 0.3, "unidad": "carga", "timestamp": 1795800000},
+    {"nombre": "uptime.seconds", "valor": 86400, "unidad": "segundos", "timestamp": 1795800000}
+  ]
+}
 ```
+
+Si el equipo tiene batería o sensor de temperatura, también aparecen `bateria.porcentaje`, `bateria.cargando` y `temperatura.cpu`.
+
+Otros formatos: `--format csv`, `--format prometheus` y `--format text`. Para ver todas las opciones: `./build/bin/chuspapulse --help`.
 
 ## ¿Qué es?
 
-ChuspaPulse es una aplicación desarrollada en C++ que permite gestionar y visualizar información relevante de manera centralizada. Está pensada para ofrecer alto rendimiento y control directo sobre los recursos del sistema.
+ChuspaPulse es un agente de monitoreo escrito en C++17. Lee las métricas del sistema operativo y las entrega con bajo consumo de recursos.
 
 ## ¿Para quién es?
 
@@ -42,83 +66,47 @@ ChuspaPulse ayuda a resolver:
 
 Gracias a su implementación en C++, ChuspaPulse permite una ejecución más rápida y optimizada.
 
-## Instalación
+## Modos de uso
 
-**Requisitos del sistema**
-- Sistema operativo soportado actualmente: **Linux (Kernel 5.4+)** y **Windows 10/11**. **macOS 12+ aún no está soportado.**
-- Compilador de C++ (GCC, Clang o MSVC)
-- CMake (recomendado)
-- Git
+- **`--once`:** una sola lectura, impresa en la salida estándar. Pensado para scripts.
+- **Modo daemon (sin `--once`):** muestrea cada cierto intervalo, guarda los snapshots en SQLite y expone una API HTTP (por defecto en el puerto `8080`). No tiene menú interactivo ni imprime métricas en pantalla. La configuración está en `pulso.toml`.
 
-### Soporte de Plataformas
+## Soporte de plataformas
 
-| Sistema Operativo | Estado de Soporte | Colectores de Métricas |
-| :--- | :---: | :---: |
-| **Linux (Kernel 5.4+)** | Soporte Pleno | 100% Funcional |
-| **Windows 10/11** | Soporte Pleno | 100% Funcional |
-| **macOS 12+** | No soportado actualmente | Colectores nativos pendientes (ver [límites conocidos](docs/limites-conocidos.md)) |
+| Sistema operativo | Estado | Detalle |
+| :--- | :---: | :--- |
+| **Linux (Kernel 5.4+)** | Soportado | Los colectores leen de `/proc`, `/sys` y `statvfs`. |
+| **Windows 10/11** | Parcial, en desarrollo | Solo CPU y uptime tienen colector específico; el resto no tiene implementación. Ver [colectores](docs/colectores.md) y [requerimientos](docs/requerimientos.md). |
+| **macOS 12+** | No soportado | Colectores nativos pendientes (ver [límites conocidos](docs/limites-conocidos.md)). |
 
-### Pasos básicos
+## Instalación y compilación
 
-```bash
-# Clonar el repositorio
-git clone https://github.com/sis-inf/ChuspaPulse.git
-
-# Entrar al proyecto
-cd ChuspaPulse
-```
-
----
-
-> [!NOTE]
-> Estos pasos corresponden a la versión final esperada del proyecto.
+Requisitos: Linux, un compilador C++17 (GCC o Clang), CMake 3.16 o superior y Git. La primera compilación descarga las dependencias, así que necesita conexión a internet.
 
 ```bash
-# Crear carpeta de build
-mkdir build && cd build
-
-# Generar archivos de compilación
-cmake ..
-
-# Compilar
-cmake --build .
-```
-
-Uso rápido:
-
-```bash
-# Ejecutar el programa (puede variar según el sistema)
-./bin/chuspapulse
-```
-
-En Windows:
-
-```bash
-bin\Release\chuspapulse.exe
-```
-## Compilación rápida
-
-```bash
+sudo apt install git cmake g++
+git clone https://github.com/sis-inf/ChuspaPulse.git && cd ChuspaPulse
 cmake -S . -B build
-make -C build
-./build/bin/chuspapulse
+cmake --build build
+./build/bin/chuspapulse --once --format json
 ```
-También puedes usar las reglas directas del Makefile:
+
+También puedes usar el `Makefile`, que invoca los mismos comandos de CMake y compila además las pruebas:
 
 ```bash
-make          # Compila el proyecto usando CMake
+make          # Compila el proyecto
 make test     # Ejecuta las pruebas
-make clean    # Limpia el directorio de compilación
+make clean    # Elimina el directorio build
 ```
-Para una guía completa de instalación consulte:
 
-[docs/instalacion.md](docs/instalacion.md)
+Guía completa de instalación: [docs/instalacion.md](docs/instalacion.md)
 
----
+> [!IMPORTANT]
+> Este proyecto se encuentra en desarrollo activo. Los pasos de instalación y ejecución pueden cambiar en futuras versiones.
 
 ## Compilación con AddressSanitizer
 
-AddressSanitizer (ASAN) es una herramienta para detectar errores de memoria como accesos inválidos, leaks de memoria, y otros problemas. Es más rápido que Valgrind y ideal para desarrollo.
+AddressSanitizer (ASAN) detecta errores de memoria como accesos inválidos y fugas. Es más rápido que Valgrind y es útil durante el desarrollo.
 
 ### Compilar tests con ASAN
 
@@ -147,101 +135,11 @@ O ejecutar un test específico:
 
 ---
 
-## Ejemplo de salida
-
-Ejecutar:
-
-```bash
-./build/bin/chuspapulse --once --format json
-```
-
-Salida:
-
-```json
-{
-  "status": "OK",
-  "cpu": {
-    "usage_percent": 23
-  },
-  "memory": {
-    "usage_percent": 40
-  },
-  "disk": {
-    "usage_percent": 47
-  },
-  "network": {
-    "status": "connected"
-  }
-}
-```
-
----
-
----
-## Ejemplo basico de uso esperado
-
-```bash
-# Entrada
-./build/bin/chuspapulse
-
-# Salida
-¡Bienvenido a ChuspaPulse!
-Seleccione una opción:
-1. Ver estado
-2. Actualizar datos
-3. Salir
-
-# Entrada
-> 1
-
-# Salida
-Estado del sistema: OK
-```
----
-> [!IMPORTANT]
-> Este proyecto se encuentra en desarrollo activo. Los pasos de instalación y ejecución pueden cambiar en futuras versiones.
----
-## Compilación con Makefile
-
-El proyecto incluye un `Makefile` como wrapper conveniente para invocar los comandos de CMake.
-
-### Requisitos
-
-| Herramienta | Versión mínima |
-|------------|----------------|
-| `g++` / `clang++` | C++17 |
-| CMake | 3.16+ |
-| GNU Make | 4.x |
-
-### Uso rápido
-
-```bash
-# Compilar el proyecto
-make
-
-# Ejecutar los tests
-make test
-
-# Eliminar artefactos de compilación
-make clean
-```
- 
-### Estructura esperada
- 
-```
-project/
-├── src/          # Fuentes principales (*.cpp)
-├── tests/        # Fuentes de pruebas  (*.cpp)
-├── build/        # Artefactos generados (ignorado por git)
-└── Makefile
-```
- 
----
-
 ## ✨ Características
 
-### 🌐 Soporte Multiplataforma
-- Compatibilidad actual con **Linux** y **Windows**.
+### 🌐 Plataformas
+- **Linux** soportado.
+- **Windows** parcial (solo CPU y uptime).
 - El soporte nativo para **macOS** permanece pendiente.
 
 ### 📊 Métricas monitoreadas
@@ -252,6 +150,7 @@ project/
 - Procesos activos
 - Carga del sistema
 - Uptime
+- Batería y temperatura (si el equipo las tiene)
 
 ### 📤 Formatos de salida
 - JSON
@@ -259,7 +158,7 @@ project/
 - CSV
 - Texto
 
-### 🌐 Endpoints HTTP
+### 🌐 Endpoints HTTP (modo daemon)
 - Consulta en tiempo real
 - Exportación de datos
 
@@ -267,27 +166,17 @@ project/
 - Configuración por umbrales
 - Notificación de valores fuera de rango
 
-### ⚙️ Modo de uso
-- Modo `--once`: ejecución única para scripting
+### ⚙️ Modos de uso
+- `--once`: ejecución única para scripting
+- Modo daemon: muestreo continuo y API HTTP
 
-### Recompilación incremental
- 
-El Makefile compila únicamente los archivos `.cpp` que hayan cambiado desde
-la última build, gracias al seguimiento de dependencias de Make sobre los
-archivos objeto (`.o`) en `build/`.
 ---
 
 ## Documentación
 
-Ver la carpeta [docs/](docs/)
-
-Guía completa de instalación:
-
-## Documentación
-
-[Índice General de la Documentación](docs/indice-general.md)
-
-[docs/instalacion.md](docs/instalacion.md)
+- [Índice general de la documentación](docs/indice-general.md)
+- [Guía de instalación](docs/instalacion.md)
+- Carpeta [docs/](docs/)
 
 ## Contribuir
 Ver [CONTRIBUTING.md](CONTRIBUTING.md)
