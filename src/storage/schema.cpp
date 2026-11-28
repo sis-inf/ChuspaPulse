@@ -3,7 +3,6 @@
 namespace chuspapulse::storage {
 
 void inicializarEsquema(SQLite::Database& db) {
-
     db.exec(
         "CREATE TABLE IF NOT EXISTS snapshots ("
         "    timestamp        INTEGER NOT NULL,"
