@@ -53,6 +53,34 @@ inline RespuestaHttpHealth construirErrorJsonHealth(
     return resp;
 }
 
+inline bool validarValorParametroHealth(
+    std::string_view clave,
+    std::string_view valor,
+    std::string& detalle_error) {
+    if (valor.empty()) {
+        detalle_error = "El parametro '" + std::string(clave) + "' requiere un valor no vacio.";
+        return false;
+    }
+    if (clave == "detail" || clave == "verbose") {
+        if (valor != "true" && valor != "false" && valor != "1" && valor != "0") {
+            detalle_error = "Valor invalido para '" + std::string(clave)
+                + "': '" + std::string(valor) + "' (permitidos: true, false, 1, 0).";
+            return false;
+        }
+        return true;
+    }
+    if (clave == "format") {
+        if (valor != "json") {
+            detalle_error = "Formato no soportado en 'format': '" + std::string(valor)
+                + "' (permitido: json).";
+            return false;
+        }
+        return true;
+    }
+    detalle_error = "Parametro de consulta no soportado: '" + std::string(clave) + "'.";
+    return false;
+}
+
 inline bool validarQueryHealth(std::string_view query_string, std::string& detalle_error) {
     if (query_string.empty()) {
         return true;
@@ -80,13 +108,17 @@ inline bool validarQueryHealth(std::string_view query_string, std::string& detal
 
         if (!par.empty()) {
             std::size_t eq = par.find('=');
-            std::string_view clave = (eq == std::string_view::npos) ? par : par.substr(0, eq);
+            if (eq == std::string_view::npos) {
+                detalle_error = "Parametro mal formado (falta '=' y valor): '" + std::string(par) + "'.";
+                return false;
+            }
+            std::string_view clave = par.substr(0, eq);
+            std::string_view valor = par.substr(eq + 1);
             if (clave.empty()) {
                 detalle_error = "Parametro de consulta mal formado: nombre de parametro vacio.";
                 return false;
             }
-            if (clave != "detail" && clave != "format" && clave != "verbose") {
-                detalle_error = "Parametro de consulta no soportado: '" + std::string(clave) + "'.";
+            if (!validarValorParametroHealth(clave, valor, detalle_error)) {
                 return false;
             }
         }
@@ -139,6 +171,7 @@ struct ResultadoReadiness {
  */
 ResultadoReadiness handleReadiness(
     const std::vector<ComprobacionReadiness>& comprobaciones);
+
 inline RespuestaHttpHealth handleHealthHttp(
     std::chrono::steady_clock::time_point start_time,
     std::string_view query_string = "") {
@@ -185,12 +218,32 @@ inline RespuestaHttpHealth handleReadinessHttp(
     }
 
     try {
-        ResultadoReadiness res = handleReadiness(comprobaciones);
-        int codigo = (res.status == 200 || res.status == 503) ? res.status : 500;
-        if (res.cuerpo.empty()) {
-            return construirErrorJsonHealth(500, "internal_error", "Respuesta de readiness vacia.");
+        bool todos_listos = true;
+        std::string componentes_json = "{";
+        for (std::size_t i = 0; i < comprobaciones.size(); ++i) {
+            bool disponible = false;
+            try {
+                disponible = comprobaciones[i].second();
+            } catch (...) {
+                disponible = false;
+            }
+            if (!disponible) {
+                todos_listos = false;
+            }
+            if (i > 0) {
+                componentes_json += ",";
+            }
+            componentes_json += "\"" + escaparJsonHealth(comprobaciones[i].first) + "\":"
+                + (disponible ? "true" : "false");
         }
-        return RespuestaHttpHealth{codigo, "application/json; charset=utf-8", std::move(res.cuerpo)};
+        componentes_json += "}";
+
+        int codigo = todos_listos ? 200 : 503;
+        std::string cuerpo = std::string("{\"status\":\"")
+            + (todos_listos ? "ready" : "not_ready")
+            + "\",\"componentes\":" + componentes_json + "}";
+
+        return RespuestaHttpHealth{codigo, "application/json; charset=utf-8", std::move(cuerpo)};
     } catch (const std::exception& ex) {
         std::cerr << "[handler_health] Error interno en /ready (500): " << ex.what() << "\n";
         return construirErrorJsonHealth(500, "internal_error", ex.what());
@@ -198,6 +251,30 @@ inline RespuestaHttpHealth handleReadinessHttp(
         std::cerr << "[handler_health] Error interno desconocido en /ready (500).\n";
         return construirErrorJsonHealth(500, "internal_error", "Error interno al evaluar readiness.");
     }
+}
+
+/**
+ * @brief Despachador unificado de rutas HTTP (/health y /ready) con parsing de path y query string.
+ */
+inline RespuestaHttpHealth despacharRutaHealth(
+    std::string_view uri_solicitada,
+    std::chrono::steady_clock::time_point start_time,
+    const std::vector<ComprobacionReadiness>& comprobaciones = {}) {
+    std::size_t pos_query = uri_solicitada.find('?');
+    std::string_view path = (pos_query == std::string_view::npos)
+        ? uri_solicitada
+        : uri_solicitada.substr(0, pos_query);
+    std::string_view query = (pos_query == std::string_view::npos)
+        ? std::string_view{}
+        : uri_solicitada.substr(pos_query + 1);
+
+    if (path == "/health") {
+        return handleHealthHttp(start_time, query);
+    }
+    if (path == "/ready") {
+        return handleReadinessHttp(comprobaciones, query);
+    }
+    return construirErrorJsonHealth(404, "not_found", "Ruta de salud no soportada.");
 }
 
 } // namespace chuspapulse::http
